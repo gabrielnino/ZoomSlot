@@ -4,11 +4,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using Services;
 
 public class Program
 {
+    private static CommandArgs? commandArgs;
     public static async Task Main(string[] args)
     {
+        commandArgs = new CommandArgs(args);
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
             .WriteTo.Console()
@@ -47,7 +50,7 @@ public class Program
 
     private static IHostBuilder CreateHostBuilder(string[] args) =>
         Host.CreateDefaultBuilder(args)
-            .UseSerilog() // <-- Integra Serilog al host
+            .UseSerilog()
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config.SetBasePath(Directory.GetCurrentDirectory());
@@ -56,8 +59,23 @@ public class Program
             })
             .ConfigureServices((hostingContext, services) =>
             {
+                // Configuration
                 var config = hostingContext.Configuration.Get<AppConfig>();
                 services.AddSingleton(config);
-                // services.AddTransient<IMyService, MyService>();
+
+                services.AddSingleton(commandArgs);
+                // Register commands
+                services.AddTransient<HelpCommand>();
+                services.AddTransient<SearchCommand>();
+                services.AddTransient<ExportCommand>();
+
+                // Register factory as singleton
+                services.AddSingleton<CommandFactory>();
+
+                // Register other services
+                services.AddTransient<ILinkedInService, LinkedInService>();
+                services.AddTransient<IJobStorageService, JsonJobStorageService>();
+                services.AddSingleton<IWebDriverFactory, ChromeDriverFactory>();
+                services.AddSingleton<CommandFactory>();
             });
 }

@@ -12,6 +12,5 @@ namespace Models
         public string Company { get; set; }
         public string Location { get; set; }
         public string Url { get; set; }
-        public DateTime DatePosted { get; set; } = DateTime.UtcNow;
     }
 }

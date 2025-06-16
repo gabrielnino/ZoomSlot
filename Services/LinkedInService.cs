@@ -12,17 +12,21 @@ namespace Services
 {
     public class LinkedInService : ILinkedInService, IDisposable
     {
+        private const string CssSelectorToFind = "input[placeholder='Describe the job you want']";
         private readonly IWebDriver _driver;
         private readonly AppConfig _config;
         private readonly ILogger<LinkedInService> _logger;
         private readonly IJobStorageService _storageService;
+        private readonly bool _debugMode;
 
         public LinkedInService(
             IWebDriverFactory driverFactory,
             AppConfig config,
             ILogger<LinkedInService> logger,
-            IJobStorageService storageService)
+            IJobStorageService storageService,
+            CommandArgs commandArgs)
         {
+            _debugMode = commandArgs.IsDebugMode;
             _driver = driverFactory.Create();
             _config = config;
             _logger = logger;
@@ -47,34 +51,72 @@ namespace Services
         private async Task LoginAsync()
         {
             _driver.Navigate().GoToUrl("https://www.linkedin.com/login");
-
             var emailInput = _driver.FindElement(By.Id("username"));
-            var passwordInput = _driver.FindElement(By.Id("password"));
-            var loginButton = _driver.FindElement(By.CssSelector("button[type='submit']"));
-
             emailInput.SendKeys(_config.LinkedInCredentials.Email);
-            passwordInput.SendKeys(_config.LinkedInCredentials.Password);
-            loginButton.Click();
-
+            TakeShop("Set the email");
+            var passwordInput = _driver.FindElement(By.Id("password"));
+            passwordInput.SendKeys(_config.LinkedInCredentials.Password + Keys.Enter);
+            TakeShop("Set the password");
             await Task.Delay(3000); // Wait for login to complete
             _logger.LogInformation("Successfully logged in to LinkedIn");
         }
 
         private async Task PerformSearchAsync()
         {
+            _logger.LogInformation("Navigating to LinkedIn Jobs page...");
             _driver.Navigate().GoToUrl("https://www.linkedin.com/jobs");
 
-            var searchInput = _driver.FindElement(By.CssSelector("input[aria-label='Search by title, skill, or company']"));
-            var locationInput = _driver.FindElement(By.CssSelector("input[aria-label='Location']"));
-            var searchButton = _driver.FindElement(By.CssSelector("button[data-tracking-control-name='public_jobs_jobs-search-bar_base-search-bar-search-submit']"));
+            // Wait for page to load
+            await Task.Delay(3000);
 
-            searchInput.SendKeys(_config.JobSearch.SearchText);
-            locationInput.Clear();
-            locationInput.SendKeys(_config.JobSearch.Location);
-            searchButton.Click();
+            // Save HTML for debugging if element not found
+            var searchInput = _driver.FindElements(By.CssSelector(CssSelectorToFind))
+                                    .FirstOrDefault();
 
-            await Task.Delay(3000); // Wait for search results
-            _logger.LogInformation($"Search performed for: {_config.JobSearch.SearchText} in {_config.JobSearch.Location}");
+            if (searchInput == null)
+            {
+                (string htmlPath, string screenshotPath) = await TakeShop();
+                _logger.LogError($"Search input not found. Page HTML saved to {htmlPath}, screenshot to {screenshotPath}");
+                throw new InvalidOperationException($"Search input element not found. Debug files saved: {htmlPath}, {screenshotPath}");
+            }
+
+            searchInput.SendKeys(_config.JobSearch.SearchText + Keys.Enter);
+            await Task.Delay(3000);
+            _logger.LogInformation($"Search performed for: {_config.JobSearch.SearchText}");
+        }
+
+        private async Task TakeShop(string stage)
+        {
+            if(!_debugMode)
+            {
+                return;
+            }
+            try
+            {
+                var (html, screenshot) = await TakeShop();
+                _logger.LogInformation($"{stage} debug: {html}, {screenshot}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"{stage} debug failed");
+            }
+        }
+
+        private async Task<(string htmlPath, string screenshotPath)> TakeShop()
+        {
+            var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            var baseFolder = Path.Combine(Directory.GetCurrentDirectory(), timestamp);
+            Directory.CreateDirectory(baseFolder);
+            var htmlPath = Path.Combine(baseFolder, $"LinkedInPage_{timestamp}.html");
+            var screenshotPath = Path.Combine(baseFolder, $"LinkedInPage_{timestamp}.png");
+
+            // Save HTML
+            var pageSource = _driver.PageSource;
+            await File.WriteAllTextAsync(htmlPath, pageSource);
+
+            // Save screenshot
+            ((ITakesScreenshot)_driver).GetScreenshot().SaveAsFile(screenshotPath);
+            return (htmlPath, screenshotPath);
         }
 
         private async Task ProcessAllPagesAsync()

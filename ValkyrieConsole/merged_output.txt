@@ -1,0 +1,1036 @@
+
+
+=== FILE: F:\ValkyrieHire\Commands\CommandFactory.cs ===
+
+﻿using Microsoft.Extensions.DependencyInjection;
+namespace Commands
+{
+public class CommandFactory
+{
+private readonly IServiceProvider _serviceProvider;
+public CommandFactory(IServiceProvider serviceProvider)
+{
+_serviceProvider = serviceProvider;
+}
+public ICommand CreateCommand(string[] args)
+{
+if (args.Length == 0 || args[0] == "--help")
+return _serviceProvider.GetRequiredService<HelpCommand>();
+var debugMode = args.Contains("--debug");
+return args[0] switch
+{
+"--search" => _serviceProvider.GetRequiredService<SearchCommand>(),
+"--export" => _serviceProvider.GetRequiredService<ExportCommand>(),
+_ => throw new ArgumentException("Invalid command")
+};
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Commands\ExportCommand.cs ===
+
+﻿using Configuration;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Services;
+using Formatting = Newtonsoft.Json.Formatting;
+namespace Commands
+{
+public class ExportCommand : ICommand
+{
+private readonly IJobStorageService _storageService;
+private readonly ILogger<ExportCommand> _logger;
+private readonly AppConfig _config;
+public ExportCommand(
+IJobStorageService storageService,
+ILogger<ExportCommand> logger,
+AppConfig config)
+{
+_storageService = storageService;
+_logger = logger;
+_config = config;
+}
+public async Task ExecuteAsync()
+{
+try
+{
+_logger.LogInformation("Starting job data export...");
+var jobs = await _storageService.LoadJobsAsync();
+if (jobs == null || !jobs.Any())
+{
+_logger.LogWarning("No jobs found to export");
+Console.WriteLine("No jobs available for export");
+return;
+}
+var exportDir = Path.Combine(Directory.GetCurrentDirectory(), "Exports");
+Directory.CreateDirectory(exportDir);
+var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+var exportPath = Path.Combine(exportDir, $"jobs_export_{timestamp}.json");
+var json = JsonConvert.SerializeObject(jobs, Formatting.Indented);
+await File.WriteAllTextAsync(exportPath, json);
+_logger.LogInformation("Successfully exported {JobCount} jobs to {ExportPath}",jobs?.Count() ?? 0,   exportPath);
+Console.WriteLine($"Exported {jobs?.Count() ?? 0} jobs to:\n{exportPath}");
+}
+catch (Exception ex)
+{
+_logger.LogError(ex, "Failed to export jobs");
+throw;
+}
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Commands\HelpCommand.cs ===
+
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+namespace Commands
+{
+public class
+HelpCommand : ICommand
+{
+private readonly ILogger<HelpCommand> _logger;
+public HelpCommand(ILogger<HelpCommand> logger = null)
+{
+_logger = logger;
+}
+public Task ExecuteAsync()
+{
+_logger?.LogInformation("Displaying help information");
+Console.WriteLine("Available commands:");
+Console.WriteLine("--search\tSearch for jobs");
+Console.WriteLine("--export\tExport results");
+Console.WriteLine("--help\t\tShow this help");
+return Task.CompletedTask;
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Commands\ICommand.cs ===
+
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+namespace Commands
+{
+public interface ICommand
+{
+Task ExecuteAsync();
+}
+}
+
+=== FILE: F:\ValkyrieHire\Commands\SearchCommand.cs ===
+
+﻿using Microsoft.Extensions.Logging;
+using Services;
+namespace Commands
+{
+public class SearchCommand : ICommand
+{
+private readonly ILinkedInService _linkedInService;
+private readonly ILogger<SearchCommand> _logger;
+public SearchCommand(ILinkedInService linkedInService, ILogger<SearchCommand> logger)
+{
+_linkedInService = linkedInService;
+_logger = logger;
+}
+public async Task ExecuteAsync()
+{
+_logger.LogInformation("Starting job search...");
+await _linkedInService.SearchJobsAsync();
+_logger.LogInformation("Job search completed successfully.");
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Commands\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ===
+
+using System;
+using System.Reflection;
+[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETCoreApp,Version=v8.0", FrameworkDisplayName = ".NET 8.0")]
+
+=== FILE: F:\ValkyrieHire\Commands\obj\Debug\net8.0\Commands.AssemblyInfo.cs ===
+
+using System;
+using System.Reflection;
+[assembly: System.Reflection.AssemblyCompanyAttribute("Commands")]
+[assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
+[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d03f4d2584b7ab20acce7501d85240cbca78f86d")]
+[assembly: System.Reflection.AssemblyProductAttribute("Commands")]
+[assembly: System.Reflection.AssemblyTitleAttribute("Commands")]
+[assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
+
+=== FILE: F:\ValkyrieHire\Commands\obj\Debug\net8.0\Commands.GlobalUsings.g.cs ===
+
+global using global::System;
+global using global::System.Collections.Generic;
+global using global::System.IO;
+global using global::System.Linq;
+global using global::System.Net.Http;
+global using global::System.Threading;
+global using global::System.Threading.Tasks;
+
+=== FILE: F:\ValkyrieHire\Configuration\AppConfig.cs ===
+
+﻿namespace Configuration
+{
+public class AppConfig
+{
+public LinkedInCredentials LinkedInCredentials { get; set; }
+public JobSearch JobSearch { get; set; }
+public Logging Logging { get; set; }
+}
+}
+
+=== FILE: F:\ValkyrieHire\Configuration\JobSearch.cs ===
+
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+namespace Configuration
+{
+public class JobSearch
+{
+public string SearchText { get; set; }
+public string Location { get; set; }
+public int MaxPages { get; set; }
+}
+}
+
+=== FILE: F:\ValkyrieHire\Configuration\LinkedInCredentials.cs ===
+
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+namespace Configuration
+{
+public class LinkedInCredentials
+{
+public string Email { get; set; }
+public string Password { get; set; }
+}
+}
+
+=== FILE: F:\ValkyrieHire\Configuration\Logging.cs ===
+
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+namespace Configuration
+{
+public class Logging
+{
+public string LogFilePath { get; set; }
+public string FileLogLevel { get; set; }
+}
+}
+
+=== FILE: F:\ValkyrieHire\Configuration\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ===
+
+using System;
+using System.Reflection;
+[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETCoreApp,Version=v8.0", FrameworkDisplayName = ".NET 8.0")]
+
+=== FILE: F:\ValkyrieHire\Configuration\obj\Debug\net8.0\Configuration.AssemblyInfo.cs ===
+
+using System;
+using System.Reflection;
+[assembly: System.Reflection.AssemblyCompanyAttribute("Configuration")]
+[assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
+[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+758245914e100111cf66eed2b6b5df79855c6e00")]
+[assembly: System.Reflection.AssemblyProductAttribute("Configuration")]
+[assembly: System.Reflection.AssemblyTitleAttribute("Configuration")]
+[assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
+
+=== FILE: F:\ValkyrieHire\Configuration\obj\Debug\net8.0\Configuration.GlobalUsings.g.cs ===
+
+global using global::System;
+global using global::System.Collections.Generic;
+global using global::System.IO;
+global using global::System.Linq;
+global using global::System.Net.Http;
+global using global::System.Threading;
+global using global::System.Threading.Tasks;
+
+=== FILE: F:\ValkyrieHire\Exceptions\AppExceptionHandler.cs ===
+
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+namespace Exceptions
+{
+public class AppExceptionHandler
+{
+private readonly ILogger<AppExceptionHandler> _logger;
+public AppExceptionHandler(ILogger<AppExceptionHandler> logger)
+{
+_logger = logger;
+}
+public void Handle(Exception ex, string context)
+{
+_logger.LogError(ex, $"Error in {context}");
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Exceptions\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ===
+
+using System;
+using System.Reflection;
+[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETCoreApp,Version=v8.0", FrameworkDisplayName = ".NET 8.0")]
+
+=== FILE: F:\ValkyrieHire\Exceptions\obj\Debug\net8.0\Exceptions.AssemblyInfo.cs ===
+
+using System;
+using System.Reflection;
+[assembly: System.Reflection.AssemblyCompanyAttribute("Exceptions")]
+[assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
+[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d03f4d2584b7ab20acce7501d85240cbca78f86d")]
+[assembly: System.Reflection.AssemblyProductAttribute("Exceptions")]
+[assembly: System.Reflection.AssemblyTitleAttribute("Exceptions")]
+[assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
+
+=== FILE: F:\ValkyrieHire\Exceptions\obj\Debug\net8.0\Exceptions.GlobalUsings.g.cs ===
+
+global using global::System;
+global using global::System.Collections.Generic;
+global using global::System.IO;
+global using global::System.Linq;
+global using global::System.Net.Http;
+global using global::System.Threading;
+global using global::System.Threading.Tasks;
+
+=== FILE: F:\ValkyrieHire\Models\JobOffer.cs ===
+
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+namespace Models
+{
+public class JobOffer
+{
+public string Title { get; set; }
+public string Company { get; set; }
+public string Location { get; set; }
+public string Url { get; set; }
+}
+}
+
+=== FILE: F:\ValkyrieHire\Models\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ===
+
+using System;
+using System.Reflection;
+[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETCoreApp,Version=v8.0", FrameworkDisplayName = ".NET 8.0")]
+
+=== FILE: F:\ValkyrieHire\Models\obj\Debug\net8.0\Models.AssemblyInfo.cs ===
+
+using System;
+using System.Reflection;
+[assembly: System.Reflection.AssemblyCompanyAttribute("Models")]
+[assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
+[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d03f4d2584b7ab20acce7501d85240cbca78f86d")]
+[assembly: System.Reflection.AssemblyProductAttribute("Models")]
+[assembly: System.Reflection.AssemblyTitleAttribute("Models")]
+[assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
+
+=== FILE: F:\ValkyrieHire\Models\obj\Debug\net8.0\Models.GlobalUsings.g.cs ===
+
+global using global::System;
+global using global::System.Collections.Generic;
+global using global::System.IO;
+global using global::System.Linq;
+global using global::System.Net.Http;
+global using global::System.Threading;
+global using global::System.Threading.Tasks;
+
+=== FILE: F:\ValkyrieHire\Services\ChromeDriverFactory.cs ===
+
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+namespace Services
+{
+public class ChromeDriverFactory : IWebDriverFactory, IDisposable
+{
+private readonly ILogger<ChromeDriverFactory> _logger;
+private ChromeDriverService _driverService;
+public ChromeDriverFactory(ILogger<ChromeDriverFactory> logger)
+{
+_logger = logger;
+_driverService = ChromeDriverService.CreateDefaultService();
+_driverService.HideCommandPromptWindow = true;
+}
+public IWebDriver Create()
+{
+return CreateDriver(GetDefaultOptions());
+}
+public IWebDriver Create(Action<ChromeOptions> configureOptions)
+{
+var options = GetDefaultOptions();
+configureOptions?.Invoke(options);
+return CreateDriver(options);
+}
+public ChromeOptions GetDefaultOptions()
+{
+var options = new ChromeOptions();
+options.AddArguments(
+"--headless",
+"--disable-gpu",
+"--no-sandbox",
+"--disable-dev-shm-usage",
+"--window-size=1920,1080",
+"--log-level=3"
+);
+options.AddExcludedArgument("enable-automation");
+options.AddAdditionalOption("useAutomationExtension", false);
+return options;
+}
+private IWebDriver CreateDriver(ChromeOptions options)
+{
+try
+{
+_logger.LogInformation("Creating new ChromeDriver instance");
+return new ChromeDriver(_driverService, options);
+}
+catch (Exception ex)
+{
+_logger.LogError(ex, "Failed to create ChromeDriver");
+throw new WebDriverException("Failed to initialize ChromeDriver", ex);
+}
+}
+public void Dispose()
+{
+_driverService?.Dispose();
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\IJobMonitorService.cs ===
+
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Models;
+namespace Services
+{
+public interface IJobMonitorService : IDisposable
+{
+void PublishNewOffer(JobOffer offer);
+IObservable<JobOffer> JobOfferStream { get; }
+int ProcessedOffersCount { get; }
+IEnumerable<JobOffer> ObservedOffers { get; }
+event EventHandler<JobBatchEventArgs> BatchProcessed;
+}
+public class JobBatchEventArgs : EventArgs
+{
+public int BatchSize { get; }
+public DateTimeOffset ProcessingTime { get; }
+public JobBatchEventArgs(int batchSize)
+{
+BatchSize = batchSize;
+ProcessingTime = DateTimeOffset.UtcNow;
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\IJobStorageService.cs ===
+
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Models;
+namespace Services
+{
+public interface IJobStorageService
+{
+Task<IEnumerable<JobOffer>> LoadJobsAsync();
+Task SaveJobsAsync(IEnumerable<JobOffer> jobs);
+Task<int> GetJobCountAsync();
+Task ClearStorageAsync();
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\ILinkedInService.cs ===
+
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Models;
+namespace Services
+{
+public interface ILinkedInService
+{
+Task SearchJobsAsync();
+Task<IEnumerable<JobOffer>> GetCurrentPageOffersAsync();
+Task<bool> NavigateToNextPageAsync();
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\IWebDriverFactory.cs ===
+
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+namespace Services
+{
+public interface IWebDriverFactory
+{
+IWebDriver Create();
+IWebDriver Create(Action<ChromeOptions> configureOptions);
+ChromeOptions GetDefaultOptions();
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\JobMonitorService.cs ===
+
+﻿using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using Microsoft.Extensions.Logging;
+using Models;
+namespace Services
+{
+public class JobMonitorService : IDisposable
+{
+private readonly Subject<JobOffer> _jobOfferSubject = new();
+private readonly ILogger<JobMonitorService> _logger;
+public JobMonitorService(ILogger<JobMonitorService> logger)
+{
+_logger = logger;
+_jobOfferSubject
+.Buffer(TimeSpan.FromSeconds(5))
+.Subscribe(batch =>
+{
+if (batch.Count > 0)
+{
+_logger.LogInformation($"Processing batch of {batch.Count} jobs");
+}
+});
+}
+public void PublishJob(JobOffer offer)
+{
+_jobOfferSubject.OnNext(offer);
+}
+public void Dispose()
+{
+_jobOfferSubject?.OnCompleted();
+_jobOfferSubject?.Dispose();
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\JsonJobStorageService.cs ===
+
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Models;
+using Newtonsoft.Json;
+namespace Services
+{
+public class JsonJobStorageService : IJobStorageService, IDisposable
+{
+private const string StorageFile = "jobs_data.json";
+private readonly ILogger<JsonJobStorageService> _logger;
+private readonly SemaphoreSlim _fileLock = new SemaphoreSlim(1, 1);
+public JsonJobStorageService(ILogger<JsonJobStorageService> logger)
+{
+_logger = logger;
+EnsureStorageDirectoryExists();
+}
+public async Task SaveJobsAsync(IEnumerable<JobOffer> jobs)
+{
+if (jobs == null)
+{
+_logger.LogWarning("Attempted to save null jobs collection");
+throw new ArgumentNullException(nameof(jobs));
+}
+await _fileLock.WaitAsync();
+try
+{
+var json = JsonConvert.SerializeObject(jobs, Formatting.Indented, new JsonSerializerSettings
+{
+NullValueHandling = NullValueHandling.Ignore,
+DateTimeZoneHandling = DateTimeZoneHandling.Utc
+});
+await File.WriteAllTextAsync(StorageFile, json);
+_logger.LogInformation("Successfully saved {JobCount} jobs to storage", jobs.Count());
+}
+catch (Exception ex)
+{
+_logger.LogError(ex, "Failed to save jobs to storage");
+throw;
+}
+finally
+{
+_fileLock.Release();
+}
+}
+public async Task<IEnumerable<JobOffer>> LoadJobsAsync()
+{
+if (!File.Exists(StorageFile))
+{
+_logger.LogInformation("No storage file found - returning empty collection");
+return Enumerable.Empty<JobOffer>();
+}
+await _fileLock.WaitAsync();
+try
+{
+var json = await File.ReadAllTextAsync(StorageFile);
+var jobs = JsonConvert.DeserializeObject<List<JobOffer>>(json)
+?? Enumerable.Empty<JobOffer>();
+_logger.LogInformation("Loaded {JobCount} jobs from storage", jobs.Count());
+return jobs;
+}
+catch (Exception ex)
+{
+_logger.LogError(ex, "Failed to load jobs from storage");
+throw;
+}
+finally
+{
+_fileLock.Release();
+}
+}
+public async Task<int> GetJobCountAsync()
+{
+var jobs = await LoadJobsAsync();
+return jobs.Count();
+}
+public async Task ClearStorageAsync()
+{
+await _fileLock.WaitAsync();
+try
+{
+if (File.Exists(StorageFile))
+{
+File.Delete(StorageFile);
+_logger.LogInformation("Job storage cleared successfully");
+}
+}
+catch (Exception ex)
+{
+_logger.LogError(ex, "Failed to clear job storage");
+throw;
+}
+finally
+{
+_fileLock.Release();
+}
+}
+private void EnsureStorageDirectoryExists()
+{
+try
+{
+var directory = Path.GetDirectoryName(StorageFile);
+if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+{
+Directory.CreateDirectory(directory);
+}
+}
+catch (Exception ex)
+{
+_logger.LogError(ex, "Failed to ensure storage directory exists");
+throw;
+}
+}
+public void Dispose()
+{
+_fileLock?.Dispose();
+GC.SuppressFinalize(this);
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\LinkedInService.cs ===
+
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Configuration;
+using Microsoft.Extensions.Logging;
+using Models;
+using OpenQA.Selenium;
+namespace Services
+{
+public class LinkedInService : ILinkedInService, IDisposable
+{
+private const string CssSelectorToFind = "input[placeholder='Describe the job you want']";
+private readonly IWebDriver _driver;
+private readonly AppConfig _config;
+private readonly ILogger<LinkedInService> _logger;
+private readonly IJobStorageService _storageService;
+private readonly bool _debugMode;
+public LinkedInService(
+IWebDriverFactory driverFactory,
+AppConfig config,
+ILogger<LinkedInService> logger,
+IJobStorageService storageService)
+{
+_driver = driverFactory.Create();
+_config = config;
+_logger = logger;
+_storageService = storageService;
+}
+public async Task SearchJobsAsync()
+{
+try
+{
+await LoginAsync();
+await PerformSearchAsync();
+await ProcessAllPagesAsync();
+}
+catch (Exception ex)
+{
+_logger.LogError(ex, "Error during job search");
+throw;
+}
+}
+private async Task LoginAsync()
+{
+_driver.Navigate().GoToUrl("https://www.linkedin.com/login");
+var emailInput = _driver.FindElement(By.Id("username"));
+emailInput.SendKeys(_config.LinkedInCredentials.Email);
+TakeShop("Set the email");
+var passwordInput = _driver.FindElement(By.Id("password"));
+passwordInput.SendKeys(_config.LinkedInCredentials.Password + Keys.Enter);
+TakeShop("Set the password");
+await Task.Delay(3000);
+_logger.LogInformation("Successfully logged in to LinkedIn");
+}
+private async Task PerformSearchAsync()
+{
+_logger.LogInformation("Navigating to LinkedIn Jobs page...");
+_driver.Navigate().GoToUrl("https://www.linkedin.com/jobs");
+await Task.Delay(3000);
+var searchInput = _driver.FindElements(By.CssSelector(CssSelectorToFind))
+.FirstOrDefault();
+if (searchInput == null)
+{
+(string htmlPath, string screenshotPath) = await TakeShop();
+_logger.LogError($"Search input not found. Page HTML saved to {htmlPath}, screenshot to {screenshotPath}");
+throw new InvalidOperationException($"Search input element not found. Debug files saved: {htmlPath}, {screenshotPath}");
+}
+searchInput.SendKeys(_config.JobSearch.SearchText + Keys.Enter);
+await Task.Delay(3000);
+_logger.LogInformation($"Search performed for: {_config.JobSearch.SearchText}");
+}
+private async Task TakeShop(string stage)
+{
+if(!_debugMode)
+{
+return;
+}
+try
+{
+var (html, screenshot) = await TakeShop();
+_logger.LogInformation($"{stage} debug: {html}, {screenshot}");
+}
+catch (Exception ex)
+{
+_logger.LogError(ex, $"{stage} debug failed");
+}
+}
+private async Task<(string htmlPath, string screenshotPath)> TakeShop()
+{
+var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+var baseFolder = Path.Combine(Directory.GetCurrentDirectory(), timestamp);
+Directory.CreateDirectory(baseFolder);
+var htmlPath = Path.Combine(baseFolder, $"LinkedInPage_{timestamp}.html");
+var screenshotPath = Path.Combine(baseFolder, $"LinkedInPage_{timestamp}.png");
+var pageSource = _driver.PageSource;
+await File.WriteAllTextAsync(htmlPath, pageSource);
+((ITakesScreenshot)_driver).GetScreenshot().SaveAsFile(screenshotPath);
+return (htmlPath, screenshotPath);
+}
+private async Task ProcessAllPagesAsync()
+{
+int pageCount = 0;
+var offers = new List<JobOffer>();
+do
+{
+pageCount++;
+_logger.LogInformation($"Processing page {pageCount}");
+var pageOffers = await GetCurrentPageOffersAsync();
+offers.AddRange(pageOffers);
+if (pageCount >= _config.JobSearch.MaxPages)
+break;
+} while (await NavigateToNextPageAsync());
+await _storageService.SaveJobsAsync(offers);
+_logger.LogInformation($"Saved {offers.Count} job offers to storage");
+}
+public async Task<IEnumerable<JobOffer>> GetCurrentPageOffersAsync()
+{
+await Task.Delay(2000);
+var jobElements = _driver.FindElements(By.CssSelector(".jobs-search-results__list-item"));
+var offers = new List<JobOffer>();
+foreach (var jobElement in jobElements)
+{
+try
+{
+var offer = new JobOffer
+{
+Title = jobElement.FindElement(By.CssSelector(".job-card-list__title")).Text,
+Company = jobElement.FindElement(By.CssSelector(".job-card-container__company-name")).Text,
+Location = jobElement.FindElement(By.CssSelector(".job-card-container__metadata-item")).Text,
+Url = jobElement.FindElement(By.CssSelector(".job-card-list__title")).GetAttribute("href")
+};
+offers.Add(offer);
+}
+catch (Exception ex)
+{
+_logger.LogWarning(ex, "Error parsing job offer");
+}
+}
+return offers;
+}
+public async Task<bool> NavigateToNextPageAsync()
+{
+try
+{
+var nextButton = _driver.FindElements(By.CssSelector("button[aria-label='Next']"))
+.FirstOrDefault(b => b.Enabled);
+if (nextButton == null)
+return false;
+nextButton.Click();
+await Task.Delay(3000);
+return true;
+}
+catch (Exception ex)
+{
+_logger.LogWarning(ex, "Error navigating to next page");
+return false;
+}
+}
+public void Dispose()
+{
+_driver?.Quit();
+_driver?.Dispose();
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ===
+
+using System;
+using System.Reflection;
+[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETCoreApp,Version=v8.0", FrameworkDisplayName = ".NET 8.0")]
+
+=== FILE: F:\ValkyrieHire\Services\obj\Debug\net8.0\Services.AssemblyInfo.cs ===
+
+using System;
+using System.Reflection;
+[assembly: System.Reflection.AssemblyCompanyAttribute("Services")]
+[assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
+[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d03f4d2584b7ab20acce7501d85240cbca78f86d")]
+[assembly: System.Reflection.AssemblyProductAttribute("Services")]
+[assembly: System.Reflection.AssemblyTitleAttribute("Services")]
+[assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
+
+=== FILE: F:\ValkyrieHire\Services\obj\Debug\net8.0\Services.GlobalUsings.g.cs ===
+
+global using global::System;
+global using global::System.Collections.Generic;
+global using global::System.IO;
+global using global::System.Linq;
+global using global::System.Net.Http;
+global using global::System.Threading;
+global using global::System.Threading.Tasks;
+
+=== FILE: F:\ValkyrieHire\Tests\LinkedInServiceTests.cs ===
+
+﻿using System.Threading.Tasks;
+namespace Tests
+{
+public class LinkedInServiceTests
+{
+}
+}
+
+=== FILE: F:\ValkyrieHire\Tests\obj\Debug\.NETFramework,Version=v4.7.2.AssemblyAttributes.cs ===
+
+using System;
+using System.Reflection;
+[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETFramework,Version=v4.7.2", FrameworkDisplayName = ".NET Framework 4.7.2")]
+
+=== FILE: F:\ValkyrieHire\Tests\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ===
+
+using System;
+using System.Reflection;
+[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETCoreApp,Version=v8.0", FrameworkDisplayName = ".NET 8.0")]
+
+=== FILE: F:\ValkyrieHire\Tests\obj\Debug\net8.0\Tests.AssemblyInfo.cs ===
+
+using System;
+using System.Reflection;
+[assembly: System.Reflection.AssemblyCompanyAttribute("Tests")]
+[assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
+[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+758245914e100111cf66eed2b6b5df79855c6e00")]
+[assembly: System.Reflection.AssemblyProductAttribute("Tests")]
+[assembly: System.Reflection.AssemblyTitleAttribute("Tests")]
+[assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
+
+=== FILE: F:\ValkyrieHire\Tests\obj\Debug\net8.0\Tests.GlobalUsings.g.cs ===
+
+global using global::Microsoft.VisualStudio.TestTools.UnitTesting;
+global using global::System;
+global using global::System.Collections.Generic;
+global using global::System.IO;
+global using global::System.Linq;
+global using global::System.Net.Http;
+global using global::System.Threading;
+global using global::System.Threading.Tasks;
+
+=== FILE: F:\ValkyrieHire\Tests\Properties\AssemblyInfo.cs ===
+
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+[assembly: AssemblyTitle("Tests")]
+[assembly: AssemblyDescription("")]
+[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("Tests")]
+[assembly: AssemblyCopyright("Copyright ©  2025")]
+[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCulture("")]
+[assembly: ComVisible(false)]
+[assembly: Guid("86725d53-2ac9-4433-ab16-2149d8d18633")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]
+
+=== FILE: F:\ValkyrieHire\ValkyrieConsole\Program.cs ===
+
+﻿using Commands;
+using Configuration;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Serilog;
+using Services;
+public class Program
+{
+public static async Task Main(string[] args)
+{
+Log.Logger = new LoggerConfiguration()
+.MinimumLevel.Debug()
+.WriteTo.Console()
+.WriteTo.File(
+path: "Logs/valkyriehire-.log",
+rollingInterval: RollingInterval.Day,
+fileSizeLimitBytes: 5_000_000,
+retainedFileCountLimit: 3,
+rollOnFileSizeLimit: true
+)
+.CreateLogger();
+try
+{
+Log.Information("ValkyrieHire application starting");
+var host = CreateHostBuilder(args).Build();
+var commandFactory = host.Services.GetRequiredService<CommandFactory>();
+var command = commandFactory.CreateCommand(args);
+await command.ExecuteAsync();
+Log.Information("ValkyrieHire application completed successfully");
+}
+catch (Exception ex)
+{
+Log.Fatal(ex, "Fatal error occurred");
+Console.WriteLine("Use --help for usage information");
+}
+finally
+{
+Log.CloseAndFlush();
+}
+}
+private static IHostBuilder CreateHostBuilder(string[] args) =>
+Host.CreateDefaultBuilder(args)
+.UseSerilog()
+.ConfigureAppConfiguration((hostingContext, config) =>
+{
+config.SetBasePath(Directory.GetCurrentDirectory());
+config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+config.AddEnvironmentVariables();
+})
+.ConfigureServices((hostingContext, services) =>
+{
+var config = hostingContext.Configuration.Get<AppConfig>();
+services.AddSingleton(config);
+services.AddTransient<HelpCommand>();
+services.AddTransient<SearchCommand>();
+services.AddTransient<ExportCommand>();
+services.AddSingleton<CommandFactory>();
+services.AddTransient<ILinkedInService, LinkedInService>();
+services.AddTransient<IJobStorageService, JsonJobStorageService>();
+services.AddSingleton<IWebDriverFactory, ChromeDriverFactory>();
+});
+}
+
+=== FILE: F:\ValkyrieHire\ValkyrieConsole\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ===
+
+using System;
+using System.Reflection;
+[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETCoreApp,Version=v8.0", FrameworkDisplayName = ".NET 8.0")]
+
+=== FILE: F:\ValkyrieHire\ValkyrieConsole\obj\Debug\net8.0\ValkyrieConsole.AssemblyInfo.cs ===
+
+using System;
+using System.Reflection;
+[assembly: System.Reflection.AssemblyCompanyAttribute("ValkyrieConsole")]
+[assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
+[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d03f4d2584b7ab20acce7501d85240cbca78f86d")]
+[assembly: System.Reflection.AssemblyProductAttribute("ValkyrieConsole")]
+[assembly: System.Reflection.AssemblyTitleAttribute("ValkyrieConsole")]
+[assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
+
+=== FILE: F:\ValkyrieHire\ValkyrieConsole\obj\Debug\net8.0\ValkyrieConsole.GlobalUsings.g.cs ===
+
+global using global::System;
+global using global::System.Collections.Generic;
+global using global::System.IO;
+global using global::System.Linq;
+global using global::System.Net.Http;
+global using global::System.Threading;
+global using global::System.Threading.Tasks;

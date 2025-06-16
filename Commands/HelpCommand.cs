@@ -7,7 +7,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Commands
 {
-    public class HelpCommand : ICommand
+    public class 
+        HelpCommand : ICommand
     {
         private readonly ILogger<HelpCommand> _logger; // Optional
 
