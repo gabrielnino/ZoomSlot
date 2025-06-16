@@ -3,75 +3,61 @@ using Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Serilog;
+
 public class Program
 {
     public static async Task Main(string[] args)
     {
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Console()
+            .WriteTo.File(
+                path: "Logs/valkyriehire-.log",
+                rollingInterval: RollingInterval.Day,
+                fileSizeLimitBytes: 5_000_000,
+                retainedFileCountLimit: 3,
+                rollOnFileSizeLimit: true
+            )
+            .CreateLogger();
+
         try
         {
-            var host = CreateHostBuilder(args).Build();
-            var logger = host.Services.GetRequiredService<ILogger<Program>>();
+            Log.Information("ValkyrieHire application starting");
 
-            logger.LogInformation("ValkyrieHire application starting");
+            var host = CreateHostBuilder(args).Build();
 
             var commandFactory = host.Services.GetRequiredService<CommandFactory>();
             var command = commandFactory.CreateCommand(args);
 
             await command.ExecuteAsync();
 
-            logger.LogInformation("ValkyrieHire application completed successfully");
+            Log.Information("ValkyrieHire application completed successfully");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Fatal error: {ex.Message}");
+            Log.Fatal(ex, "Fatal error occurred");
             Console.WriteLine("Use --help for usage information");
+        }
+        finally
+        {
+            Log.CloseAndFlush();
         }
     }
 
     private static IHostBuilder CreateHostBuilder(string[] args) =>
-    Host.CreateDefaultBuilder(args)
-        .ConfigureAppConfiguration((hostingContext, config) =>
-        {
-            config.SetBasePath(Directory.GetCurrentDirectory());
-            config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-            config.AddEnvironmentVariables();
-        })
-        .ConfigureLogging((hostingContext, logging) =>
-        {
-            logging.ClearProviders();
-            logging.AddConsole();
-
-            var config = hostingContext.Configuration.Get<AppConfig>();
-
-            // Add file logging with proper configuration
-            logging.AddFile(config.Logging.LogFilePath, fileLoggerOpts =>
+        Host.CreateDefaultBuilder(args)
+            .UseSerilog() // <-- Integra Serilog al host
+            .ConfigureAppConfiguration((hostingContext, config) =>
             {
-                fileLoggerOpts.MinLevel = GetLogLevel(config.Logging.FileLogLevel);
-                fileLoggerOpts.FileSizeLimitBytes = 5_000_000; // 5MB
-                fileLoggerOpts.RetainedFileCountLimit = 3;
-                fileLoggerOpts.EnsureDirectoryExists = true;
+                config.SetBasePath(Directory.GetCurrentDirectory());
+                config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                config.AddEnvironmentVariables();
+            })
+            .ConfigureServices((hostingContext, services) =>
+            {
+                var config = hostingContext.Configuration.Get<AppConfig>();
+                services.AddSingleton(config);
+                // services.AddTransient<IMyService, MyService>();
             });
-        })
-        .ConfigureServices((hostingContext, services) =>
-        {
-            // Configuration
-            var config = hostingContext.Configuration.Get<AppConfig>();
-            services.AddSingleton(config);
-
-            // Register your services here
-            // services.AddTransient<IMyService, MyService>();
-        });
-
-
-    private static LogLevel GetLogLevel(string level) => level.ToUpper() switch
-    {
-        "TRACE" => LogLevel.Trace,
-        "DEBUG" => LogLevel.Debug,
-        "INFORMATION" => LogLevel.Information,
-        "WARNING" => LogLevel.Warning,
-        "ERROR" => LogLevel.Error,
-        "CRITICAL" => LogLevel.Critical,
-        _ => LogLevel.Information
-    };
 }
