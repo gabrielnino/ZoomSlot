@@ -7,12 +7,13 @@ namespace Services
 {
     public class LinkedInService : ILinkedInService, IDisposable
     {
-        private const string Message = "Error during job search";
+        private const string ErrorMessage = "Job search operation failed";
         private readonly IWebDriver _driver;
         private readonly AppConfig _config;
         private readonly ILogger<LinkedInService> _logger;
         private readonly bool _debugMode;
         private readonly string _executionFolder;
+        private bool _disposed = false;
 
         public LinkedInService(
             IWebDriverFactory driverFactory,
@@ -28,26 +29,29 @@ namespace Services
             var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
             _executionFolder = Path.Combine(Directory.GetCurrentDirectory(), $"Execution_{timestamp}");
             Directory.CreateDirectory(_executionFolder);
+
+            _logger.LogInformation($"📁 Created execution folder at: {_executionFolder}");
         }
 
         public async Task SearchJobsAsync()
         {
             try
             {
-                //await CloseChromeAsync();
+                _logger.LogInformation("🚀 Starting LinkedIn job search process");
                 await LoginAsync();
                 await PerformSearchAsync();
                 await ProcessAllPagesAsync();
+                _logger.LogInformation("✅ Job search completed successfully");
             }
             catch (Exception ex)
             {
-                var (htmlPath, screenshotPath) = await TakeScreenshot(Message, true);
-                _logger.LogError($"Search input not found. Page HTML saved to {htmlPath}, screenshot to {screenshotPath}");
-                throw;
+                var (htmlPath, screenshotPath) = await TakeScreenshot(ErrorMessage, true);
+                _logger.LogError(ex, $"❌ Critical error during job search. Debug info saved to:\nHTML: {htmlPath}\nScreenshot: {screenshotPath}");
+                throw new ApplicationException("Job search failed. See inner exception for details.", ex);
             }
             finally
             {
-                Dispose(); // Ensure resources are cleaned up
+                Dispose();
             }
         }
 
@@ -63,15 +67,15 @@ namespace Services
         {
             var securityCheckHeader = _driver.FindElements(By.XPath("//h1[contains(text(), 'Let's do a quick security check')]"));
             var startPuzzleButton = _driver.FindElements(By.XPath("//button[contains(text(), 'Start Puzzle')]"));
-
             return securityCheckHeader.Count > 0 || startPuzzleButton.Count > 0;
         }
 
         private async Task LoginAsync()
         {
-
+            _logger.LogInformation("🔐 Attempting to login to LinkedIn...");
             _driver.Navigate().GoToUrl("https://www.linkedin.com/login");
             await Task.Delay(3000);
+
             if (!IsOnLoginPage())
             {
                 if (IsSecurityCheckPresent())
@@ -83,113 +87,127 @@ namespace Services
                     else
                     {
                         throw new InvalidOperationException(
-                            "LinkedIn requires manual security check. Please login manually in a browser first.");
+                            "LinkedIn requires manual security verification. Please login manually in browser first.");
                     }
                 }
+
                 if (_debugMode)
                 {
                     await HandleUnexpectedPage();
                 }
-                throw new InvalidOperationException("Failed to load LinkedIn login page");
+
+                throw new InvalidOperationException(
+                    $"Failed to load LinkedIn login page. Current URL: {_driver.Url}");
             }
 
             var emailInput = _driver.FindElement(By.Id("username"));
             emailInput.SendKeys(_config.LinkedInCredentials.Email);
-            _ = TakeScreenshot("Set the email");
+            _ = TakeScreenshot("Entered email");
+
             var passwordInput = _driver.FindElement(By.Id("password"));
             passwordInput.SendKeys(_config.LinkedInCredentials.Password + Keys.Enter);
-            _ = TakeScreenshot("Set the password");
+            _ = TakeScreenshot("Entered password");
+
             await Task.Delay(3000);
-            _logger.LogInformation("Successfully logged in to LinkedIn");
-
+            _logger.LogInformation("✅ Successfully authenticated with LinkedIn");
         }
-
 
         private async Task HandleUnexpectedPage()
         {
-            var (htmlPath, screenshotPath) = await TakeScreenshot("UnexpectedPage");
-            _logger.LogError($"Unexpected page loaded. HTML: {htmlPath}, Screenshot: {screenshotPath}");
+            var (htmlPath, screenshotPath) = await TakeScreenshot("UnexpectedPageDetected");
 
-            Console.WriteLine("=====================================");
-            Console.WriteLine("DEBUG MODE: Unexpected page detected");
-            Console.WriteLine($"Check debug files at:");
-            Console.WriteLine($"- HTML: {htmlPath}");
-            Console.WriteLine($"- Screenshot: {screenshotPath}");
-            Console.WriteLine("=====================================");
+            _logger.LogError($"Unexpected page layout detected. Debug info saved to:\nHTML: {htmlPath}\nScreenshot: {screenshotPath}");
+
+            Console.WriteLine("\n╔════════════════════════════════════════════╗");
+            Console.WriteLine("║           UNEXPECTED PAGE DETECTED          ║");
+            Console.WriteLine("╠════════════════════════════════════════════╣");
+            Console.WriteLine($"║ Current URL: {_driver.Url,-30} ║");
+            Console.WriteLine("║                                            ║");
+            Console.WriteLine($"║ HTML saved to: {htmlPath,-25} ║");
+            Console.WriteLine($"║ Screenshot saved to: {screenshotPath,-18} ║");
+            Console.WriteLine("╚════════════════════════════════════════════╝\n");
         }
 
         private async Task HandleSecurityCheckInDebugMode()
         {
-            _logger.LogWarning("Security check detected - waiting for manual completion in debug mode");
+            var (htmlPath, screenshotPath) = await TakeScreenshot("SecurityVerification");
 
-            var (htmlPath, screenshotPath) = await TakeScreenshot("Security Check");
-            _logger.LogInformation($"Security check debug files saved: {htmlPath}, {screenshotPath}");
+            _logger.LogWarning($"⚠️ Security verification required. Debug info saved to:\nHTML: {htmlPath}\nScreenshot: {screenshotPath}");
 
-            Console.WriteLine("=============================================");
-            Console.WriteLine("LinkedIn requires a manual security check.");
-            Console.WriteLine("Please complete the puzzle in the browser window.");
-            Console.WriteLine("Press ENTER when done to continue...");
-            Console.WriteLine("=============================================");
+            Console.WriteLine("\n╔════════════════════════════════════════════╗");
+            Console.WriteLine("║         SECURITY VERIFICATION REQUIRED       ║");
+            Console.WriteLine("╠════════════════════════════════════════════╣");
+            Console.WriteLine("║ LinkedIn requires additional verification: ║");
+            Console.WriteLine("║ 1. Complete the security check in browser  ║");
+            Console.WriteLine("║ 2. Press ENTER to continue automation      ║");
+            Console.WriteLine("║                                            ║");
+            Console.WriteLine($"║ Debug files saved to:                     ║");
+            Console.WriteLine($"║ - HTML: {htmlPath,-30} ║");
+            Console.WriteLine($"║ - Screenshot: {screenshotPath,-23} ║");
+            Console.WriteLine("╚════════════════════════════════════════════╝\n");
 
             Console.ReadLine();
-
-            // Wait additional time after manual intervention
             await Task.Delay(5000);
+            _logger.LogInformation("🔄 Resuming automation after security check");
         }
 
         private async Task PerformSearchAsync()
         {
-            _logger.LogInformation("Navigating to LinkedIn Jobs page...");
+            _logger.LogInformation("🔍 Navigating to LinkedIn Jobs page...");
             _driver.Navigate().GoToUrl("https://www.linkedin.com/jobs");
-            // Wait for page to load
             await Task.Delay(3000);
-            _ = TakeScreenshot("Go jobs");
-            // Save HTML for debugging if element not found
+
+            _ = TakeScreenshot("JobsPageLoaded");
+
             var search = By.XPath("//input[contains(@class, 'jobs-search-box__text-input')]");
-            var searchInput = _driver.FindElements(search)
-                                    .FirstOrDefault();
-            //
+            var searchInput = _driver.FindElements(search).FirstOrDefault();
+
             if (searchInput == null)
             {
-                throw new InvalidOperationException($"Search input element not found.");
+                throw new InvalidOperationException(
+                    $"Job search input not found on page. Current URL: {_driver.Url}");
             }
 
+            _logger.LogInformation($"🔎 Searching for: '{_config.JobSearch.SearchText}'");
             searchInput.SendKeys(_config.JobSearch.SearchText + Keys.Enter);
+
             await Task.Delay(3000);
-            _ = TakeScreenshot("Search jobs");
+            _ = TakeScreenshot("SearchExecuted");
+
             ScrollMove();
             await Task.Delay(3000);
-            _ = TakeScreenshot("Move scroll");
-            _logger.LogInformation($"Search performed for: {_config.JobSearch.SearchText}");
-          
+
+            _logger.LogInformation($"✅ Search completed for: '{_config.JobSearch.SearchText}'");
         }
 
-        private async Task<(string htmlPath, string screenshotPath)> TakeScreenshot(string? stage = null, bool isError=false)
+        private async Task<(string htmlPath, string screenshotPath)> TakeScreenshot(string? stage = null, bool isError = false)
         {
-            if (!_debugMode)
+            if (!_debugMode) return (null, null);
+
+            var (html, screenshot) = await CaptureDebugArtifacts(isError);
+
+            if (!isError && stage != null)
             {
-                return (null, null);
+                _logger.LogDebug($"📸 Debug capture for '{stage}':\nHTML: {html}\nScreenshot: {screenshot}");
             }
-            var (html, screenshot) = await TakeScreenshot(isError);
-            if(!isError)
-            {
-                _logger.LogInformation($"{stage} debug: {html}, {screenshot}");
-            }
+
             return (html, screenshot);
         }
 
-        private async Task<(string htmlPath, string screenshotPath)> TakeScreenshot(bool isError)
+        private async Task<(string htmlPath, string screenshotPath)> CaptureDebugArtifacts(bool isError)
         {
             var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
             var subfolder = isError ? "Errors" : "Debug";
-            // Create subfolder structure: Execution_{timestamp}/subfolder/stageFolder/
             var fullPath = Path.Combine(_executionFolder, subfolder);
+
             Directory.CreateDirectory(fullPath);
-            var htmlPath = Path.Combine(fullPath, $"LinkedInPage_{timestamp}.html");
-            var screenshotPath = Path.Combine(fullPath, $"LinkedInPage_{timestamp}.png");
-            var pageSource = _driver.PageSource;
-            await File.WriteAllTextAsync(htmlPath, pageSource);
+
+            var htmlPath = Path.Combine(fullPath, $"Page_{timestamp}.html");
+            var screenshotPath = Path.Combine(fullPath, $"Screenshot_{timestamp}.png");
+
+            await File.WriteAllTextAsync(htmlPath, _driver.PageSource);
             ((ITakesScreenshot)_driver).GetScreenshot().SaveAsFile(screenshotPath);
+
             return (htmlPath, screenshotPath);
         }
 
@@ -198,128 +216,126 @@ namespace Services
             int pageCount = 0;
             var offers = new List<string>();
 
+            _logger.LogInformation($"📄 Processing up to {_config.JobSearch.MaxPages} pages of results");
+
             do
             {
                 pageCount++;
-                _logger.LogInformation($"Processing page {pageCount}");
+                _logger.LogInformation($"📖 Processing page {pageCount}...");
 
                 var pageOffers = await GetCurrentPageOffersAsync();
                 offers.AddRange(pageOffers);
 
+                _logger.LogInformation($"✔️ Page {pageCount} processed. Found {pageOffers?.Count() ?? 0} listings");
+
                 if (pageCount >= _config.JobSearch.MaxPages)
+                {
+                    _logger.LogInformation($"ℹ️ Reached maximum page limit of {_config.JobSearch.MaxPages}");
                     break;
+                }
 
             } while (await NavigateToNextPageAsync());
 
-            _logger.LogInformation($"Saved {offers.Count} job offers to storage");
+            _logger.LogInformation($"🎉 Completed processing. Total {offers.Count} opportunities found across {pageCount} pages");
         }
 
         public void ScrollMove()
         {
             var xpathSearchResults = "//ul[contains(@class, 'semantic-search-results-list')]";
-            var bySearchResult = By.XPath(xpathSearchResults);
-            var scrollables = _driver.FindElements(bySearchResult);
+            var scrollable = _driver.FindElements(By.XPath(xpathSearchResults)).FirstOrDefault();
 
-            if (scrollables == null || scrollables.Count() == 0)
+            if (scrollable == null)
             {
+                _logger.LogWarning("⚠️ Scroll container not found - skipping scroll operation");
                 return;
             }
 
-            var scrollable = scrollables.FirstOrDefault();
             var jsExecutor = (IJavaScriptExecutor)_driver;
-
-            // Get the total scroll height
             long scrollHeight = (long)jsExecutor.ExecuteScript("return arguments[0].scrollHeight", scrollable);
             long currentPosition = 0;
 
-            // Scroll in 10-pixel increments
+            _logger.LogDebug($"🖱️ Beginning scroll through results (height: {scrollHeight}px)");
+
             while (currentPosition < scrollHeight)
             {
                 currentPosition += 10;
                 jsExecutor.ExecuteScript("arguments[0].scrollTop = arguments[1];", scrollable, currentPosition);
-
-                // Optional: Add a small delay between scroll steps
-                System.Threading.Thread.Sleep(50);
+                Thread.Sleep(50);
             }
 
-            // Ensure we reach exactly the bottom
-            jsExecutor.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight;", scrollable);
+            _logger.LogDebug("🖱️ Finished scrolling to bottom of results");
         }
 
-        // Helper method to wait for process exit asynchronously
-        private Task<bool> WaitForExitAsync(Process process, int timeout = -1)
-        {
-            if (process.HasExited) return Task.FromResult(true);
-
-            var tcs = new TaskCompletionSource<bool>();
-            process.EnableRaisingEvents = true;
-            process.Exited += (sender, args) => tcs.TrySetResult(true);
-
-            if (timeout > 0)
-            {
-                return Task.WhenAny(tcs.Task, Task.Delay(timeout))
-                          .ContinueWith(t => t.Result == tcs.Task);
-            }
-
-            return tcs.Task;
-        }
         public async Task<IEnumerable<string>?> GetCurrentPageOffersAsync()
         {
-            await Task.Delay(2000); // Wait for page to load
-            var xpathToFind = "//ul[contains(@class, 'semantic-search-results-list')]";
-            var by = By.XPath(xpathToFind);
-            var jobContanier = _driver.FindElements(by).FirstOrDefault();
-            if (jobContanier == null)
+            await Task.Delay(2000);
+
+            var jobContainer = _driver.FindElements(By.XPath("//ul[contains(@class, 'semantic-search-results-list')]"))
+                                    .FirstOrDefault();
+
+            if (jobContainer == null)
             {
+                _logger.LogWarning("⚠️ Job listings container not found on page");
                 return null;
             }
-            var xpathToFindListItem = ".//li[contains(@class, 'semantic-search-results-list__list-item')]";
-            var jobNodes = jobContanier.FindElements(By.XPath(xpathToFindListItem));
-            if (jobNodes == null)
-            {
-                return null;
-            }
+
             var offers = new List<string>();
+            var jobNodes = jobContainer.FindElements(By.XPath(".//li[contains(@class, 'semantic-search-results-list__list-item')]"));
+
+            if (jobNodes == null || !jobNodes.Any())
+            {
+                _logger.LogWarning("⚠️ No job listings found on current page");
+                return null;
+            }
+
+            _logger.LogDebug($"🔍 Found {jobNodes.Count} job listings on page");
+
             foreach (var jobNode in jobNodes)
             {
                 try
                 {
-                    var xpathCard= ".//div[contains(@class, 'job-card-job-posting-card-wrapper')]";
-                    var byCard = By.XPath(xpathCard);
-                    var cards = jobNode.FindElements(byCard);
-                    if (cards == null || cards.Count() == 0)
+                    var jobUrl = ExtractJobUrl(jobNode);
+                    if (!string.IsNullOrEmpty(jobUrl))
                     {
-                        xpathCard = ".//div[contains(@class, 'semantic-search-results-list__list-item')]";
-                        byCard = By.XPath(xpathCard);
-                        cards = jobNode.FindElements(byCard);
+                        offers.Add(jobUrl);
                     }
-                    if (cards == null || cards.Count() == 0)
-                    {
-                        throw new Exception($"the card didn't find it {jobNode.GetAttribute("id")}");
-                    }
-                    var card = cards.FirstOrDefault();
-                    var cssSelectorCardLink = "a.job-card-job-posting-card-wrapper__card-link";
-                    var byCardLink = By.CssSelector(cssSelectorCardLink);
-                    var jobAnchors = card.FindElements(byCardLink);
-                    if (jobAnchors == null || jobAnchors.Count() == 0)
-                    {
-                        throw new Exception($"the anchor didn't find it {jobNode.GetAttribute("id")}");
-                    }
-                    var jobAnchor = jobAnchors.FirstOrDefault();
-                    var jobUrl = jobAnchor.GetAttribute("href");
-                    if (jobUrl == null)
-                    {
-                        throw new Exception($"the url didn't find it {jobNode.GetAttribute("id")}");
-                    }
-                    offers.Add(jobUrl);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, ex.Message);
+                    _logger.LogWarning(ex, $"⚠️ Failed to process job listing {jobNode.GetAttribute("id")}");
                 }
             }
 
             return offers;
+        }
+
+        private string? ExtractJobUrl(IWebElement jobNode)
+        {
+            var card = jobNode.FindElements(By.XPath(".//div[contains(@class, 'job-card-job-posting-card-wrapper')]"))
+                             .FirstOrDefault()
+                      ?? jobNode.FindElements(By.XPath(".//div[contains(@class, 'semantic-search-results-list__list-item')]"))
+                             .FirstOrDefault();
+
+            if (card == null)
+            {
+                throw new Exception($"Job card element not found in listing {jobNode.GetAttribute("id")}");
+            }
+
+            var jobAnchor = card.FindElements(By.CssSelector("a.job-card-job-posting-card-wrapper__card-link"))
+                               .FirstOrDefault();
+
+            if (jobAnchor == null)
+            {
+                throw new Exception($"Job link element not found in listing {jobNode.GetAttribute("id")}");
+            }
+
+            var jobUrl = jobAnchor.GetAttribute("href");
+            if (string.IsNullOrEmpty(jobUrl))
+            {
+                throw new Exception($"Empty URL in listing {jobNode.GetAttribute("id")}");
+            }
+
+            return jobUrl;
         }
 
         public async Task<bool> NavigateToNextPageAsync()
@@ -327,26 +343,52 @@ namespace Services
             try
             {
                 var nextButton = _driver.FindElements(By.CssSelector("button[aria-label='Next']"))
-                    .FirstOrDefault(b => b.Enabled);
+                                      .FirstOrDefault(b => b.Enabled);
 
                 if (nextButton == null)
+                {
+                    _logger.LogInformation("⏹️ No more pages available - reached end of results");
                     return false;
+                }
 
+                _logger.LogDebug("⏭️ Attempting to navigate to next page");
                 nextButton.Click();
-                await Task.Delay(3000); // Wait for next page to load
+                await Task.Delay(3000);
+
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Error navigating to next page");
+                _logger.LogWarning(ex, "⚠️ Error while attempting to navigate to next page");
                 return false;
             }
         }
 
         public void Dispose()
         {
-            _driver?.Quit();
-            _driver?.Dispose();
+            if (_disposed) return;
+
+            try
+            {
+                _logger.LogDebug("🧹 Cleaning up browser resources...");
+                _driver?.Quit();
+                _driver?.Dispose();
+                _logger.LogInformation("✅ Resources cleaned up successfully");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Error occurred during cleanup");
+            }
+            finally
+            {
+                _disposed = true;
+                GC.SuppressFinalize(this);
+            }
+        }
+
+        ~LinkedInService()
+        {
+            Dispose();
         }
     }
 }
