@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Models;
 using Newtonsoft.Json;
 
 namespace Services
@@ -21,7 +20,7 @@ namespace Services
             EnsureStorageDirectoryExists();
         }
 
-        public async Task SaveJobsAsync(IEnumerable<JobOffer> jobs)
+        public async Task SaveJobsAsync(IEnumerable<string> jobs)
         {
             if (jobs == null)
             {
@@ -52,20 +51,20 @@ namespace Services
             }
         }
 
-        public async Task<IEnumerable<JobOffer>> LoadJobsAsync()
+        public async Task<IEnumerable<string>> LoadJobsAsync()
         {
             if (!File.Exists(StorageFile))
             {
                 _logger.LogInformation("No storage file found - returning empty collection");
-                return Enumerable.Empty<JobOffer>();
+                return Enumerable.Empty<string>();
             }
 
             await _fileLock.WaitAsync();
             try
             {
                 var json = await File.ReadAllTextAsync(StorageFile);
-                var jobs = JsonConvert.DeserializeObject<List<JobOffer>>(json)
-                          ?? Enumerable.Empty<JobOffer>();
+                var jobs = JsonConvert.DeserializeObject<List<string>>(json)
+                          ?? Enumerable.Empty<string>();
 
                 _logger.LogInformation("Loaded {JobCount} jobs from storage", jobs.Count());
                 return jobs;

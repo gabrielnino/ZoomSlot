@@ -1,16 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Models;
-
-namespace Services
+﻿namespace Services
 {
     public interface ILinkedInService
     {
         Task SearchJobsAsync();
-        Task<IEnumerable<JobOffer>> GetCurrentPageOffersAsync();
+        Task<IEnumerable<string>> GetCurrentPageOffersAsync();
         Task<bool> NavigateToNextPageAsync();
     }
 }

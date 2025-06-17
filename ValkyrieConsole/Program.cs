@@ -67,14 +67,14 @@ public class Program
                 // Register commands
                 services.AddTransient<HelpCommand>();
                 services.AddTransient<SearchCommand>();
-                services.AddTransient<ExportCommand>();
+                //services.AddTransient<ExportCommand>();
 
                 // Register factory as singleton
                 services.AddSingleton<CommandFactory>();
 
                 // Register other services
                 services.AddTransient<ILinkedInService, LinkedInService>();
-                services.AddTransient<IJobStorageService, JsonJobStorageService>();
+                //services.AddTransient<IJobStorageService, JsonJobStorageService>();
                 services.AddSingleton<IWebDriverFactory, ChromeDriverFactory>();
                 services.AddSingleton<CommandFactory>();
             });

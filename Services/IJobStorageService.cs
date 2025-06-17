@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Models;
 
 namespace Services
 {
@@ -12,12 +11,12 @@ namespace Services
         /// <summary>
         /// Loads all stored job offers
         /// </summary>
-        Task<IEnumerable<JobOffer>> LoadJobsAsync();
+        Task<IEnumerable<string>> LoadJobsAsync();
 
         /// <summary>
         /// Saves a collection of job offers to storage
         /// </summary>
-        Task SaveJobsAsync(IEnumerable<JobOffer> jobs);
+        Task SaveJobsAsync(IEnumerable<string> jobs);
 
         /// <summary>
         /// Optional: Gets the count of stored jobs

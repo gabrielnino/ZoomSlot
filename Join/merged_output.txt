@@ -762,6 +762,7 @@ using Configuration;
 using Microsoft.Extensions.Logging;
 using Models;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 namespace Services
 {
 public class LinkedInService : ILinkedInService, IDisposable
@@ -807,9 +808,10 @@ throw;
 }
 private bool IsOnLoginPage()
 {
-return _driver.FindElements(By.Id("username")).Count > 0
-&& _driver.FindElements(By.Id("password")).Count > 0
-&& _driver.Url.Contains("/login");
+var usernameElements = _driver.FindElements(By.Id("username"));
+var passwordElements = _driver.FindElements(By.Id("password"));
+var urlContainsLogin = _driver.Url.Contains("/login");
+return usernameElements.Count > 0 && passwordElements.Count > 0 && urlContainsLogin;
 }
 private bool IsSecurityCheckPresent()
 {
@@ -823,12 +825,6 @@ _driver.Navigate().GoToUrl("https://www.linkedin.com/login");
 await Task.Delay(3000);
 if (!IsOnLoginPage())
 {
-if (_debugMode)
-{
-await HandleUnexpectedPage();
-}
-throw new InvalidOperationException("Failed to load LinkedIn login page");
-}
 if (IsSecurityCheckPresent())
 {
 if (_debugMode)
@@ -840,6 +836,12 @@ else
 throw new InvalidOperationException(
 "LinkedIn requires manual security check. Please login manually in a browser first.");
 }
+}
+if (_debugMode)
+{
+await HandleUnexpectedPage();
+}
+throw new InvalidOperationException("Failed to load LinkedIn login page");
 }
 var emailInput = _driver.FindElement(By.Id("username"));
 emailInput.SendKeys(_config.LinkedInCredentials.Email);
