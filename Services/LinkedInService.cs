@@ -2,7 +2,6 @@
 using Configuration;
 using Microsoft.Extensions.Logging;
 using OpenQA.Selenium;
-using OpenQA.Selenium.DevTools.V135.DOM;
 
 namespace Services
 {
@@ -45,6 +44,10 @@ namespace Services
                 var (htmlPath, screenshotPath) = await TakeScreenshot(Message, true);
                 _logger.LogError($"Search input not found. Page HTML saved to {htmlPath}, screenshot to {screenshotPath}");
                 throw;
+            }
+            finally
+            {
+                Dispose(); // Ensure resources are cleaned up
             }
         }
 
@@ -243,48 +246,6 @@ namespace Services
             jsExecutor.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight;", scrollable);
         }
 
-        private async Task CloseChromeAsync()
-        {
-            var tasks = new List<Task>();
-
-            foreach (var process in Process.GetProcessesByName("chrome"))
-            {
-                tasks.Add(CloseProcessAsync(process));
-            }
-
-            await Task.WhenAll(tasks);
-        }
-
-        private async Task CloseProcessAsync(Process process)
-        {
-            if (process.HasExited) return;
-
-            try
-            {
-                if (process.CloseMainWindow())
-                {
-                    // Wait for exit asynchronously with timeout
-                    var exitTask = WaitForExitAsync(process);
-                    var timeoutTask = Task.Delay(2000);
-
-                    if (await Task.WhenAny(exitTask, timeoutTask) == timeoutTask)
-                    {
-                        process.Kill();
-                    }
-                }
-                else
-                {
-                    process.Kill();
-                }
-
-                await WaitForExitAsync(process, 1000);
-            }
-            catch (Exception ex) when (ex is InvalidOperationException || ex is NotSupportedException)
-            {
-                // Process might have exited already
-            }
-        }
-
         // Helper method to wait for process exit asynchronously
         private Task<bool> WaitForExitAsync(Process process, int timeout = -1)
         {
@@ -334,8 +295,7 @@ namespace Services
                     }
                     if (cards == null || cards.Count() == 0)
                     {
-                        offers.Add($"the card didn't find it {jobNode.GetAttribute("id")}");
-                        continue;
+                        throw new Exception($"the card didn't find it {jobNode.GetAttribute("id")}");
                     }
                     var card = cards.FirstOrDefault();
                     var cssSelectorCardLink = "a.job-card-job-posting-card-wrapper__card-link";
@@ -343,21 +303,19 @@ namespace Services
                     var jobAnchors = card.FindElements(byCardLink);
                     if (jobAnchors == null || jobAnchors.Count() == 0)
                     {
-                        offers.Add("the anchor didn't find it");
-                        continue;
+                        throw new Exception($"the anchor didn't find it {jobNode.GetAttribute("id")}");
                     }
                     var jobAnchor = jobAnchors.FirstOrDefault();
                     var jobUrl = jobAnchor.GetAttribute("href");
                     if (jobUrl == null)
                     {
-                        offers.Add("the url didn't find it");
-                        continue;
+                        throw new Exception($"the url didn't find it {jobNode.GetAttribute("id")}");
                     }
                     offers.Add(jobUrl);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Error parsing job offer");
+                    _logger.LogWarning(ex, ex.Message);
                 }
             }
 
