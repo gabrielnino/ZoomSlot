@@ -174,9 +174,6 @@ namespace Services
             await Task.Delay(3000);
             _ = TakeScreenshot("SearchExecuted");
 
-            ScrollMove();
-            await Task.Delay(3000);
-
             _logger.LogInformation($"✅ Search completed for: '{_config.JobSearch.SearchText}'");
         }
 
@@ -220,6 +217,8 @@ namespace Services
 
             do
             {
+                ScrollMove();
+                await Task.Delay(3000);
                 pageCount++;
                 _logger.LogInformation($"📖 Processing page {pageCount}...");
 
@@ -342,7 +341,7 @@ namespace Services
         {
             try
             {
-                var nextButton = _driver.FindElements(By.CssSelector("button[aria-label='Next']"))
+                var nextButton = _driver.FindElements(By.XPath("//div[contains(@class, 'semantic-search-results-list__pagination')]"))
                                       .FirstOrDefault(b => b.Enabled);
 
                 if (nextButton == null)
