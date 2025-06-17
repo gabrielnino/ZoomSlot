@@ -1,4 +1,5 @@
-﻿using Configuration;
+﻿using System.Diagnostics;
+using Configuration;
 using Microsoft.Extensions.Logging;
 using OpenQA.Selenium;
 using OpenQA.Selenium.DevTools.V135.DOM;
@@ -34,6 +35,7 @@ namespace Services
         {
             try
             {
+                //await CloseChromeAsync();
                 await LoginAsync();
                 await PerformSearchAsync();
                 await ProcessAllPagesAsync();
@@ -214,22 +216,92 @@ namespace Services
             var xpathSearchResults = "//ul[contains(@class, 'semantic-search-results-list')]";
             var bySearchResult = By.XPath(xpathSearchResults);
             var scrollables = _driver.FindElements(bySearchResult);
-            if(scrollables == null || scrollables.Count() == 0)
+
+            if (scrollables == null || scrollables.Count() == 0)
             {
                 return;
             }
+
             var scrollable = scrollables.FirstOrDefault();
             var jsExecutor = (IJavaScriptExecutor)_driver;
+
+            // Get the total scroll height
+            long scrollHeight = (long)jsExecutor.ExecuteScript("return arguments[0].scrollHeight", scrollable);
+            long currentPosition = 0;
+
+            // Scroll in 10-pixel increments
+            while (currentPosition < scrollHeight)
+            {
+                currentPosition += 10;
+                jsExecutor.ExecuteScript("arguments[0].scrollTop = arguments[1];", scrollable, currentPosition);
+
+                // Optional: Add a small delay between scroll steps
+                System.Threading.Thread.Sleep(50);
+            }
+
+            // Ensure we reach exactly the bottom
             jsExecutor.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight;", scrollable);
         }
 
-        public void ScrollMoveIndee()
+        private async Task CloseChromeAsync()
         {
-            var scrollable = _driver.FindElement(By.ClassName("js-focus-visible"));
-            var jsExecutor = (IJavaScriptExecutor)_driver;
-            jsExecutor.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight;", scrollable);
+            var tasks = new List<Task>();
+
+            foreach (var process in Process.GetProcessesByName("chrome"))
+            {
+                tasks.Add(CloseProcessAsync(process));
+            }
+
+            await Task.WhenAll(tasks);
         }
 
+        private async Task CloseProcessAsync(Process process)
+        {
+            if (process.HasExited) return;
+
+            try
+            {
+                if (process.CloseMainWindow())
+                {
+                    // Wait for exit asynchronously with timeout
+                    var exitTask = WaitForExitAsync(process);
+                    var timeoutTask = Task.Delay(2000);
+
+                    if (await Task.WhenAny(exitTask, timeoutTask) == timeoutTask)
+                    {
+                        process.Kill();
+                    }
+                }
+                else
+                {
+                    process.Kill();
+                }
+
+                await WaitForExitAsync(process, 1000);
+            }
+            catch (Exception ex) when (ex is InvalidOperationException || ex is NotSupportedException)
+            {
+                // Process might have exited already
+            }
+        }
+
+        // Helper method to wait for process exit asynchronously
+        private Task<bool> WaitForExitAsync(Process process, int timeout = -1)
+        {
+            if (process.HasExited) return Task.FromResult(true);
+
+            var tcs = new TaskCompletionSource<bool>();
+            process.EnableRaisingEvents = true;
+            process.Exited += (sender, args) => tcs.TrySetResult(true);
+
+            if (timeout > 0)
+            {
+                return Task.WhenAny(tcs.Task, Task.Delay(timeout))
+                          .ContinueWith(t => t.Result == tcs.Task);
+            }
+
+            return tcs.Task;
+        }
         public async Task<IEnumerable<string>?> GetCurrentPageOffersAsync()
         {
             await Task.Delay(2000); // Wait for page to load
