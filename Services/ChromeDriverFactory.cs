@@ -22,7 +22,6 @@ namespace Services
             _driverService.HideCommandPromptWindow = true;
         }
 
-        // Fixed implementation
         public IWebDriver Create()
         {
             return CreateDriver(GetDefaultOptions());

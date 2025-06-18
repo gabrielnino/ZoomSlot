@@ -86,10 +86,6 @@ namespace Services
 
         private async Task PerformSearchAsync()
         {
-            //if(IsSecurityChek())
-            //{
-            //    await TryStartPuzzle();
-            //}
             _logger.LogInformation("🔍 Navigating to LinkedIn Jobs page...");
             _driver.Navigate().GoToUrl("https://www.linkedin.com/jobs");
             await Task.Delay(3000);
@@ -283,11 +279,6 @@ namespace Services
                 return false;
             }
         }
-
-       
-
-
-
 
         public void Dispose()
         {

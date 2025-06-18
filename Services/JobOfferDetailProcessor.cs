@@ -20,11 +20,13 @@ namespace Services
         private readonly List<JobOfferDetail> _offersDetail;
         private readonly ICaptureService _capture;
         private readonly string _executionFolder;
+        private readonly ISecurityCheckHelper _securityCheckHelper;
 
         public JobOfferDetailProcessor(IWebDriverFactory driverFactory,
             ILogger<JobOfferDetailProcessor> logger,
             ICaptureService capture,
-            string executionFolder)
+            string executionFolder,
+            ISecurityCheckHelper securityCheckHelper)
         {
             _offersDetail = new List<JobOfferDetail>();
             _driver = driverFactory.Create();
@@ -32,6 +34,7 @@ namespace Services
             _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
             _capture = capture;
             _executionFolder = executionFolder;
+            _securityCheckHelper = securityCheckHelper;
         }
 
         public async Task<List<JobOfferDetail>> ProcessOffersAsync(IEnumerable<string> offers)
@@ -50,9 +53,9 @@ namespace Services
                         var el = driver.FindElements(By.XPath(xPathJobs)).FirstOrDefault();
                         return el != null && el.Displayed;
                     });
-                    if (IsSecurityChek())
+                    if (_securityCheckHelper.IsSecurityChek())
                     {
-                        await TryStartPuzzle();
+                        await _securityCheckHelper.TryStartPuzzle();
                     }
 
                     await _capture.CaptureArtifacts(_executionFolder, "Detailed Job offer");
@@ -102,49 +105,6 @@ namespace Services
 
             var jobOffer = new JobOfferDetail();
             return jobOffer;
-        }
-
-        private bool IsSecurityChek()
-        {
-            var title = _driver.Title.Contains("Security Verification");
-            var captcha = _driver.FindElements(By.Id("captcha-internal")).Any();
-            var text = _driver.FindElements(By.XPath("//h1[contains(text(), 'Let’s do a quick security check')]")).Any();
-            return title || captcha || text;
-        }
-
-        private async Task TryStartPuzzle()
-        {
-            try
-            {
-                _logger.LogDebug("🔎 Searching for 'Start Puzzle' button...");
-                await _capture.CaptureArtifacts(_executionFolder, "Error in Detailed Job Offer");
-                var startPuzzleButton = _wait.Until(driver =>
-                {
-                    var xpathText = "//button[contains(text(), 'Start Puzzle')]";
-                    var button = driver.FindElements(By.XPath(xpathText))
-                                                   .FirstOrDefault();
-                    return (button != null && button.Displayed && button.Enabled) ? button : null;
-                });
-
-                await _capture.CaptureArtifacts(_executionFolder, "Error in Detailed Job Offer");
-
-                if (startPuzzleButton == null)
-                {
-                    _logger.LogWarning("⚠️ 'Start Puzzle' button not found on security check page.");
-                }
-
-                if (!startPuzzleButton.Displayed || !startPuzzleButton.Enabled)
-                {
-                    _logger.LogWarning("⚠️ 'Start Puzzle' button is not interactable.");
-                }
-
-                _logger.LogInformation("🧩 Clicking 'Start Puzzle' button...");
-                startPuzzleButton.Click();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "❌ Failed to click 'Start Puzzle' button.");
-            }
         }
     }
 }

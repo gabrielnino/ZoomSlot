@@ -77,6 +77,7 @@ public class Program
                 services.AddTransient<ILinkedInService, LinkedInService>();
                 services.AddTransient<IJobOfferDetailProcessor, JobOfferDetailProcessor>();
                 services.AddTransient<ILoginService, LinkedInLoginService>();
+                services.AddTransient<ISecurityCheckHelper, SecurityCheckHelper>();
                 services.AddTransient<ICaptureService, CaptureService>();
                 services.AddSingleton<IWebDriverFactory, ChromeDriverFactory>();
                 services.AddSingleton<CommandFactory>();
