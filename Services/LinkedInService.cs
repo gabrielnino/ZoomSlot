@@ -19,112 +19,117 @@ namespace Services
         private readonly ILogger<LinkedInService> _logger;
         private bool _disposed = false;
         private readonly ILoginService _loginService;
-        private readonly string _executionFolder;
-        private readonly string _folderName;
-        private readonly string _timestamp;
+        private readonly ExecutionOptions _executionOptions;
         private readonly ICaptureService _capture;
         private readonly List<string> _offers;
-        private readonly List<JobOfferDetail> _offersDetail;
-        
+        private readonly IJobOfferDetailProcessor _jobOfferDetail;
+
+
+
         public LinkedInService(
             IWebDriverFactory driverFactory,
             AppConfig config,
             ILogger<LinkedInService> logger,
             CommandArgs commandArgs,
             ILoginService loginService,
-            ICaptureService capture)
+            ICaptureService capture,
+            ExecutionOptions executionOptions,
+            IJobOfferDetailProcessor jobOfferDetail)
         {
             _driver = driverFactory.Create();
             _config = config;
             _logger = logger;
+            _executionOptions = executionOptions;
+            EnsureDirectoryExists(_executionOptions.ExecutionFolder);
+            _logger.LogInformation($"📁 Created execution folder at: {_executionOptions.ExecutionFolder}");
 
-            _timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            _folderName = $"Execution_{_timestamp}";
-            _executionFolder = Path.Combine(Directory.GetCurrentDirectory(), _folderName);
-            EnsureDirectoryExists(_executionFolder);
-            _logger.LogInformation($"📁 Created execution folder at: {_executionFolder}");
             _loginService = loginService;
             _capture = capture;
             _offers = [];
             _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
-            _offersDetail = [];
+            _jobOfferDetail = jobOfferDetail;
         }
 
-        private void EnsureDirectoryExists(string path)
+        private static void EnsureDirectoryExists(string path)
         {
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
             }
         }
+
         public async Task SearchJobsAsync()
         {
             try
             {
-                _logger.LogInformation("🚀 Starting LinkedIn job search process");
-                await _loginService.LoginAsync(_folderName, _timestamp);
+                _logger.LogInformation("🚀 Starting LinkedIn job search process...");
+                await _loginService.LoginAsync();
                 await PerformSearchAsync();
                 await ProcessAllPagesAsync();
-                ProcessDetailedJobOffers();
-                _logger.LogInformation("✅ Job search completed successfully");
+                await _jobOfferDetail.ProcessOffersAsync(_offers);
+                _logger.LogInformation("✅ LinkedIn job search process completed successfully.");
             }
             catch (Exception ex)
             {
-                await _capture.CaptureArtifacts(_executionFolder, ErrorMessage);
-                _logger.LogError(ex, $"❌ Critical error during job search. Debug info saved to:\nHTML: {_timestamp}.html\nScreenshot: {_timestamp}.png");
+                var timestamp = await _capture.CaptureArtifacts(_executionOptions.ExecutionFolder, "An unexpected error");
+                _logger.LogError(ex, $"❌ An unexpected error occurred during the LinkedIn job search process. Debug artifacts saved at:\nHTML: {timestamp}.html\nScreenshot: {timestamp}.png");
                 throw new ApplicationException("Job search failed. See inner exception for details.", ex);
             }
             finally
             {
-                _logger.LogInformation("🧹 Cleaning up resources after job search process");
+                _logger.LogInformation("🧹 Cleaning up resources after job search process...");
                 Dispose();
             }
         }
 
-        
+
 
         private async Task PerformSearchAsync()
         {
+            //if(IsSecurityChek())
+            //{
+            //    await TryStartPuzzle();
+            //}
             _logger.LogInformation("🔍 Navigating to LinkedIn Jobs page...");
             _driver.Navigate().GoToUrl("https://www.linkedin.com/jobs");
             await Task.Delay(3000);
-            await _capture.CaptureArtifacts(_executionFolder, "JobsPageLoaded");
-            var search = By.XPath("//input[contains(@class, 'jobs-search-box__text-input')]");
-            var searchInput = _driver.FindElements(search).FirstOrDefault();
+            await _capture.CaptureArtifacts(_executionOptions.ExecutionFolder, "JobsPageLoaded");
+
+            var searchInput = _driver.FindElements(By.XPath("//input[contains(@class, 'jobs-search-box__text-input')]"))
+                                     .FirstOrDefault();
             if (searchInput == null)
             {
-                var message = $"Job search input not found on page. Current URL: {_driver.Url}";
-                throw new InvalidOperationException(message);
+                throw new InvalidOperationException($"❌ Job search input field not found. Current URL: {_driver.Url}");
             }
-            _logger.LogInformation($"🔎 Searching for: '{_config.JobSearch.SearchText}'");
+
+            _logger.LogInformation($"🔎 Executing job search with keyword: '{_config.JobSearch.SearchText}'...");
             searchInput.SendKeys(_config.JobSearch.SearchText + Keys.Enter);
             await Task.Delay(3000);
-            await _capture.CaptureArtifacts(_executionFolder, "SearchExecuted");
-            _logger.LogInformation($"✅ Search completed for: '{_config.JobSearch.SearchText}'");
+            await _capture.CaptureArtifacts(_executionOptions.ExecutionFolder, "SearchExecuted");
+            _logger.LogInformation($"✅ Search executed for: '{_config.JobSearch.SearchText}'.");
         }
 
         private async Task ProcessAllPagesAsync()
         {
             int pageCount = 0;
-            _logger.LogInformation($"📄 Processing up to {_config.JobSearch.MaxPages} pages of results");
+            _logger.LogInformation($"📄 Beginning processing of up to {_config.JobSearch.MaxPages} result pages...");
 
             do
             {
                 ScrollMove();
                 await Task.Delay(3000);
                 pageCount++;
-                _logger.LogInformation($"📖 Processing page {pageCount}...");
+                _logger.LogInformation($"📖 Processing results page {pageCount}...");
 
                 var pageOffers = await GetCurrentPageOffersAsync();
-                if(pageOffers == null)
-                {
-                    continue;
-                }
+                if (pageOffers == null) continue;
+
                 _offers.AddRange(pageOffers);
-                _logger.LogInformation($"✔️ Page {pageCount} processed. Found {pageOffers?.Count() ?? 0} listings");
+                _logger.LogInformation($"✔️ Results page {pageCount} processed. Found {pageOffers.Count()} listings.");
+
                 if (pageCount >= _config.JobSearch.MaxPages)
                 {
-                    _logger.LogInformation($"ℹ️ Reached maximum page limit of {_config.JobSearch.MaxPages}");
+                    _logger.LogInformation($"ℹ️ Reached maximum configured page limit of {_config.JobSearch.MaxPages}.");
                     break;
                 }
 
@@ -133,12 +138,12 @@ namespace Services
 
         private void ScrollMove()
         {
-            var xpathSearchResults = "//ul[contains(@class, 'semantic-search-results-list')]";
-            var scrollable = _driver.FindElements(By.XPath(xpathSearchResults)).FirstOrDefault();
+            var scrollable = _driver.FindElements(By.XPath("//ul[contains(@class, 'semantic-search-results-list')]"))
+                                    .FirstOrDefault();
 
             if (scrollable == null)
             {
-                _logger.LogWarning("⚠️ Scroll container not found - skipping scroll operation");
+                _logger.LogWarning("⚠️ Scrollable results container not found; skipping scroll operation.");
                 return;
             }
 
@@ -146,7 +151,7 @@ namespace Services
             long scrollHeight = (long)jsExecutor.ExecuteScript("return arguments[0].scrollHeight", scrollable);
             long currentPosition = 0;
 
-            _logger.LogDebug($"🖱️ Beginning scroll through results (height: {scrollHeight}px)");
+            _logger.LogDebug($"🖱️ Scrolling through job results container (total height: {scrollHeight}px)...");
 
             while (currentPosition < scrollHeight)
             {
@@ -155,7 +160,7 @@ namespace Services
                 Thread.Sleep(50);
             }
 
-            _logger.LogDebug("🖱️ Finished scrolling to bottom of results");
+            _logger.LogDebug("🖱️ Scrolling completed.");
         }
 
         public async Task<IEnumerable<string>?> GetCurrentPageOffersAsync()
@@ -163,25 +168,24 @@ namespace Services
             await Task.Delay(2000);
 
             var jobContainer = _driver.FindElements(By.XPath("//ul[contains(@class, 'semantic-search-results-list')]"))
-                                    .FirstOrDefault();
+                                      .FirstOrDefault();
 
             if (jobContainer == null)
             {
-                _logger.LogWarning("⚠️ Job listings container not found on page");
+                _logger.LogWarning("⚠️ No job listings container found on the current page.");
                 return null;
             }
 
-            var offers = new List<string>();
             var jobNodes = jobContainer.FindElements(By.XPath(".//li[contains(@class, 'semantic-search-results-list__list-item')]"));
-
             if (jobNodes == null || !jobNodes.Any())
             {
-                _logger.LogWarning("⚠️ No job listings found on current page");
+                _logger.LogWarning("⚠️ No job listings detected on the current page.");
                 return null;
             }
 
-            _logger.LogDebug($"🔍 Found {jobNodes.Count} job listings on page");
+            _logger.LogDebug($"🔍 Detected {jobNodes.Count} job listings on the current page.");
 
+            var offers = new List<string>();
             foreach (var jobNode in jobNodes)
             {
                 try
@@ -190,16 +194,15 @@ namespace Services
                     if (!string.IsNullOrEmpty(jobUrl))
                     {
                         var url = ExtractJobIdUrl("https://www.linkedin.com", jobUrl);
-                        if(string.IsNullOrWhiteSpace(url))
+                        if (!string.IsNullOrWhiteSpace(url))
                         {
-                            continue;
+                            offers.Add(url);
                         }
-                        offers.Add(url);
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, $"⚠️ Failed to process job listing {jobNode.GetAttribute("id")}");
+                    _logger.LogWarning(ex, $"⚠️ Failed to extract job URL for listing with ID: {jobNode.GetAttribute("id")}");
                 }
             }
 
@@ -209,17 +212,17 @@ namespace Services
         private string? ExtractJobIdUrl(string urlLinkedin, string url)
         {
             var uri = new Uri(url);
-            string[] segments = uri.Segments;
+            var segments = uri.Segments;
             if (segments.Length >= 4 && segments[2].Equals("view/", StringComparison.OrdinalIgnoreCase))
             {
-                string jobId = segments[3].TrimEnd('/');
+                var jobId = segments[3].TrimEnd('/');
                 return $"{urlLinkedin}/jobs/view/{jobId}/";
             }
 
             var queryParams = System.Web.HttpUtility.ParseQueryString(uri.Query);
             if (queryParams["currentJobId"] != null)
             {
-                string jobId = queryParams["currentJobId"];
+                var jobId = queryParams["currentJobId"];
                 return $"{urlLinkedin}/jobs/view/{jobId}/";
             }
 
@@ -229,27 +232,27 @@ namespace Services
         private string? ExtractJobUrl(IWebElement jobNode)
         {
             var card = jobNode.FindElements(By.XPath(".//div[contains(@class, 'job-card-job-posting-card-wrapper')]"))
-                             .FirstOrDefault()
-                      ?? jobNode.FindElements(By.XPath(".//div[contains(@class, 'semantic-search-results-list__list-item')]"))
-                             .FirstOrDefault();
+                              .FirstOrDefault()
+                    ?? jobNode.FindElements(By.XPath(".//div[contains(@class, 'semantic-search-results-list__list-item')]"))
+                              .FirstOrDefault();
 
             if (card == null)
             {
-                throw new Exception($"Job card element not found in listing {jobNode.GetAttribute("id")}");
+                throw new Exception($"❌ Job card element not found in listing {jobNode.GetAttribute("id")}");
             }
 
             var jobAnchor = card.FindElements(By.CssSelector("a.job-card-job-posting-card-wrapper__card-link"))
-                               .FirstOrDefault();
+                                .FirstOrDefault();
 
             if (jobAnchor == null)
             {
-                throw new Exception($"Job link element not found in listing {jobNode.GetAttribute("id")}");
+                throw new Exception($"❌ Job link element not found in listing {jobNode.GetAttribute("id")}");
             }
 
             var jobUrl = jobAnchor.GetAttribute("href");
             if (string.IsNullOrEmpty(jobUrl))
             {
-                throw new Exception($"Empty URL in listing {jobNode.GetAttribute("id")}");
+                throw new Exception($"❌ Empty URL in listing {jobNode.GetAttribute("id")}");
             }
 
             return jobUrl;
@@ -260,15 +263,15 @@ namespace Services
             try
             {
                 var nextButton = _driver.FindElements(By.XPath("//div[contains(@class, 'semantic-search-results-list__pagination')]"))
-                                      .FirstOrDefault(b => b.Enabled);
+                                        .FirstOrDefault(b => b.Enabled);
 
                 if (nextButton == null)
                 {
-                    _logger.LogInformation("⏹️ No more pages available - reached end of results");
+                    _logger.LogInformation("⏹️ No additional results pages detected; ending pagination.");
                     return false;
                 }
 
-                _logger.LogDebug("⏭️ Attempting to navigate to next page");
+                _logger.LogDebug("⏭️ Clicking to navigate to next page...");
                 nextButton.Click();
                 await Task.Delay(3000);
 
@@ -276,110 +279,15 @@ namespace Services
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "⚠️ Error while attempting to navigate to next page");
+                _logger.LogWarning(ex, "⚠️ Failed to navigate to the next page of results.");
                 return false;
             }
         }
 
-        private async Task ProcessDetailedJobOffers()
-        {
-            foreach (var offer in _offers)
-            {
-                _driver.Navigate().GoToUrl(offer);
+       
 
-                await _capture.CaptureArtifacts(_executionFolder, "Detailed Job offer");
-                var offersDetail = await ExtractDescriptionLinkedIn();
-                if (offersDetail == null)
-                {
-                    continue;
-                }
-                _offersDetail.Add(offersDetail);
-            }
-        }
 
-        public async Task<JobOfferDetail> ExtractDescriptionLinkedIn()
-        {
-            var details = _driver.FindElements(By.XPath("//div[contains(@class, 'jobs-box--with-cta-large')]"));
-            if (!details.Any())
-            {
-                var message = $"Job details container not found on the page. Current URL: {_driver.Url}";
-                throw new InvalidOperationException(message);
-            }
-            var detail = details.FirstOrDefault();
 
-            var seeMoreButtons = detail.FindElements(By.XPath("//button[contains(@class, 'jobs-description__footer-button') and contains(., 'See more')]"));
-            if (!seeMoreButtons.Any())
-            {
-                var message = $"'See more' button not found in job description. Current URL: {_driver.Url}";
-                throw new InvalidOperationException(message);
-            }
-
-            await _capture.CaptureArtifacts(_executionFolder, "Detailed Job offer");
-            var jobOffer = new JobOfferDetail();
-            /*
-            var seeMoreButton = seeMoreButtons.First();
-            if (seeMoreButton.Displayed)
-            {
-                seeMoreButton.Click();
-            }
-
-            //jobs-details
-            //var details = _driver.FindElement(By.XPath("//div[contains(@class, 'jobs-semantic-search-job-details-wrapper')]"));
-            var header = details.FindElement(By.CssSelector("div.t-14.artdeco-card"));
-            var job_title_element = header.FindElement(By.CssSelector("h1.t-24.t-bold.inline"));
-            var jobOffer = new JobOfferDetail
-            {
-                //title
-                JobOfferTitle = job_title_element.Text
-            };
-            var company_name_element = header.FindElement(By.CssSelector(".job-details-jobs-unified-top-card__company-name a"));
-            //company name
-            jobOffer.CompanyName = company_name_element.Text;
-            //
-            var hiring_team_section = details.FindElement(By.CssSelector("div.job-details-module"));
-            var name_elements = hiring_team_section.FindElements(By.CssSelector(".jobs-poster__name strong"));
-            if (name_elements.Any())
-            {
-                var name_element = name_elements.First();
-                //hiring_team_section
-                jobOffer.ContactHiringSection = name_element.Text;
-            }
-            var applicants = _wait.Until(driver => driver.FindElement(By.XPath(
-                "//div[contains(@class, 'job-details-jobs-unified-top-card__primary-description-container')]"
-            )));
-            if (applicants != null)
-            {
-                jobOffer.Applicants = applicants.Text;
-            }
-
-            //var seeMoreButtons = details.FindElements(By.XPath("//button[contains(@class, 'jobs-description__footer-button') and contains(., 'See more')]"));
-            //if (seeMoreButtons.Any())
-            //{
-            //    var seeMoreButton = seeMoreButtons.First();
-            //    if (seeMoreButton.Displayed)
-            //    {
-            //        seeMoreButton.Click();
-            //    }
-            //}
-
-            var description_element = details.FindElement(By.CssSelector("article.jobs-description__container"));
-            //description
-            jobOffer.Description = description_element.Text;
-            //var salaryContainer = driver.FindElement(By.Id("SALARY"));
-            var jobDetailsContainers = details.FindElements(By.CssSelector(".artdeco-card.job-details-module"));
-            if (jobDetailsContainers.Any())
-            {
-                var salaryElements = _driver.FindElements(By.XPath(".//p[contains(., 'CA$')]"));
-                if (salaryElements.Any())
-                {
-                    var salaryElement = salaryElements.First();
-                    jobOffer.SalaryOrBudgetOffered = salaryElement.Text.Trim();
-                }
-
-            }
-            */
-            return jobOffer;
-        }
 
         public void Dispose()
         {
@@ -387,14 +295,14 @@ namespace Services
 
             try
             {
-                _logger.LogDebug("🧹 Cleaning up browser resources...");
+                _logger.LogDebug("🧹 Disposing browser driver and cleaning resources...");
                 _driver?.Quit();
                 _driver?.Dispose();
-                _logger.LogInformation("✅ Resources cleaned up successfully");
+                _logger.LogInformation("✅ Browser driver and resources disposed successfully.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "❌ Error occurred during cleanup");
+                _logger.LogError(ex, "❌ Exception encountered while disposing browser resources.");
             }
             finally
             {

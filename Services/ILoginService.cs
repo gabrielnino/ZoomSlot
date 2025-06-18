@@ -8,6 +8,6 @@ namespace Services
 {
     public interface ILoginService
     {
-        Task LoginAsync(string folderName, string timestamp);
+        Task LoginAsync();
     }
 }

@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Models;
 
 namespace Services
 {
-    public interface ICaptureService
+    public interface IJobOfferDetailProcessor
     {
-        Task<string> CaptureArtifacts(string executionFolder, string stage);
+        Task<List<JobOfferDetail>> ProcessOffersAsync(IEnumerable<string> offers);
     }
 }

@@ -14,7 +14,7 @@ namespace Services
             _logger = logger;
         }
 
-        public async Task CaptureArtifacts(string executionFolder, string stage)
+        public async Task<string> CaptureArtifacts(string executionFolder, string stage)
         {
             var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
             _logger.LogWarning($"⚠️ CaptureDebugArtifacts called with {timestamp}");
@@ -31,6 +31,7 @@ namespace Services
             var screenshot = ((ITakesScreenshot)_driver).GetScreenshot();
             screenshot.SaveAsFile(screenshotPath);
             _logger.LogDebug($"📸 Debug capture for '{stage}':\nHTML: {htmlfile}\nScreenshot: {screenshotFile}");
+            return timestamp;
         }
     }
 }

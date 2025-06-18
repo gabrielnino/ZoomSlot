@@ -1,8 +1,10 @@
-﻿using Commands;
+﻿using System.Reactive;
+using Commands;
 using Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Models;
 using Serilog;
 using Services;
 
@@ -48,8 +50,9 @@ public class Program
         }
     }
 
-    private static IHostBuilder CreateHostBuilder(string[] args) =>
-        Host.CreateDefaultBuilder(args)
+    private static IHostBuilder CreateHostBuilder(string[] args)
+    {
+        return Host.CreateDefaultBuilder(args)
             .UseSerilog()
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
@@ -57,26 +60,26 @@ public class Program
                 config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
                 config.AddEnvironmentVariables();
             })
-            .ConfigureServices((hostingContext, services) =>
+            .ConfigureServices(static (hostingContext, services) =>
             {
                 // Configuration
                 var config = hostingContext.Configuration.Get<AppConfig>();
                 services.AddSingleton(config);
-
+                var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                var folderName = $"Execution_{timestamp}";
+                var executionFolder = Path.Combine(Directory.GetCurrentDirectory(), folderName);
+                var execution = new ExecutionOptions() { ExecutionFolder = "" };
+                services.AddSingleton<ExecutionOptions>(execution);
                 services.AddSingleton(commandArgs);
-                // Register commands
                 services.AddTransient<HelpCommand>();
                 services.AddTransient<SearchCommand>();
-                //services.AddTransient<ExportCommand>();
-
-                // Register factory as singleton
                 services.AddSingleton<CommandFactory>();
-
-                // Register other services
                 services.AddTransient<ILinkedInService, LinkedInService>();
-                services.AddTransient <ILoginService, LinkedInLoginService>();
+                services.AddTransient<IJobOfferDetailProcessor, JobOfferDetailProcessor>();
+                services.AddTransient<ILoginService, LinkedInLoginService>();
                 services.AddTransient<ICaptureService, CaptureService>();
                 services.AddSingleton<IWebDriverFactory, ChromeDriverFactory>();
                 services.AddSingleton<CommandFactory>();
             });
+    }
 }

@@ -1,5 +1,6 @@
 ﻿using Configuration;
 using Microsoft.Extensions.Logging;
+using Models;
 using OpenQA.Selenium;
 
 namespace Services
@@ -11,20 +12,25 @@ namespace Services
         private readonly ILogger<LinkedInLoginService> _logger;
         private readonly ICaptureService _capture;
         private readonly bool _debugMode;
-
+        private readonly ExecutionOptions _executionOptions;
+        private const string FolderName = "Login";
+        private static string Timestamp => DateTime.Now.ToString("yyyyMMdd_HHmmss");
+        private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
         public LinkedInLoginService(
             AppConfig config, 
             IWebDriverFactory driverFactory, 
             ILogger<LinkedInLoginService> logger, 
-            ICaptureService capture)
+            ICaptureService capture,
+            ExecutionOptions executionOptions)
         {
             _config = config;
             _driver = driverFactory.Create();
             _logger = logger;
             _capture = capture;
+            _executionOptions = executionOptions;
         }
 
-        public async Task LoginAsync(string folderName, string timestamp)
+        public async Task LoginAsync()
         {
             _logger.LogInformation("🔐 Attempting to login to LinkedIn...");
             _driver.Navigate().GoToUrl("https://www.linkedin.com/login");
@@ -34,15 +40,20 @@ namespace Services
             {
                 if (IsSecurityCheckPresent())
                 {
+                    var timestamp = await _capture.CaptureArtifacts(FolderPath, "UnexpectedPageDetected");
+                    _logger.LogError($"Unexpected page layout detected.");
+                    Console.WriteLine("\n╔════════════════════════════════════════════╗");
+                    Console.WriteLine("║           SECURITY PAGE DETECTED          ║");
+                    Console.WriteLine("╠════════════════════════════════════════════╣");
+                    Console.WriteLine($"║ Current URL: {_driver.Url,-30} ║");
+                    Console.WriteLine("║                                            ║");
+                    Console.WriteLine($"║ HTML saved to: {timestamp}.html ║");
+                    Console.WriteLine($"║ Screenshot saved to: {timestamp}.png ║");
+                    Console.WriteLine("╚════════════════════════════════════════════╝\n");
                     throw new InvalidOperationException(
                         "LinkedIn requires manual security verification. Please login manually in browser first.");
                 }
-
-                if (_debugMode)
-                {
-                    await HandleUnexpectedPage(folderName, timestamp);
-                }
-
+                await HandleUnexpectedPage();
                 throw new InvalidOperationException(
                     $"Failed to load LinkedIn login page. Current URL: {_driver.Url}");
             }
@@ -50,11 +61,11 @@ namespace Services
             var emailInput = _driver.FindElement(By.Id("username"));
             emailInput.SendKeys(_config.LinkedInCredentials.Email);
             await Task.Delay(3000);
-            await _capture.CaptureArtifacts(folderName, "Entered email");
+            await _capture.CaptureArtifacts(FolderPath, "Entered email");
             var passwordInput = _driver.FindElement(By.Id("password"));
             passwordInput.SendKeys(_config.LinkedInCredentials.Password + Keys.Enter);
             await Task.Delay(3000);
-            await _capture.CaptureArtifacts(folderName, "Entered password");
+            await _capture.CaptureArtifacts(FolderPath, "Entered password");
             _logger.LogInformation("✅ Successfully authenticated with LinkedIn");
         }
 
@@ -70,14 +81,13 @@ namespace Services
         {
             var securityCheckHeader = _driver.FindElements(By.XPath("//h1[contains(text(), 'Let's do a quick security check')]"));
             var startPuzzleButton = _driver.FindElements(By.XPath("//button[contains(text(), 'Start Puzzle')]"));
-            return securityCheckHeader.Count > 0 || startPuzzleButton.Count > 0;
+            return securityCheckHeader.Any() || startPuzzleButton.Any();
         }
 
-        private async Task HandleUnexpectedPage(string folderName, string timestamp)
+        private async Task HandleUnexpectedPage()
         {
-            await _capture.CaptureArtifacts(folderName, "UnexpectedPageDetected");
+            var timestamp = await _capture.CaptureArtifacts(FolderPath, "UnexpectedPageDetected");
             _logger.LogError($"Unexpected page layout detected.");
-
             Console.WriteLine("\n╔════════════════════════════════════════════╗");
             Console.WriteLine("║           UNEXPECTED PAGE DETECTED          ║");
             Console.WriteLine("╠════════════════════════════════════════════╣");

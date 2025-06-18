@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Services
+namespace Models
 {
-    public interface ICaptureService
+    public class ExecutionOptions
     {
-        Task<string> CaptureArtifacts(string executionFolder, string stage);
+        public string ExecutionFolder { get; set; }
     }
 }
