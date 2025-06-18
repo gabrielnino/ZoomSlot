@@ -3,8 +3,10 @@ using System.Reactive;
 using System.Text.RegularExpressions;
 using Configuration;
 using Microsoft.Extensions.Logging;
+using Models;
 using Newtonsoft.Json;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 
 namespace Services
 {
@@ -12,6 +14,7 @@ namespace Services
     {
         private const string ErrorMessage = "Job search operation failed";
         private readonly IWebDriver _driver;
+        private readonly WebDriverWait _wait;
         private readonly AppConfig _config;
         private readonly ILogger<LinkedInService> _logger;
         private bool _disposed = false;
@@ -20,7 +23,9 @@ namespace Services
         private readonly string _folderName;
         private readonly string _timestamp;
         private readonly ICaptureService _capture;
-
+        private readonly List<string> _offers;
+        private readonly List<JobOfferDetail> _offersDetail;
+        
         public LinkedInService(
             IWebDriverFactory driverFactory,
             AppConfig config,
@@ -40,6 +45,9 @@ namespace Services
             _logger.LogInformation($"📁 Created execution folder at: {_executionFolder}");
             _loginService = loginService;
             _capture = capture;
+            _offers = [];
+            _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+            _offersDetail = [];
         }
 
         private void EnsureDirectoryExists(string path)
@@ -57,6 +65,7 @@ namespace Services
                 await _loginService.LoginAsync(_folderName, _timestamp);
                 await PerformSearchAsync();
                 await ProcessAllPagesAsync();
+                ProcessDetailedJobOffers();
                 _logger.LogInformation("✅ Job search completed successfully");
             }
             catch (Exception ex)
@@ -67,6 +76,7 @@ namespace Services
             }
             finally
             {
+                _logger.LogInformation("🧹 Cleaning up resources after job search process");
                 Dispose();
             }
         }
@@ -96,8 +106,6 @@ namespace Services
         private async Task ProcessAllPagesAsync()
         {
             int pageCount = 0;
-            var offers = new List<string>();
-
             _logger.LogInformation($"📄 Processing up to {_config.JobSearch.MaxPages} pages of results");
 
             do
@@ -108,10 +116,12 @@ namespace Services
                 _logger.LogInformation($"📖 Processing page {pageCount}...");
 
                 var pageOffers = await GetCurrentPageOffersAsync();
-                offers.AddRange(pageOffers);
-
+                if(pageOffers == null)
+                {
+                    continue;
+                }
+                _offers.AddRange(pageOffers);
                 _logger.LogInformation($"✔️ Page {pageCount} processed. Found {pageOffers?.Count() ?? 0} listings");
-
                 if (pageCount >= _config.JobSearch.MaxPages)
                 {
                     _logger.LogInformation($"ℹ️ Reached maximum page limit of {_config.JobSearch.MaxPages}");
@@ -119,14 +129,9 @@ namespace Services
                 }
 
             } while (await NavigateToNextPageAsync());
-            var jsonPath = Path.Combine(_executionFolder, $"Offers_{DateTime.Now:yyyyMMdd_HHmmss}.json");
-            var jsonContent = JsonConvert.SerializeObject(offers, Formatting.Indented);
-            await File.WriteAllTextAsync(jsonPath, jsonContent);
-            _logger.LogInformation($"💾 Offers data saved to {jsonPath}");
-            _logger.LogInformation($"🎉 Completed processing. Total {offers.Count} opportunities found across {pageCount} pages");
         }
 
-        public void ScrollMove()
+        private void ScrollMove()
         {
             var xpathSearchResults = "//ul[contains(@class, 'semantic-search-results-list')]";
             var scrollable = _driver.FindElements(By.XPath(xpathSearchResults)).FirstOrDefault();
@@ -185,6 +190,10 @@ namespace Services
                     if (!string.IsNullOrEmpty(jobUrl))
                     {
                         var url = ExtractJobIdUrl("https://www.linkedin.com", jobUrl);
+                        if(string.IsNullOrWhiteSpace(url))
+                        {
+                            continue;
+                        }
                         offers.Add(url);
                     }
                 }
@@ -197,7 +206,7 @@ namespace Services
             return offers;
         }
 
-        public string? ExtractJobIdUrl(string urlLinkedin, string url)
+        private string? ExtractJobIdUrl(string urlLinkedin, string url)
         {
             var uri = new Uri(url);
             string[] segments = uri.Segments;
@@ -270,6 +279,106 @@ namespace Services
                 _logger.LogWarning(ex, "⚠️ Error while attempting to navigate to next page");
                 return false;
             }
+        }
+
+        private async Task ProcessDetailedJobOffers()
+        {
+            foreach (var offer in _offers)
+            {
+                _driver.Navigate().GoToUrl(offer);
+
+                await _capture.CaptureArtifacts(_executionFolder, "Detailed Job offer");
+                var offersDetail = await ExtractDescriptionLinkedIn();
+                if (offersDetail == null)
+                {
+                    continue;
+                }
+                _offersDetail.Add(offersDetail);
+            }
+        }
+
+        public async Task<JobOfferDetail> ExtractDescriptionLinkedIn()
+        {
+            var details = _driver.FindElements(By.XPath("//div[contains(@class, 'jobs-box--with-cta-large')]"));
+            if (!details.Any())
+            {
+                var message = $"Job details container not found on the page. Current URL: {_driver.Url}";
+                throw new InvalidOperationException(message);
+            }
+            var detail = details.FirstOrDefault();
+
+            var seeMoreButtons = detail.FindElements(By.XPath("//button[contains(@class, 'jobs-description__footer-button') and contains(., 'See more')]"));
+            if (!seeMoreButtons.Any())
+            {
+                var message = $"'See more' button not found in job description. Current URL: {_driver.Url}";
+                throw new InvalidOperationException(message);
+            }
+
+            await _capture.CaptureArtifacts(_executionFolder, "Detailed Job offer");
+            var jobOffer = new JobOfferDetail();
+            /*
+            var seeMoreButton = seeMoreButtons.First();
+            if (seeMoreButton.Displayed)
+            {
+                seeMoreButton.Click();
+            }
+
+            //jobs-details
+            //var details = _driver.FindElement(By.XPath("//div[contains(@class, 'jobs-semantic-search-job-details-wrapper')]"));
+            var header = details.FindElement(By.CssSelector("div.t-14.artdeco-card"));
+            var job_title_element = header.FindElement(By.CssSelector("h1.t-24.t-bold.inline"));
+            var jobOffer = new JobOfferDetail
+            {
+                //title
+                JobOfferTitle = job_title_element.Text
+            };
+            var company_name_element = header.FindElement(By.CssSelector(".job-details-jobs-unified-top-card__company-name a"));
+            //company name
+            jobOffer.CompanyName = company_name_element.Text;
+            //
+            var hiring_team_section = details.FindElement(By.CssSelector("div.job-details-module"));
+            var name_elements = hiring_team_section.FindElements(By.CssSelector(".jobs-poster__name strong"));
+            if (name_elements.Any())
+            {
+                var name_element = name_elements.First();
+                //hiring_team_section
+                jobOffer.ContactHiringSection = name_element.Text;
+            }
+            var applicants = _wait.Until(driver => driver.FindElement(By.XPath(
+                "//div[contains(@class, 'job-details-jobs-unified-top-card__primary-description-container')]"
+            )));
+            if (applicants != null)
+            {
+                jobOffer.Applicants = applicants.Text;
+            }
+
+            //var seeMoreButtons = details.FindElements(By.XPath("//button[contains(@class, 'jobs-description__footer-button') and contains(., 'See more')]"));
+            //if (seeMoreButtons.Any())
+            //{
+            //    var seeMoreButton = seeMoreButtons.First();
+            //    if (seeMoreButton.Displayed)
+            //    {
+            //        seeMoreButton.Click();
+            //    }
+            //}
+
+            var description_element = details.FindElement(By.CssSelector("article.jobs-description__container"));
+            //description
+            jobOffer.Description = description_element.Text;
+            //var salaryContainer = driver.FindElement(By.Id("SALARY"));
+            var jobDetailsContainers = details.FindElements(By.CssSelector(".artdeco-card.job-details-module"));
+            if (jobDetailsContainers.Any())
+            {
+                var salaryElements = _driver.FindElements(By.XPath(".//p[contains(., 'CA$')]"));
+                if (salaryElements.Any())
+                {
+                    var salaryElement = salaryElements.First();
+                    jobOffer.SalaryOrBudgetOffered = salaryElement.Text.Trim();
+                }
+
+            }
+            */
+            return jobOffer;
         }
 
         public void Dispose()
