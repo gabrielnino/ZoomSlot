@@ -12,23 +12,23 @@ using OpenQA.Selenium.Support.UI;
 
 namespace Services
 {
-    public class JobOfferDetailProcessor : IJobOfferDetailProcessor
+    public class JobOfferDetail : IJobOfferDetail
     {
-        private readonly ILogger<JobOfferDetailProcessor> _logger;
+        private readonly ILogger<JobOfferDetail> _logger;
         private readonly IWebDriver _driver;
         private readonly WebDriverWait _wait;
-        private readonly List<JobOfferDetail> _offersDetail;
-        private readonly ICaptureService _capture;
+        private readonly List<Models.JobOfferDetail> _offersDetail;
+        private readonly ICaptureSnapshot _capture;
         private readonly string _executionFolder;
-        private readonly ISecurityCheckHelper _securityCheckHelper;
+        private readonly ISecurityCheck _securityCheckHelper;
 
-        public JobOfferDetailProcessor(IWebDriverFactory driverFactory,
-            ILogger<JobOfferDetailProcessor> logger,
-            ICaptureService capture,
+        public JobOfferDetail(IWebDriverFactory driverFactory,
+            ILogger<JobOfferDetail> logger,
+            ICaptureSnapshot capture,
             string executionFolder,
-            ISecurityCheckHelper securityCheckHelper)
+            ISecurityCheck securityCheckHelper)
         {
-            _offersDetail = new List<JobOfferDetail>();
+            _offersDetail = new List<Models.JobOfferDetail>();
             _driver = driverFactory.Create();
             _logger = logger;
             _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
@@ -37,7 +37,7 @@ namespace Services
             _securityCheckHelper = securityCheckHelper;
         }
 
-        public async Task<List<JobOfferDetail>> ProcessOffersAsync(IEnumerable<string> offers)
+        public async Task<List<Models.JobOfferDetail>> ProcessOffersAsync(IEnumerable<string> offers)
         {
             _logger.LogInformation("📝 Processing detailed job offer data...");
 
@@ -76,7 +76,7 @@ namespace Services
             }
             return _offersDetail;
         }
-        public async Task<JobOfferDetail> ExtractDescriptionLinkedIn()
+        public async Task<Models.JobOfferDetail> ExtractDescriptionLinkedIn()
         {
             _logger.LogDebug("🔍 Extracting job details from current page...");
 
@@ -103,7 +103,7 @@ namespace Services
 
             await _capture.CaptureArtifacts(_executionFolder, "ExtractDescriptionLinkedIn");
 
-            var jobOffer = new JobOfferDetail();
+            var jobOffer = new Models.JobOfferDetail();
             return jobOffer;
         }
     }

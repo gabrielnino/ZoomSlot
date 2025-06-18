@@ -3,12 +3,12 @@ using OpenQA.Selenium;
 
 namespace Services
 {
-    public class CaptureService : ICaptureService
+    public class CaptureSnapshot : ICaptureSnapshot
     {
         private readonly IWebDriver _driver;
-        private readonly ILogger<CaptureService> _logger;
+        private readonly ILogger<CaptureSnapshot> _logger;
 
-        public CaptureService(IWebDriverFactory driverFactory, ILogger<CaptureService> logger)
+        public CaptureSnapshot(IWebDriverFactory driverFactory, ILogger<CaptureSnapshot> logger)
         {
             _driver = driverFactory.Create();
             _logger = logger;

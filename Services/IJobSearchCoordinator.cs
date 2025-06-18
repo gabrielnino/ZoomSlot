@@ -1,6 +1,6 @@
 ﻿namespace Services
 {
-    public interface ILinkedInService
+    public interface IJobSearchCoordinator
     {
         Task SearchJobsAsync();
     }

@@ -10,18 +10,18 @@ namespace Services
         private readonly AppConfig _config;
         private readonly IWebDriver _driver;
         private readonly ILogger<LinkedInLoginService> _logger;
-        private readonly ICaptureService _capture;
+        private readonly ICaptureSnapshot _capture;
         private readonly ExecutionOptions _executionOptions;
         private const string FolderName = "Login";
         private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
-        private readonly ISecurityCheckHelper _securityCheck;
+        private readonly ISecurityCheck _securityCheck;
         public LinkedInLoginService(
             AppConfig config, 
             IWebDriverFactory driverFactory, 
             ILogger<LinkedInLoginService> logger, 
-            ICaptureService capture,
+            ICaptureSnapshot capture,
             ExecutionOptions executionOptions,
-            ISecurityCheckHelper securityCheck)
+            ISecurityCheck securityCheck)
         {
             _config = config;
             _driver = driverFactory.Create();

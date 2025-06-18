@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Services
 {
-    public interface ISearchService
+    public interface IJobSearch
     {
         Task PerformSearchAsync();
     }

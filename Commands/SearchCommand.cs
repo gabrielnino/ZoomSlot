@@ -5,10 +5,10 @@ namespace Commands
 {
     public class SearchCommand : ICommand
     {
-        private readonly ILinkedInService _linkedInService;
+        private readonly IJobSearchCoordinator _linkedInService;
         private readonly ILogger<SearchCommand> _logger;
 
-        public SearchCommand(ILinkedInService linkedInService, ILogger<SearchCommand> logger)
+        public SearchCommand(IJobSearchCoordinator linkedInService, ILogger<SearchCommand> logger)
         {
             _linkedInService = linkedInService;
             _logger = logger;

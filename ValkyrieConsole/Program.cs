@@ -74,11 +74,11 @@ public class Program
                 services.AddTransient<HelpCommand>();
                 services.AddTransient<SearchCommand>();
                 services.AddSingleton<CommandFactory>();
-                services.AddTransient<ILinkedInService, LinkedInService>();
-                services.AddTransient<IJobOfferDetailProcessor, JobOfferDetailProcessor>();
+                services.AddTransient<IJobSearchCoordinator, JobSearchCoordinator>();
+                services.AddTransient<IJobOfferDetail, Services.JobOfferDetail>();
                 services.AddTransient<ILoginService, LinkedInLoginService>();
-                services.AddTransient<ISecurityCheckHelper, SecurityCheckHelper>();
-                services.AddTransient<ICaptureService, CaptureService>();
+                services.AddTransient<ISecurityCheck, SecurityCheck>();
+                services.AddTransient<ICaptureSnapshot, CaptureSnapshot>();
                 services.AddSingleton<IWebDriverFactory, ChromeDriverFactory>();
                 services.AddSingleton<CommandFactory>();
             });

@@ -6,24 +6,24 @@ using OpenQA.Selenium.Support.UI;
 
 namespace Services
 {
-    public class SecurityCheckHelper : ISecurityCheckHelper
+    public class SecurityCheck : ISecurityCheck
     {
-        private readonly ILogger<JobOfferDetailProcessor> _logger;
+        private readonly ILogger<JobOfferDetail> _logger;
         private readonly IWebDriver _driver;
         private readonly WebDriverWait _wait;
-        private readonly List<JobOfferDetail> _offersDetail;
-        private readonly ICaptureService _capture;
+        private readonly List<Models.JobOfferDetail> _offersDetail;
+        private readonly ICaptureSnapshot _capture;
         private readonly ExecutionOptions _executionOptions;
         private readonly string _executionFolder;
         private const string FolderName = "SecurityCheck";
         private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
-        public SecurityCheckHelper(IWebDriverFactory driverFactory,
-            ILogger<JobOfferDetailProcessor> logger,
-            ICaptureService capture,
+        public SecurityCheck(IWebDriverFactory driverFactory,
+            ILogger<JobOfferDetail> logger,
+            ICaptureSnapshot capture,
             string executionFolder,
             ExecutionOptions executionOptions)
         {
-            _offersDetail = new List<JobOfferDetail>();
+            _offersDetail = new List<Models.JobOfferDetail>();
             _driver = driverFactory.Create();
             _logger = logger;
             _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));

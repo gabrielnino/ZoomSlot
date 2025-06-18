@@ -5,15 +5,15 @@ using OpenQA.Selenium;
 
 namespace Services
 {
-    public class ProcessService : IProcessService
+    public class PageProcessor : IPageProcessor
     {
         private readonly IWebDriver _driver;
         private readonly AppConfig _config;
-        private readonly ILogger<ProcessService> _logger;
+        private readonly ILogger<PageProcessor> _logger;
         private readonly ExecutionOptions _executionOptions;
-        public ProcessService(IWebDriverFactory driverFactory,
+        public PageProcessor(IWebDriverFactory driverFactory,
             AppConfig config,
-            ILogger<ProcessService> logger,
+            ILogger<PageProcessor> logger,
             ExecutionOptions executionOptions)
         {
             _driver = driverFactory.Create();

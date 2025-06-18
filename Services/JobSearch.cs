@@ -5,21 +5,21 @@ using OpenQA.Selenium;
 
 namespace Services
 {
-    public class SearchService : ISearchService
+    public class JobSearch : IJobSearch
     {
         private readonly IWebDriver _driver;
         private readonly AppConfig _config;
-        private readonly ILogger<SearchService> _logger;
+        private readonly ILogger<JobSearch> _logger;
         private readonly ExecutionOptions _executionOptions;
-        private readonly ICaptureService _capture;
+        private readonly ICaptureSnapshot _capture;
         private const string FolderName = "Search";
         private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
-        private readonly ISecurityCheckHelper _securityCheck;
+        private readonly ISecurityCheck _securityCheck;
 
-        public SearchService(IWebDriverFactory driverFactory,
+        public JobSearch(IWebDriverFactory driverFactory,
             AppConfig config,
-            ILogger<SearchService> logger,
-            ICaptureService capture,
+            ILogger<JobSearch> logger,
+            ICaptureSnapshot capture,
             ExecutionOptions executionOptions)
         {
             _driver = driverFactory.Create();

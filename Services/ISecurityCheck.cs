@@ -1,6 +1,6 @@
 ﻿namespace Services
 {
-    public interface ISecurityCheckHelper
+    public interface ISecurityCheck
     {
         bool IsSecurityChek();
         Task TryStartPuzzle();

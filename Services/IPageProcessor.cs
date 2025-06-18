@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Models;
 
 namespace Services
 {
-    public interface IJobOfferDetailProcessor
+    public interface IPageProcessor
     {
-        Task<List<JobOfferDetail>> ProcessOffersAsync(IEnumerable<string> offers);
+        Task<List<string>> ProcessAllPagesAsync();
     }
 }

@@ -6,34 +6,34 @@ using OpenQA.Selenium.Support.UI;
 
 namespace Services
 {
-    public class LinkedInService : ILinkedInService, IDisposable
+    public class JobSearchCoordinator : IJobSearchCoordinator, IDisposable
     {
         private const string ErrorMessage = "Job search operation failed";
         private readonly IWebDriver _driver;
         private readonly WebDriverWait _wait;
         private readonly AppConfig _config;
-        private readonly ILogger<LinkedInService> _logger;
+        private readonly ILogger<JobSearchCoordinator> _logger;
         private bool _disposed = false;
         private readonly ILoginService _loginService;
         private readonly ExecutionOptions _executionOptions;
-        private readonly ICaptureService _capture;
+        private readonly ICaptureSnapshot _capture;
         private List<string>? _offers;
-        private readonly IJobOfferDetailProcessor _jobOfferDetail;
-        private readonly ISearchService _searchService;
-        private readonly IProcessService _processService;
+        private readonly IJobOfferDetail _jobOfferDetail;
+        private readonly IJobSearch _searchService;
+        private readonly IPageProcessor _processService;
 
 
-        public LinkedInService(
+        public JobSearchCoordinator(
             IWebDriverFactory driverFactory,
             AppConfig config,
-            ILogger<LinkedInService> logger,
+            ILogger<JobSearchCoordinator> logger,
             CommandArgs commandArgs,
             ILoginService loginService,
-            ICaptureService capture,
+            ICaptureSnapshot capture,
             ExecutionOptions executionOptions,
-            IJobOfferDetailProcessor jobOfferDetail,
-            ISearchService searchService,
-            IProcessService processService)
+            IJobOfferDetail jobOfferDetail,
+            IJobSearch searchService,
+            IPageProcessor processService)
         {
             _driver = driverFactory.Create();
             _config = config;
@@ -103,7 +103,7 @@ namespace Services
             }
         }
 
-        ~LinkedInService()
+        ~JobSearchCoordinator()
         {
             Dispose();
         }
