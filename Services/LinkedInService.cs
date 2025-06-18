@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Reactive;
+using System.Text.RegularExpressions;
 using Configuration;
 using Microsoft.Extensions.Logging;
 using OpenQA.Selenium;
@@ -11,42 +13,55 @@ namespace Services
         private readonly IWebDriver _driver;
         private readonly AppConfig _config;
         private readonly ILogger<LinkedInService> _logger;
-        private readonly bool _debugMode;
-        private readonly string _executionFolder;
         private bool _disposed = false;
+        private readonly ILoginService _loginService;
+        private readonly string _executionFolder;
+        private readonly string _folderName;
+        private readonly string _timestamp;
+        private readonly ICaptureService _capture;
 
         public LinkedInService(
             IWebDriverFactory driverFactory,
             AppConfig config,
             ILogger<LinkedInService> logger,
-            CommandArgs commandArgs)
+            CommandArgs commandArgs,
+            ILoginService loginService,
+            ICaptureService capture)
         {
-            _debugMode = commandArgs.IsDebugMode;
             _driver = driverFactory.Create();
             _config = config;
             _logger = logger;
 
-            var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            _executionFolder = Path.Combine(Directory.GetCurrentDirectory(), $"Execution_{timestamp}");
-            Directory.CreateDirectory(_executionFolder);
-
+            _timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            _folderName = $"Execution_{_timestamp}";
+            _executionFolder = Path.Combine(Directory.GetCurrentDirectory(), _folderName);
+            EnsureDirectoryExists(_executionFolder);
             _logger.LogInformation($"📁 Created execution folder at: {_executionFolder}");
+            _loginService = loginService;
+            _capture = capture;
         }
 
+        private void EnsureDirectoryExists(string path)
+        {
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+        }
         public async Task SearchJobsAsync()
         {
             try
             {
                 _logger.LogInformation("🚀 Starting LinkedIn job search process");
-                await LoginAsync();
+                await _loginService.LoginAsync(_folderName, _timestamp);
                 await PerformSearchAsync();
                 await ProcessAllPagesAsync();
                 _logger.LogInformation("✅ Job search completed successfully");
             }
             catch (Exception ex)
             {
-                var (htmlPath, screenshotPath) = await TakeScreenshot(ErrorMessage, true);
-                _logger.LogError(ex, $"❌ Critical error during job search. Debug info saved to:\nHTML: {htmlPath}\nScreenshot: {screenshotPath}");
+                await _capture.CaptureArtifacts(_executionFolder, ErrorMessage);
+                _logger.LogError(ex, $"❌ Critical error during job search. Debug info saved to:\nHTML: {_timestamp}.html\nScreenshot: {_timestamp}.png");
                 throw new ApplicationException("Job search failed. See inner exception for details.", ex);
             }
             finally
@@ -55,157 +70,26 @@ namespace Services
             }
         }
 
-        private bool IsOnLoginPage()
-        {
-            var usernameElements = _driver.FindElements(By.Id("username"));
-            var passwordElements = _driver.FindElements(By.Id("password"));
-            var urlContainsLogin = _driver.Url.Contains("/login");
-            return usernameElements.Count > 0 && passwordElements.Count > 0 && urlContainsLogin;
-        }
-
-        private bool IsSecurityCheckPresent()
-        {
-            var securityCheckHeader = _driver.FindElements(By.XPath("//h1[contains(text(), 'Let's do a quick security check')]"));
-            var startPuzzleButton = _driver.FindElements(By.XPath("//button[contains(text(), 'Start Puzzle')]"));
-            return securityCheckHeader.Count > 0 || startPuzzleButton.Count > 0;
-        }
-
-        private async Task LoginAsync()
-        {
-            _logger.LogInformation("🔐 Attempting to login to LinkedIn...");
-            _driver.Navigate().GoToUrl("https://www.linkedin.com/login");
-            await Task.Delay(3000);
-
-            if (!IsOnLoginPage())
-            {
-                if (IsSecurityCheckPresent())
-                {
-                    if (_debugMode)
-                    {
-                        await HandleSecurityCheckInDebugMode();
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException(
-                            "LinkedIn requires manual security verification. Please login manually in browser first.");
-                    }
-                }
-
-                if (_debugMode)
-                {
-                    await HandleUnexpectedPage();
-                }
-
-                throw new InvalidOperationException(
-                    $"Failed to load LinkedIn login page. Current URL: {_driver.Url}");
-            }
-
-            var emailInput = _driver.FindElement(By.Id("username"));
-            emailInput.SendKeys(_config.LinkedInCredentials.Email);
-            _ = TakeScreenshot("Entered email");
-
-            var passwordInput = _driver.FindElement(By.Id("password"));
-            passwordInput.SendKeys(_config.LinkedInCredentials.Password + Keys.Enter);
-            _ = TakeScreenshot("Entered password");
-
-            await Task.Delay(3000);
-            _logger.LogInformation("✅ Successfully authenticated with LinkedIn");
-        }
-
-        private async Task HandleUnexpectedPage()
-        {
-            var (htmlPath, screenshotPath) = await TakeScreenshot("UnexpectedPageDetected");
-
-            _logger.LogError($"Unexpected page layout detected. Debug info saved to:\nHTML: {htmlPath}\nScreenshot: {screenshotPath}");
-
-            Console.WriteLine("\n╔════════════════════════════════════════════╗");
-            Console.WriteLine("║           UNEXPECTED PAGE DETECTED          ║");
-            Console.WriteLine("╠════════════════════════════════════════════╣");
-            Console.WriteLine($"║ Current URL: {_driver.Url,-30} ║");
-            Console.WriteLine("║                                            ║");
-            Console.WriteLine($"║ HTML saved to: {htmlPath,-25} ║");
-            Console.WriteLine($"║ Screenshot saved to: {screenshotPath,-18} ║");
-            Console.WriteLine("╚════════════════════════════════════════════╝\n");
-        }
-
-        private async Task HandleSecurityCheckInDebugMode()
-        {
-            var (htmlPath, screenshotPath) = await TakeScreenshot("SecurityVerification");
-
-            _logger.LogWarning($"⚠️ Security verification required. Debug info saved to:\nHTML: {htmlPath}\nScreenshot: {screenshotPath}");
-
-            Console.WriteLine("\n╔════════════════════════════════════════════╗");
-            Console.WriteLine("║         SECURITY VERIFICATION REQUIRED       ║");
-            Console.WriteLine("╠════════════════════════════════════════════╣");
-            Console.WriteLine("║ LinkedIn requires additional verification: ║");
-            Console.WriteLine("║ 1. Complete the security check in browser  ║");
-            Console.WriteLine("║ 2. Press ENTER to continue automation      ║");
-            Console.WriteLine("║                                            ║");
-            Console.WriteLine($"║ Debug files saved to:                     ║");
-            Console.WriteLine($"║ - HTML: {htmlPath,-30} ║");
-            Console.WriteLine($"║ - Screenshot: {screenshotPath,-23} ║");
-            Console.WriteLine("╚════════════════════════════════════════════╝\n");
-
-            Console.ReadLine();
-            await Task.Delay(5000);
-            _logger.LogInformation("🔄 Resuming automation after security check");
-        }
+        
 
         private async Task PerformSearchAsync()
         {
             _logger.LogInformation("🔍 Navigating to LinkedIn Jobs page...");
             _driver.Navigate().GoToUrl("https://www.linkedin.com/jobs");
             await Task.Delay(3000);
-
-            _ = TakeScreenshot("JobsPageLoaded");
-
+            await _capture.CaptureArtifacts(_executionFolder, "JobsPageLoaded");
             var search = By.XPath("//input[contains(@class, 'jobs-search-box__text-input')]");
             var searchInput = _driver.FindElements(search).FirstOrDefault();
-
             if (searchInput == null)
             {
-                throw new InvalidOperationException(
-                    $"Job search input not found on page. Current URL: {_driver.Url}");
+                var message = $"Job search input not found on page. Current URL: {_driver.Url}";
+                throw new InvalidOperationException(message);
             }
-
             _logger.LogInformation($"🔎 Searching for: '{_config.JobSearch.SearchText}'");
             searchInput.SendKeys(_config.JobSearch.SearchText + Keys.Enter);
-
             await Task.Delay(3000);
-            _ = TakeScreenshot("SearchExecuted");
-
+            await _capture.CaptureArtifacts(_executionFolder, "SearchExecuted");
             _logger.LogInformation($"✅ Search completed for: '{_config.JobSearch.SearchText}'");
-        }
-
-        private async Task<(string htmlPath, string screenshotPath)> TakeScreenshot(string? stage = null, bool isError = false)
-        {
-            if (!_debugMode) return (null, null);
-
-            var (html, screenshot) = await CaptureDebugArtifacts(isError);
-
-            if (!isError && stage != null)
-            {
-                _logger.LogDebug($"📸 Debug capture for '{stage}':\nHTML: {html}\nScreenshot: {screenshot}");
-            }
-
-            return (html, screenshot);
-        }
-
-        private async Task<(string htmlPath, string screenshotPath)> CaptureDebugArtifacts(bool isError)
-        {
-            var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            var subfolder = isError ? "Errors" : "Debug";
-            var fullPath = Path.Combine(_executionFolder, subfolder);
-
-            Directory.CreateDirectory(fullPath);
-
-            var htmlPath = Path.Combine(fullPath, $"Page_{timestamp}.html");
-            var screenshotPath = Path.Combine(fullPath, $"Screenshot_{timestamp}.png");
-
-            await File.WriteAllTextAsync(htmlPath, _driver.PageSource);
-            ((ITakesScreenshot)_driver).GetScreenshot().SaveAsFile(screenshotPath);
-
-            return (htmlPath, screenshotPath);
         }
 
         private async Task ProcessAllPagesAsync()

@@ -13,6 +13,7 @@ namespace Services
     {
         private readonly ILogger<ChromeDriverFactory> _logger;
         private ChromeDriverService _driverService;
+        private IWebDriver? _sharedDriver;
 
         public ChromeDriverFactory(ILogger<ChromeDriverFactory> logger)
         {
@@ -57,8 +58,12 @@ namespace Services
         {
             try
             {
-                _logger.LogInformation("Creating new ChromeDriver instance");
-                return new ChromeDriver(_driverService, options);
+                if (_sharedDriver == null)
+                {
+                    _logger.LogInformation("Creating new ChromeDriver instance");
+                    _sharedDriver = new ChromeDriver(_driverService, options);
+                }
+                return _sharedDriver;
             }
             catch (Exception ex)
             {

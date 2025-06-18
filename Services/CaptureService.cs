@@ -1,0 +1,36 @@
+﻿using Microsoft.Extensions.Logging;
+using OpenQA.Selenium;
+
+namespace Services
+{
+    public class CaptureService : ICaptureService
+    {
+        private readonly IWebDriver _driver;
+        private readonly ILogger<CaptureService> _logger;
+
+        public CaptureService(IWebDriverFactory driverFactory, ILogger<CaptureService> logger)
+        {
+            _driver = driverFactory.Create();
+            _logger = logger;
+        }
+
+        public async Task CaptureArtifacts(string executionFolder, string stage)
+        {
+            _logger.LogWarning("⚠️ CaptureDebugArtifacts called with empty timestamp");
+            var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            if (string.IsNullOrWhiteSpace(stage))
+            {
+                stage = "UnknownStage";
+            }
+
+            var htmlfile = $"{timestamp}.html";
+            var htmlPath = Path.Combine(executionFolder, htmlfile);
+            var screenshotFile = $"{timestamp}.png";
+            var screenshotPath = Path.Combine(executionFolder, screenshotFile);
+            await File.WriteAllTextAsync(htmlPath, _driver.PageSource);
+            var screenshot = ((ITakesScreenshot)_driver).GetScreenshot();
+            screenshot.SaveAsFile(screenshotPath);
+            _logger.LogDebug($"📸 Debug capture for '{stage}':\nHTML: {htmlfile}\nScreenshot: {screenshotFile}");
+        }
+    }
+}

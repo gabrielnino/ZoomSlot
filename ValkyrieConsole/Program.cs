@@ -74,7 +74,8 @@ public class Program
 
                 // Register other services
                 services.AddTransient<ILinkedInService, LinkedInService>();
-                //services.AddTransient<IJobStorageService, JsonJobStorageService>();
+                services.AddTransient <ILoginService, LinkedInLoginService>();
+                services.AddTransient<ICaptureService, CaptureService>();
                 services.AddSingleton<IWebDriverFactory, ChromeDriverFactory>();
                 services.AddSingleton<CommandFactory>();
             });
