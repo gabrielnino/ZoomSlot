@@ -3,6 +3,7 @@ using System.Reactive;
 using System.Text.RegularExpressions;
 using Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using OpenQA.Selenium;
 
 namespace Services
@@ -118,7 +119,10 @@ namespace Services
                 }
 
             } while (await NavigateToNextPageAsync());
-
+            var jsonPath = Path.Combine(_executionFolder, $"Offers_{DateTime.Now:yyyyMMdd_HHmmss}.json");
+            var jsonContent = JsonConvert.SerializeObject(offers, Formatting.Indented);
+            await File.WriteAllTextAsync(jsonPath, jsonContent);
+            _logger.LogInformation($"💾 Offers data saved to {jsonPath}");
             _logger.LogInformation($"🎉 Completed processing. Total {offers.Count} opportunities found across {pageCount} pages");
         }
 
@@ -180,7 +184,8 @@ namespace Services
                     var jobUrl = ExtractJobUrl(jobNode);
                     if (!string.IsNullOrEmpty(jobUrl))
                     {
-                        offers.Add(jobUrl);
+                        var url = ExtractJobIdUrl("https://www.linkedin.com", jobUrl);
+                        offers.Add(url);
                     }
                 }
                 catch (Exception ex)
@@ -190,6 +195,26 @@ namespace Services
             }
 
             return offers;
+        }
+
+        public string? ExtractJobIdUrl(string urlLinkedin, string url)
+        {
+            var uri = new Uri(url);
+            string[] segments = uri.Segments;
+            if (segments.Length >= 4 && segments[2].Equals("view/", StringComparison.OrdinalIgnoreCase))
+            {
+                string jobId = segments[3].TrimEnd('/');
+                return $"{urlLinkedin}/jobs/view/{jobId}/";
+            }
+
+            var queryParams = System.Web.HttpUtility.ParseQueryString(uri.Query);
+            if (queryParams["currentJobId"] != null)
+            {
+                string jobId = queryParams["currentJobId"];
+                return $"{urlLinkedin}/jobs/view/{jobId}/";
+            }
+
+            return null;
         }
 
         private string? ExtractJobUrl(IWebElement jobNode)

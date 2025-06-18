@@ -16,8 +16,8 @@ namespace Services
 
         public async Task CaptureArtifacts(string executionFolder, string stage)
         {
-            _logger.LogWarning("⚠️ CaptureDebugArtifacts called with empty timestamp");
             var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            _logger.LogWarning($"⚠️ CaptureDebugArtifacts called with {timestamp}");
             if (string.IsNullOrWhiteSpace(stage))
             {
                 stage = "UnknownStage";
