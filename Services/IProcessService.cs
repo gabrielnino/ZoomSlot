@@ -8,6 +8,6 @@ namespace Services
 {
     public interface IProcessService
     {
-        Task ProcessAllPagesAsync();
+        Task<List<string>> ProcessAllPagesAsync();
     }
 }

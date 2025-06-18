@@ -17,7 +17,7 @@ namespace Services
         private readonly ILoginService _loginService;
         private readonly ExecutionOptions _executionOptions;
         private readonly ICaptureService _capture;
-        private readonly List<string> _offers;
+        private List<string>? _offers;
         private readonly IJobOfferDetailProcessor _jobOfferDetail;
         private readonly ISearchService _searchService;
         private readonly IProcessService _processService;
@@ -40,21 +40,20 @@ namespace Services
             _logger = logger;
             _executionOptions = executionOptions;
             EnsureDirectoryExists(_executionOptions.ExecutionFolder);
-            _logger.LogInformation($"📁 Created execution folder at: {_executionOptions.ExecutionFolder}");
             _loginService = loginService;
             _capture = capture;
-            _offers = [];
             _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
             _jobOfferDetail = jobOfferDetail;
             _searchService = searchService;
             _processService = processService;
         }
 
-        private static void EnsureDirectoryExists(string path)
+        private void EnsureDirectoryExists(string path)
         {
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
+                _logger.LogInformation($"📁 Created execution folder at: {_executionOptions.ExecutionFolder}");
             }
         }
 
@@ -65,7 +64,7 @@ namespace Services
                 _logger.LogInformation("🚀 Starting LinkedIn job search process...");
                 await _loginService.LoginAsync();
                 await _searchService.PerformSearchAsync();
-                await _processService.ProcessAllPagesAsync();
+                _offers = await _processService.ProcessAllPagesAsync();
                 await _jobOfferDetail.ProcessOffersAsync(_offers);
                 _logger.LogInformation("✅ LinkedIn job search process completed successfully.");
             }

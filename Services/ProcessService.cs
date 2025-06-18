@@ -11,28 +11,22 @@ namespace Services
         private readonly AppConfig _config;
         private readonly ILogger<ProcessService> _logger;
         private readonly ExecutionOptions _executionOptions;
-        private readonly List<string> _offers;
-
         public ProcessService(IWebDriverFactory driverFactory,
             AppConfig config,
             ILogger<ProcessService> logger,
-            CommandArgs commandArgs,
-            ICaptureService capture,
             ExecutionOptions executionOptions)
         {
             _driver = driverFactory.Create();
             _config = config;
             _logger = logger;
             _executionOptions = executionOptions;
-            _logger.LogInformation($"📁 Created execution folder at: {_executionOptions.ExecutionFolder}");
-            _offers = [];
         }
 
-        public async Task ProcessAllPagesAsync()
+        public async Task<List<string>> ProcessAllPagesAsync()
         {
             int pageCount = 0;
             _logger.LogInformation($"📄 Beginning processing of up to {_config.JobSearch.MaxPages} result pages...");
-
+            var offers = new List<string>();
             do
             {
                 ScrollMove();
@@ -43,7 +37,7 @@ namespace Services
                 var pageOffers = await GetCurrentPageOffersAsync();
                 if (pageOffers == null) continue;
 
-                _offers.AddRange(pageOffers);
+                offers.AddRange(pageOffers);
                 _logger.LogInformation($"✔️ Results page {pageCount} processed. Found {pageOffers.Count()} listings.");
 
                 if (pageCount >= _config.JobSearch.MaxPages)
@@ -53,6 +47,7 @@ namespace Services
                 }
 
             } while (await NavigateToNextPageAsync());
+            return offers;
         }
 
         private string? ExtractJobIdUrl(string urlLinkedin, string url)
