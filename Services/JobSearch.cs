@@ -15,13 +15,15 @@ namespace Services
         private readonly ISecurityCheck _securityCheck;
         private const string FolderName = "Search";
         private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
+        private readonly IDirectoryCheck _directoryCheck;
 
         public JobSearch(IWebDriverFactory driverFactory,
             AppConfig config,
             ILogger<JobSearch> logger,
             ICaptureSnapshot capture,
             ExecutionOptions executionOptions,
-            ISecurityCheck securityCheck)
+            ISecurityCheck securityCheck,
+            IDirectoryCheck directoryCheck)
         {
             _driver = driverFactory.Create();
             _config = config;
@@ -30,12 +32,13 @@ namespace Services
             _logger.LogInformation($"📁 Created execution folder at: {_executionOptions.ExecutionFolder}");
             _capture = capture;
             _securityCheck = securityCheck;
-
+            _directoryCheck = directoryCheck;
+            _directoryCheck.EnsureDirectoryExists(FolderPath);
         }
 
         public async Task PerformSearchAsync()
         {
-            _logger.LogInformation("🔍 Navigating to LinkedIn Jobs page...");
+            _logger.LogInformation($"🔍ID:{_executionOptions.TimeStamp} Navigating to LinkedIn Jobs page...");
             _driver.Navigate().GoToUrl("https://www.linkedin.com/jobs");
             await Task.Delay(3000);
 
@@ -47,8 +50,6 @@ namespace Services
                     "❌ LinkedIn requires manual security verification. Please complete verification in the browser before proceeding.");
             }
 
-            // No need to call HandleUnexpectedPage if IsSecurityChek is true
-            // Instead, check if we're on the correct page by looking for expected elements
             var searchInput = _driver.FindElements(By.XPath("//input[contains(@class, 'jobs-search-box__text-input')]"))
                                      .FirstOrDefault();
 
@@ -61,12 +62,12 @@ namespace Services
 
             await _capture.CaptureArtifacts(FolderPath, "JobsPageLoaded");
 
-            _logger.LogInformation($"🔎 Executing job search with keyword: '{_config.JobSearch.SearchText}'...");
+            _logger.LogInformation($"🔎ID:{_executionOptions.TimeStamp} Executing job search with keyword: '{_config.JobSearch.SearchText}'...");
             searchInput.SendKeys(_config.JobSearch.SearchText + Keys.Enter);
             await Task.Delay(3000);
 
             await _capture.CaptureArtifacts(FolderPath, "SearchExecuted");
-            _logger.LogInformation($"✅ Search executed for: '{_config.JobSearch.SearchText}'.");
+            _logger.LogInformation($"✅ID:{_executionOptions.TimeStamp} Search executed for: '{_config.JobSearch.SearchText}'.");
         }
     }
 }

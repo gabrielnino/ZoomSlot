@@ -15,13 +15,15 @@ namespace Services
         private const string FolderName = "Login";
         private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
         private readonly ISecurityCheck _securityCheck;
+        private readonly IDirectoryCheck _directoryCheck;
         public LoginService(
             AppConfig config, 
             IWebDriverFactory driverFactory, 
             ILogger<LoginService> logger, 
             ICaptureSnapshot capture,
             ExecutionOptions executionOptions,
-            ISecurityCheck securityCheck)
+            ISecurityCheck securityCheck,
+            IDirectoryCheck directoryCheck)
         {
             _config = config;
             _driver = driverFactory.Create();
@@ -29,11 +31,13 @@ namespace Services
             _capture = capture;
             _executionOptions = executionOptions;
             _securityCheck = securityCheck;
+            _directoryCheck = directoryCheck;
+            _directoryCheck.EnsureDirectoryExists(FolderPath);
         }
 
         public async Task LoginAsync()
         {
-            _logger.LogInformation("🔐 Attempting to login to LinkedIn...");
+            _logger.LogInformation($"🔐ID:{_executionOptions.TimeStamp} Attempting to login to LinkedIn...");
             _driver.Navigate().GoToUrl("https://www.linkedin.com/login");
             await Task.Delay(3000);
 
@@ -58,7 +62,7 @@ namespace Services
             passwordInput.SendKeys(_config.LinkedInCredentials.Password + Keys.Enter);
             await Task.Delay(3000);
             await _capture.CaptureArtifacts(FolderPath, "Entered password");
-            _logger.LogInformation("✅ Successfully authenticated with LinkedIn");
+            _logger.LogInformation($"✅ID:{_executionOptions.TimeStamp} Successfully authenticated with LinkedIn");
         }
 
         private bool IsOnLoginPage()

@@ -1,5 +1,4 @@
-﻿using System.Reactive;
-using Commands;
+﻿using Commands;
 using Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -65,10 +64,8 @@ public class Program
                 // Configuration
                 var config = hostingContext.Configuration.Get<AppConfig>();
                 services.AddSingleton(config);
-                var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                var folderName = $"Execution_{timestamp}";
-                var executionFolder = Path.Combine(Directory.GetCurrentDirectory(), folderName);
-                var execution = new ExecutionOptions() { ExecutionFolder = "" };
+               
+                var execution = new ExecutionOptions();
                 services.AddSingleton<ExecutionOptions>(execution);
                 services.AddSingleton(commandArgs);
                 services.AddTransient<HelpCommand>();
@@ -80,6 +77,10 @@ public class Program
                 services.AddTransient<ISecurityCheck, SecurityCheck>();
                 services.AddTransient<ICaptureSnapshot, CaptureSnapshot>();
                 services.AddSingleton<IWebDriverFactory, ChromeDriverFactory>();
+                services.AddSingleton<IWebDriverFactory, ChromeDriverFactory>();
+                services.AddSingleton<IJobSearch, JobSearch>();
+                services.AddSingleton<IPageProcessor, PageProcessor>();
+                services.AddSingleton<IDirectoryCheck, DirectoryCheck>();
                 services.AddSingleton<CommandFactory>();
             });
     }

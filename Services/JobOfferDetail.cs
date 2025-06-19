@@ -14,36 +14,37 @@ namespace Services
         private readonly ICaptureSnapshot _capture;
         private readonly ExecutionOptions _executionOptions;
         private const string FolderName = "Detail";
-        private readonly string _executionFolder;
         private readonly ISecurityCheck _securityCheck;
         private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
+        private readonly IDirectoryCheck _directoryCheck;
 
         public JobOfferDetail(IWebDriverFactory driverFactory,
             ILogger<JobOfferDetail> logger,
             ICaptureSnapshot capture,
-            string executionFolder,
             ISecurityCheck securityCheck,
-            ExecutionOptions executionOptions)
+            ExecutionOptions executionOptions,
+            IDirectoryCheck directoryCheck)
         {
             _offersDetail = [];
             _driver = driverFactory.Create();
             _logger = logger;
             _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
             _capture = capture;
-            _executionFolder = executionFolder;
             _securityCheck = securityCheck;
             _executionOptions = executionOptions;
+            _directoryCheck = directoryCheck;
+            _directoryCheck.EnsureDirectoryExists(FolderPath);
         }
 
         public async Task<List<Models.JobOfferDetail>> ProcessOffersAsync(IEnumerable<string> offers)
         {
-            _logger.LogInformation("📝 Processing detailed job offer data...");
+            _logger.LogInformation($"📝ID:{_executionOptions.TimeStamp} Processing detailed job offer data...");
 
             foreach (var offer in offers)
             {
                 try
                 {
-                    _logger.LogDebug($"🌐 Navigating to job offer URL: {offer}");
+                    _logger.LogDebug($"🌐ID:{_executionOptions.TimeStamp} Navigating to job offer URL: {offer}");
                     _driver.Navigate().GoToUrl(offer);
                     _wait.Until(driver =>
                     {
@@ -56,19 +57,19 @@ namespace Services
                         await _securityCheck.TryStartPuzzle();
                     }
 
-                    await _capture.CaptureArtifacts(_executionFolder, "Detailed Job offer");
+                    await _capture.CaptureArtifacts(FolderPath, "Detailed Job offer");
 
                     var offersDetail = await ExtractDescriptionLinkedIn();
                     if (offersDetail != null)
                     {
                         _offersDetail.Add(offersDetail);
-                        _logger.LogInformation("✅ Detailed job offer processed successfully.");
+                        _logger.LogInformation($"✅ID:{_executionOptions.TimeStamp} Detailed job offer processed successfully.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"❌ Failed to process detailed job offer at URL: {offer}");
-                    await _capture.CaptureArtifacts(_executionFolder, "Error in Detailed Job Offer");
+                    _logger.LogError(ex, $"❌ID:{_executionOptions.TimeStamp} Failed to process detailed job offer at URL: {offer}");
+                    await _capture.CaptureArtifacts(FolderPath, "Error in Detailed Job Offer");
                     // Continue with next offer instead of stopping
                 }
             }
@@ -76,7 +77,7 @@ namespace Services
         }
         public async Task<Models.JobOfferDetail> ExtractDescriptionLinkedIn()
         {
-            _logger.LogDebug("🔍 Extracting job details from current page...");
+            _logger.LogDebug($"🔍ID:{_executionOptions.TimeStamp} Extracting job details from current page...");
 
             await _capture.CaptureArtifacts(FolderPath, "Extract description");
 
@@ -89,19 +90,19 @@ namespace Services
             }
 
             var detail = details.FirstOrDefault(x => x != null);
-            _logger.LogDebug("✅ Job details container found.");
+            _logger.LogDebug($"✅ID:{_executionOptions.TimeStamp} Job details container found.");
 
             var seeMoreButtons = detail.FindElements(By.XPath("//button[contains(@class, 'jobs-description__footer-button') and contains(., 'See more')]"));
             if (!seeMoreButtons.Any())
             {
-                var message = $"❌ 'See more' button not found. Current URL: {_driver.Url}";
+                var message = $"❌ID:{_executionOptions.TimeStamp} 'See more' button not found. Current URL: {_driver.Url}";
                 _logger.LogWarning(message);
                 throw new InvalidOperationException(message);
             }
 
-            _logger.LogDebug("✅ 'See more' button found.");
+            _logger.LogDebug($"✅ID:{_executionOptions.TimeStamp} 'See more' button found.");
 
-            await _capture.CaptureArtifacts(_executionFolder, "ExtractDescriptionLinkedIn");
+            await _capture.CaptureArtifacts(FolderPath, "ExtractDescriptionLinkedIn");
 
             var jobOffer = new Models.JobOfferDetail();
             return jobOffer;

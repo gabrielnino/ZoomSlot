@@ -16,12 +16,14 @@ namespace Services
         private readonly ISecurityCheck _securityCheck;
         private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
         private readonly ICaptureSnapshot _capture;
+        private readonly IDirectoryCheck _directoryCheck;
         public PageProcessor(IWebDriverFactory driverFactory,
             AppConfig config,
             ILogger<PageProcessor> logger,
             ExecutionOptions executionOptions,
             ICaptureSnapshot capture,
-            ISecurityCheck securityCheck)
+            ISecurityCheck securityCheck,
+            IDirectoryCheck directoryCheck)
         {
             _driver = driverFactory.Create();
             _config = config;
@@ -29,12 +31,14 @@ namespace Services
             _executionOptions = executionOptions;
             _capture = capture;
             _securityCheck = securityCheck;
+            _directoryCheck = directoryCheck;
+            _directoryCheck.EnsureDirectoryExists(FolderPath);
         }
 
         public async Task<List<string>> ProcessAllPagesAsync()
         {
             int pageCount = 0;
-            _logger.LogInformation($"📄 Beginning processing of up to {_config.JobSearch.MaxPages} result pages...");
+            _logger.LogInformation($"📄ID:{_executionOptions.TimeStamp} Beginning processing of up to {_config.JobSearch.MaxPages} result pages...");
             var offers = new List<string>();
             do
             {
@@ -42,17 +46,17 @@ namespace Services
                 ScrollMove();
                 await Task.Delay(3000);
                 pageCount++;
-                _logger.LogInformation($"📖 Processing results page {pageCount}...");
+                _logger.LogInformation($"📖ID:{_executionOptions.TimeStamp} Processing results page {pageCount}...");
 
                 var pageOffers = await GetCurrentPageOffersAsync();
                 if (pageOffers == null) continue;
 
                 offers.AddRange(pageOffers);
-                _logger.LogInformation($"✔️ Results page {pageCount} processed. Found {pageOffers.Count()} listings.");
+                _logger.LogInformation($"✔️ID:{_executionOptions.TimeStamp} Results page {pageCount} processed. Found {pageOffers.Count()} listings.");
 
                 if (pageCount >= _config.JobSearch.MaxPages)
                 {
-                    _logger.LogInformation($"ℹ️ Reached maximum configured page limit of {_config.JobSearch.MaxPages}.");
+                    _logger.LogInformation($"ℹ️ID:{_executionOptions.TimeStamp} Reached maximum configured page limit of {_config.JobSearch.MaxPages}.");
                     break;
                 }
 
@@ -89,7 +93,7 @@ namespace Services
 
             if (card == null)
             {
-                throw new Exception($"❌ Job card element not found in listing {jobNode.GetAttribute("id")}");
+                throw new Exception($"❌ID:{_executionOptions.TimeStamp} Job card element not found in listing {jobNode.GetAttribute("id")}");
             }
 
             var jobAnchor = card.FindElements(By.CssSelector("a.job-card-job-posting-card-wrapper__card-link"))
@@ -97,13 +101,13 @@ namespace Services
 
             if (jobAnchor == null)
             {
-                throw new Exception($"❌ Job link element not found in listing {jobNode.GetAttribute("id")}");
+                throw new Exception($"❌ID:{_executionOptions.TimeStamp} Job link element not found in listing {jobNode.GetAttribute("id")}");
             }
 
             var jobUrl = jobAnchor.GetAttribute("href");
             if (string.IsNullOrEmpty(jobUrl))
             {
-                throw new Exception($"❌ Empty URL in listing {jobNode.GetAttribute("id")}");
+                throw new Exception($"❌ID:{_executionOptions.TimeStamp} Empty URL in listing {jobNode.GetAttribute("id")}");
             }
 
             return jobUrl;
@@ -116,7 +120,7 @@ namespace Services
 
             if (scrollable == null)
             {
-                _logger.LogWarning("⚠️ Scrollable results container not found; skipping scroll operation.");
+                _logger.LogWarning("⚠️ID:{_executionOptions.TimeStamp} Scrollable results container not found; skipping scroll operation.");
                 return;
             }
 
@@ -124,7 +128,7 @@ namespace Services
             long scrollHeight = (long)jsExecutor.ExecuteScript("return arguments[0].scrollHeight", scrollable);
             long currentPosition = 0;
 
-            _logger.LogDebug($"🖱️ Scrolling through job results container (total height: {scrollHeight}px)...");
+            _logger.LogDebug($"🖱️ID:{_executionOptions.TimeStamp} Scrolling through job results container (total height: {scrollHeight}px)...");
 
             while (currentPosition < scrollHeight)
             {
@@ -133,7 +137,7 @@ namespace Services
                 Thread.Sleep(50);
             }
 
-            _logger.LogDebug("🖱️ Scrolling completed.");
+            _logger.LogDebug($"🖱️ID:{_executionOptions.TimeStamp} Scrolling completed.");
         }
 
         private async Task<bool> NavigateToNextPageAsync()
@@ -145,11 +149,11 @@ namespace Services
 
                 if (nextButton == null)
                 {
-                    _logger.LogInformation("⏹️ No additional results pages detected; pagination completed.");
+                    _logger.LogInformation($"⏹️ID:{_executionOptions.TimeStamp} No additional results pages detected; pagination completed.");
                     return false;
                 }
 
-                _logger.LogDebug("⏭️ Clicking to navigate to next page...");
+                _logger.LogDebug($"⏭️ID:{_executionOptions.TimeStamp} Clicking to navigate to next page...");
                 nextButton.Click();
                 await Task.Delay(3000);
 
@@ -157,7 +161,7 @@ namespace Services
                 {
                     await _securityCheck.HandleSecurityPage();
                     throw new InvalidOperationException(
-                        "❌ LinkedIn requires manual security verification. Please complete verification in the browser before proceeding.");
+                        $"❌ID:{_executionOptions.TimeStamp} LinkedIn requires manual security verification. Please complete verification in the browser before proceeding.");
                 }
 
                 // Optional: If you want to verify page load consistency here
@@ -166,15 +170,15 @@ namespace Services
                 {
                     await _securityCheck.HandleUnexpectedPage();
                     throw new InvalidOperationException(
-                        $"❌ Failed to load next page of job listings. Current URL: {_driver.Url}");
+                        $"❌ID:{_executionOptions.TimeStamp} Failed to load next page of job listings. Current URL: {_driver.Url}");
                 }
 
-                _logger.LogInformation("✅ Successfully navigated to the next page of results.");
+                _logger.LogInformation($"✅ID:{_executionOptions.TimeStamp} Successfully navigated to the next page of results.");
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "⚠️ Exception encountered while navigating to the next page.");
+                _logger.LogWarning(ex, $"⚠️ID:{_executionOptions.TimeStamp} Exception encountered while navigating to the next page.");
                 return false;
             }
         }
@@ -188,18 +192,18 @@ namespace Services
 
             if (jobContainer == null)
             {
-                _logger.LogWarning("⚠️ No job listings container found on the current page.");
+                _logger.LogWarning($"⚠️ID:{_executionOptions.TimeStamp} No job listings container found on the current page.");
                 return null;
             }
 
             var jobNodes = jobContainer.FindElements(By.XPath(".//li[contains(@class, 'semantic-search-results-list__list-item')]"));
             if (jobNodes == null || !jobNodes.Any())
             {
-                _logger.LogWarning("⚠️ No job listings detected on the current page.");
+                _logger.LogWarning($"⚠️ID:{_executionOptions.TimeStamp} No job listings detected on the current page.");
                 return null;
             }
 
-            _logger.LogDebug($"🔍 Detected {jobNodes.Count} job listings on the current page.");
+            _logger.LogDebug($"🔍ID:{_executionOptions.TimeStamp} Detected {jobNodes.Count} job listings on the current page.");
 
             var offers = new List<string>();
             foreach (var jobNode in jobNodes)
@@ -218,7 +222,7 @@ namespace Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, $"⚠️ Failed to extract job URL for listing with ID: {jobNode.GetAttribute("id")}");
+                    _logger.LogWarning(ex, $"⚠️ID:{_executionOptions.TimeStamp} Failed to extract job URL for listing with ID: {jobNode.GetAttribute("id")}");
                 }
             }
 

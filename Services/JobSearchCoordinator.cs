@@ -18,6 +18,7 @@ namespace Services
         private readonly IJobOfferDetail _jobOfferDetail;
         private readonly IJobSearch _searchService;
         private readonly IPageProcessor _processService;
+        private readonly IDirectoryCheck _directoryCheck;
 
 
         public JobSearchCoordinator(
@@ -28,12 +29,14 @@ namespace Services
             ExecutionOptions executionOptions,
             IJobOfferDetail jobOfferDetail,
             IJobSearch searchService,
-            IPageProcessor processService)
+            IPageProcessor processService,
+            IDirectoryCheck directoryCheck)
         {
             _driver = driverFactory.Create();
             _logger = logger;
             _executionOptions = executionOptions;
-            EnsureDirectoryExists(_executionOptions.ExecutionFolder);
+            _directoryCheck = directoryCheck;
+            _directoryCheck.EnsureDirectoryExists(_executionOptions.ExecutionFolder);
             _loginService = loginService;
             _capture = capture;
             _jobOfferDetail = jobOfferDetail;
@@ -41,35 +44,28 @@ namespace Services
             _processService = processService;
         }
 
-        private void EnsureDirectoryExists(string path)
-        {
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-                _logger.LogInformation($"📁 Created execution folder at: {_executionOptions.ExecutionFolder}");
-            }
-        }
+
 
         public async Task SearchJobsAsync()
         {
             try
             {
-                _logger.LogInformation("🚀 Starting LinkedIn job search process...");
+                _logger.LogInformation($"🚀ID:{_executionOptions.TimeStamp} Starting LinkedIn job search process...");
                 await _loginService.LoginAsync();
                 await _searchService.PerformSearchAsync();
                 _offers = await _processService.ProcessAllPagesAsync();
                 await _jobOfferDetail.ProcessOffersAsync(_offers);
-                _logger.LogInformation("✅ LinkedIn job search process completed successfully.");
+                _logger.LogInformation($"✅ID:{_executionOptions.TimeStamp} LinkedIn job search process completed successfully.");
             }
             catch (Exception ex)
             {
                 var timestamp = await _capture.CaptureArtifacts(_executionOptions.ExecutionFolder, "An unexpected error");
-                _logger.LogError(ex, $"❌ An unexpected error occurred during the LinkedIn job search process. Debug artifacts saved at:\nHTML: {timestamp}.html\nScreenshot: {timestamp}.png");
+                _logger.LogError(ex, $"❌ID:{_executionOptions.TimeStamp} An unexpected error occurred during the LinkedIn job search process. Debug artifacts saved at:\nHTML: {timestamp}.html\nScreenshot: {timestamp}.png");
                 throw new ApplicationException("Job search failed. See inner exception for details.", ex);
             }
             finally
             {
-                _logger.LogInformation("🧹 Cleaning up resources after job search process...");
+                _logger.LogInformation($"ID:{_executionOptions.TimeStamp}🧹 Cleaning up resources after job search process...");
                 Dispose();
             }
         }
@@ -80,14 +76,14 @@ namespace Services
 
             try
             {
-                _logger.LogDebug("🧹 Disposing browser driver and cleaning resources...");
+                _logger.LogDebug($"ID:{_executionOptions.TimeStamp}🧹 Disposing browser driver and cleaning resources...");
                 _driver?.Quit();
                 _driver?.Dispose();
-                _logger.LogInformation("✅ Browser driver and resources disposed successfully.");
+                _logger.LogInformation($"✅ID:{_executionOptions.TimeStamp} Browser driver and resources disposed successfully.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "❌ Exception encountered while disposing browser resources.");
+                _logger.LogError(ex, $"❌ID:{_executionOptions.TimeStamp} Exception encountered while disposing browser resources.");
             }
             finally
             {
