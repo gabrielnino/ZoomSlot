@@ -127,16 +127,26 @@ public class SearchCommand : ICommand
 {
 private readonly IJobSearchCoordinator _linkedInService;
 private readonly ILogger<SearchCommand> _logger;
-public SearchCommand(IJobSearchCoordinator linkedInService, ILogger<SearchCommand> logger)
+private readonly IJobStorageService _storageService;
+public SearchCommand(IJobSearchCoordinator linkedInService, ILogger<SearchCommand> logger, IJobStorageService storageService)
 {
 _linkedInService = linkedInService;
 _logger = logger;
+_storageService = storageService;
 }
 public async Task ExecuteAsync()
 {
 _logger.LogInformation("Starting job search...");
-await _linkedInService.SearchJobsAsync();
-_logger.LogInformation("Job search completed successfully.");
+var jobDetails = await _linkedInService.SearchJobsAsync();
+if (jobDetails != null && jobDetails.Any())
+{
+await _storageService.SaveJobsAsync(jobDetails);
+_logger.LogInformation("✅ Job search completed and job details saved.");
+}
+else
+{
+_logger.LogWarning("⚠️ No job details found to save.");
+}
 }
 }
 }
@@ -154,7 +164,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Commands")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f0605e9a96032285ee371cfe6954833a0aa2ba10")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a45973b7e6a697ee317803c2d1892a517e4b59a2")]
 [assembly: System.Reflection.AssemblyProductAttribute("Commands")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Commands")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
@@ -774,7 +784,7 @@ _jobOfferDetail = jobOfferDetail;
 _searchService = searchService;
 _processService = processService;
 }
-public async Task SearchJobsAsync()
+public async Task<List<JobOfferDetail>> SearchJobsAsync()
 {
 try
 {
@@ -784,6 +794,7 @@ var searchText = await _searchService.PerformSearchAsync();
 _offers = await _processService.ProcessAllPagesAsync();
 _offersDetail = await _jobOfferDetail.ProcessOffersAsync(_offers, searchText);
 _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} LinkedIn job search process completed successfully.");
+return _offersDetail ?? [];
 }
 catch (Exception ex)
 {
@@ -827,6 +838,7 @@ Dispose();
 === FILE: F:\ValkyrieHire\Services\JsonJobStorageService.cs ===
 
 ﻿using Microsoft.Extensions.Logging;
+using Models;
 using Newtonsoft.Json;
 using Services.Interfaces;
 namespace Services
@@ -835,33 +847,25 @@ public class JsonJobStorageService : IJobStorageService, IDisposable
 {
 private const string StorageFile = "jobs_data.json";
 private readonly ILogger<JsonJobStorageService> _logger;
-private readonly SemaphoreSlim _fileLock = new SemaphoreSlim(1, 1);
+private readonly SemaphoreSlim _fileLock = new(1, 1);
 public JsonJobStorageService(ILogger<JsonJobStorageService> logger)
 {
 _logger = logger;
 EnsureStorageDirectoryExists();
 }
-public async Task SaveJobsAsync(IEnumerable<string> jobs)
+public async Task SaveJobsAsync(IEnumerable<JobOfferDetail> jobs)
 {
-if (jobs == null)
-{
-_logger.LogWarning("Attempted to save null jobs collection");
-throw new ArgumentNullException(nameof(jobs));
-}
+if (jobs == null) throw new ArgumentNullException(nameof(jobs));
 await _fileLock.WaitAsync();
 try
 {
-var json = JsonConvert.SerializeObject(jobs, Formatting.Indented, new JsonSerializerSettings
-{
-NullValueHandling = NullValueHandling.Ignore,
-DateTimeZoneHandling = DateTimeZoneHandling.Utc
-});
+var json = JsonConvert.SerializeObject(jobs, Formatting.Indented);
 await File.WriteAllTextAsync(StorageFile, json);
-_logger.LogInformation("Successfully saved {JobCount} jobs to storage", jobs.Count());
+_logger.LogInformation("✅ Saved {JobCount} job details to storage", jobs.Count());
 }
 catch (Exception ex)
 {
-_logger.LogError(ex, "Failed to save jobs to storage");
+_logger.LogError(ex, "❌ Failed to save job details");
 throw;
 }
 finally
@@ -869,25 +873,24 @@ finally
 _fileLock.Release();
 }
 }
-public async Task<IEnumerable<string>> LoadJobsAsync()
+public async Task<IEnumerable<JobOfferDetail>> LoadJobsAsync()
 {
 if (!File.Exists(StorageFile))
 {
-_logger.LogInformation("No storage file found - returning empty collection");
-return Enumerable.Empty<string>();
+_logger.LogInformation("⚠️ Storage file not found");
+return Enumerable.Empty<JobOfferDetail>();
 }
 await _fileLock.WaitAsync();
 try
 {
 var json = await File.ReadAllTextAsync(StorageFile);
-var jobs = JsonConvert.DeserializeObject<List<string>>(json)
-?? Enumerable.Empty<string>();
-_logger.LogInformation("Loaded {JobCount} jobs from storage", jobs.Count());
+var jobs = JsonConvert.DeserializeObject<List<JobOfferDetail>>(json) ?? new List<JobOfferDetail>();
+_logger.LogInformation("✅ Loaded {JobCount} job details", jobs.Count);
 return jobs;
 }
 catch (Exception ex)
 {
-_logger.LogError(ex, "Failed to load jobs from storage");
+_logger.LogError(ex, "❌ Failed to load job details");
 throw;
 }
 finally
@@ -908,12 +911,12 @@ try
 if (File.Exists(StorageFile))
 {
 File.Delete(StorageFile);
-_logger.LogInformation("Job storage cleared successfully");
+_logger.LogInformation("✅ Cleared job storage");
 }
 }
 catch (Exception ex)
 {
-_logger.LogError(ex, "Failed to clear job storage");
+_logger.LogError(ex, "❌ Failed to clear storage");
 throw;
 }
 finally
@@ -921,26 +924,18 @@ finally
 _fileLock.Release();
 }
 }
-private void EnsureStorageDirectoryExists()
+public void Dispose()
 {
-try
+_fileLock.Dispose();
+GC.SuppressFinalize(this);
+}
+private void EnsureStorageDirectoryExists()
 {
 var directory = Path.GetDirectoryName(StorageFile);
 if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
 {
 Directory.CreateDirectory(directory);
 }
-}
-catch (Exception ex)
-{
-_logger.LogError(ex, "Failed to ensure storage directory exists");
-throw;
-}
-}
-public void Dispose()
-{
-_fileLock?.Dispose();
-GC.SuppressFinalize(this);
 }
 }
 }
@@ -1364,22 +1359,24 @@ Task<string> PerformSearchAsync();
 
 === FILE: F:\ValkyrieHire\Services\Interfaces\IJobSearchCoordinator.cs ===
 
-﻿namespace Services.Interfaces
+﻿using Models;
+namespace Services.Interfaces
 {
 public interface IJobSearchCoordinator
 {
-Task SearchJobsAsync();
+Task<List<JobOfferDetail>> SearchJobsAsync();
 }
 }
 
 === FILE: F:\ValkyrieHire\Services\Interfaces\IJobStorageService.cs ===
 
-﻿namespace Services.Interfaces
+﻿using Models;
+namespace Services.Interfaces
 {
 public interface IJobStorageService
 {
-Task<IEnumerable<string>> LoadJobsAsync();
-Task SaveJobsAsync(IEnumerable<string> jobs);
+Task<IEnumerable<JobOfferDetail>> LoadJobsAsync();
+Task SaveJobsAsync(IEnumerable<JobOfferDetail> jobs);
 Task<int> GetJobCountAsync();
 Task ClearStorageAsync();
 }
@@ -1445,7 +1442,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Services")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f0605e9a96032285ee371cfe6954833a0aa2ba10")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a45973b7e6a697ee317803c2d1892a517e4b59a2")]
 [assembly: System.Reflection.AssemblyProductAttribute("Services")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Services")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
@@ -1620,7 +1617,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Tests.Services")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f0605e9a96032285ee371cfe6954833a0aa2ba10")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a45973b7e6a697ee317803c2d1892a517e4b59a2")]
 [assembly: System.Reflection.AssemblyProductAttribute("Tests.Services")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Tests.Services")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
@@ -1638,7 +1635,8 @@ global using global::System.Threading.Tasks;
 
 === FILE: F:\ValkyrieHire\ValkyrieConsole\Program.cs ===
 
-﻿using Commands;
+﻿using System;
+using Commands;
 using Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -1709,11 +1707,11 @@ services.AddTransient<ILoginService, LoginService>();
 services.AddTransient<ISecurityCheck, SecurityCheck>();
 services.AddTransient<ICaptureSnapshot, CaptureSnapshot>();
 services.AddSingleton<IWebDriverFactory, ChromeDriverFactory>();
-services.AddSingleton<IWebDriverFactory, ChromeDriverFactory>();
-services.AddSingleton<IJobSearch, JobSearch>();
-services.AddSingleton<IPageProcessor, PageProcessor>();
+services.AddTransient<IJobSearch, JobSearch>();
+services.AddTransient<IPageProcessor, PageProcessor>();
 services.AddSingleton<IDirectoryCheck, DirectoryCheck>();
-services.AddSingleton<CommandFactory>();
+services.AddSingleton<IJobStorageService, JsonJobStorageService>();
+services.AddTransient<ExportCommand>();
 });
 }
 }
@@ -1731,7 +1729,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ValkyrieConsole")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f0605e9a96032285ee371cfe6954833a0aa2ba10")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a45973b7e6a697ee317803c2d1892a517e4b59a2")]
 [assembly: System.Reflection.AssemblyProductAttribute("ValkyrieConsole")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ValkyrieConsole")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

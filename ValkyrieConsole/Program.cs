@@ -34,10 +34,11 @@ public class Program
             var host = CreateHostBuilder(args).Build();
 
             var commandFactory = host.Services.GetRequiredService<CommandFactory>();
-            var command = commandFactory.CreateCommand(args);
-
-            await command.ExecuteAsync();
-
+            var commands = commandFactory.CreateCommand(args);
+            foreach (var command in commands)
+            {
+                await command.ExecuteAsync();
+            }
             Log.Information("ValkyrieHire application completed successfully");
         }
         catch (Exception ex)

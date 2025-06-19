@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Commands
 {
@@ -6,22 +7,29 @@ namespace Commands
     {
         private readonly IServiceProvider _serviceProvider = serviceProvider;
 
-        public ICommand CreateCommand(string[] args)
+        public IEnumerable<ICommand> CreateCommand(string[] args)
         {
             if (args.Length == 0 || args.Contains("--help"))
-                return _serviceProvider.GetRequiredService<HelpCommand>();
+                return [_serviceProvider.GetRequiredService<HelpCommand>()];
 
-            var command = args.FirstOrDefault(arg =>
-                arg == "--search" || arg == "--export") ?? "--help";
+            var commands = args
+                .Where(arg => arg == "--search" || arg == "--export")
+                .Distinct()
+                .ToList();
 
-            return command switch
+            if (commands.Contains("--search") && commands[0] != "--search")
+            {
+                commands.Remove("--search");
+                commands.Insert(0, "--search");
+            }
+
+            return [.. commands.Select<string, ICommand>(arg => arg switch
             {
                 "--search" => _serviceProvider.GetRequiredService<SearchCommand>(),
-
                 "--export" => _serviceProvider.GetRequiredService<ExportCommand>(),
-
-                _ => throw new ArgumentException("Invalid command")
-            };
+                _ => throw new ArgumentException($"Invalid command argument: {arg}")
+            })];
         }
+
     }
 }
