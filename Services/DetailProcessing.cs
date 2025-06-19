@@ -48,26 +48,11 @@ namespace Services
                 {
                     _logger.LogDebug($"🌐 ID:{_executionOptions.TimeStamp} Navigating to job offer URL: {offer}");
                     _driver.Navigate().GoToUrl(offer);
-                    _wait.Until(driver =>
-                    {
-                        var xPathJobs = "//div[contains(@class, 'jobs-box--with-cta-large')]";
-                        var el = driver.FindElements(By.XPath(xPathJobs)).FirstOrDefault();
-                        return el != null && el.Displayed;
-                    });
-                    if (_securityCheck.IsSecurityChek())
-                    {
-                        await _securityCheck.TryStartPuzzle();
-                    }
-
+                    await Wait();
                     await _capture.CaptureArtifacts(FolderPath, "Detailed Job offer");
-
                     var offersDetail = await ExtractDetail(searchText);
-                    if (offersDetail != null)
-                    {
-                        offersDetail.SearchText = searchText;
-                        _offersDetail.Add(offersDetail);
-                        _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Detailed job offer processed successfully.");
-                    }
+                    _offersDetail.Add(offersDetail);
+                    _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Detailed job offer processed successfully.");
                 }
                 catch (Exception ex)
                 {
@@ -78,114 +63,118 @@ namespace Services
             }
             return _offersDetail;
         }
+
+        private async Task Wait()
+        {
+            _wait.Until(driver =>
+            {
+                var xPathJobs = "//div[contains(@class, 'jobs-box--with-cta-large')]";
+                var el = driver.FindElements(By.XPath(xPathJobs)).FirstOrDefault();
+                return el != null && el.Displayed;
+            });
+            if (_securityCheck.IsSecurityChek())
+            {
+                await _securityCheck.TryStartPuzzle();
+            }
+        }
+
         public async Task<JobOfferDetail> ExtractDetail(string searchText)
         {
             _logger.LogDebug($"🔍 ID:{_executionOptions.TimeStamp} Extracting job details from current page...");
-            await _capture.CaptureArtifacts(FolderPath, "Extract description");
+            await _capture.CaptureArtifacts(FolderPath, "ExtractDescription_Start");
+            var detail = ExtractDetail();
+            await _capture.CaptureArtifacts(FolderPath, "ExtractDescription_AfterSeeMore");
+            var header = ExtractHeader();
+            var jobOfferTitle = ExtractTitle(header);
+            var companyName = ExtractCompany(header);
+            var contactHiringSection = ExtractContactHiring(detail);
+            var applicants = ExtractApplicants(detail);
+            var descriptionText = ExtractDescription(detail);
+            var salaryOrBudgetOffered = ExtractSalary(detail);
+            return new JobOfferDetail
+            {
+                JobOfferTitle = jobOfferTitle,
+                CompanyName = companyName,
+                ContactHiringSection = contactHiringSection,
+                Applicants = applicants,
+                Description = descriptionText,
+                SalaryOrBudgetOffered = salaryOrBudgetOffered,
+                Link = _driver.Url,
+                SearchText = searchText
+            };
+        }
+
+        private IWebElement ExtractHeader()
+        {
+            var header = _driver.FindElements(By.XPath("//div[contains(@class, 't-14') and contains(@class, 'artdeco-card')]")).FirstOrDefault();
+            if (header == null)
+            {
+                var message = $"❌ ID:{_executionOptions.TimeStamp} Header not found. Current URL: {_driver.Url}";
+                _logger.LogWarning(message);
+                throw new InvalidOperationException(message);
+            }
+            return header;
+        }
+
+        private IWebElement ExtractDetail()
+        {
             var details = _driver.FindElements(By.XPath("//div[contains(@class, 'jobs-box--with-cta-large')]"));
-            if (!details.Any())
+            if (details.Count == 0)
             {
                 var message = $"❌ Job details container not found. Current URL: {_driver.Url}";
                 _logger.LogWarning(message);
                 throw new InvalidOperationException(message);
             }
-            var detail = details.FirstOrDefault(x => x != null);
-            _logger.LogDebug($"✅ ID:{_executionOptions.TimeStamp} Job details container found.");
-            var seeMoreButtons = detail.FindElements(By.XPath("//button[contains(@class, 'jobs-description__footer-button') and contains(., 'See more')]"));
-            if (seeMoreButtons.Any())
+            var detail = details.First();
+            ClickSeeMore(detail);
+            return detail;
+        }
+
+        private void ClickSeeMore(IWebElement detail)
+        {
+            // Try to expand description
+            var seeMoreButton = detail.FindElements(By.XPath(".//button[contains(@class, 'jobs-description__footer-button') and contains(., 'See more')]")).FirstOrDefault();
+            if (seeMoreButton != null)
             {
-                var seeMoreButton = seeMoreButtons.FirstOrDefault(x => x != null);
                 seeMoreButton.Click();
+                _logger.LogDebug($"✅ ID:{_executionOptions.TimeStamp} 'See more' button clicked.");
             }
-            _logger.LogDebug($"✅ ID:{_executionOptions.TimeStamp} 'See more' button found.");
-            await _capture.CaptureArtifacts(FolderPath, "ExtractDescriptionLinkedIn");
-            var headers = _driver.FindElements(By.XPath("//div[contains(@class, 't-14') and contains(@class, 'artdeco-card')]"));
-            if (!headers.Any())
-            {
-                var message = $"❌ ID:{_executionOptions.TimeStamp} 'Header not found. Current URL: {_driver.Url}";
-                _logger.LogWarning(message);
-                throw new InvalidOperationException(message);
-            }
-            var header = headers.FirstOrDefault(x => x != null);
-            var job_title_elements = header.FindElements(By.CssSelector("h1.t-24.t-bold.inline"));
-            var jobOfferTitle = string.Empty;
-            if (job_title_elements.Any())
-            {
-                var job_title_element = job_title_elements.FirstOrDefault(x => x != null);
-                if (!string.IsNullOrWhiteSpace(job_title_element.Text))
-                {
-                    jobOfferTitle = job_title_element.Text;
-                }
-            }
-            var company_name_elements = header.FindElements(By.CssSelector(".job-details-jobs-unified-top-card__company-name a"));
-            var companyName = string.Empty;
-            if (company_name_elements.Any())
-            {
-                var company_name_element = company_name_elements.FirstOrDefault(x => x != null);
-                if (!string.IsNullOrWhiteSpace(company_name_element.Text))
-                {
-                    companyName = company_name_element.Text;
-                }
-            }
-            var hiring_team_sections = detail.FindElements(By.CssSelector("div.job-details-module"));
-            var contactHiringSection = string.Empty;
-            if (hiring_team_sections.Any())
-            {
-                var hiring_team_section = hiring_team_sections.FirstOrDefault(x => x != null);
-                var name_elements = hiring_team_section.FindElements(By.CssSelector(".jobs-poster__name strong"));
-                if (name_elements.Any())
-                {
-                    var name_element = name_elements.FirstOrDefault(x => x != null);
-                    if (!string.IsNullOrWhiteSpace(name_element.Text))
-                    {
-                        contactHiringSection = name_element.Text;
-                    }
-                }
-            }
+        }
 
-            var aplicantsXPath = "//div[contains(@class, 'job-details-jobs-unified-top-card__primary-description-container')]";
-            var applicants = _wait.Until(driver => _driver.FindElements(By.XPath(aplicantsXPath)));
-            var applicantsText = string.Empty;
-            if (applicants.Any())
-            {
-                var applicant = applicants.FirstOrDefault(x => x != null);
-                applicantsText = applicant.Text;
-            }
-            var description_elements = detail.FindElements(By.CssSelector("article.jobs-description__container"));
-            var descriptionText = string.Empty;
-            if (description_elements.Any())
-            {
-                var description_element = description_elements.FirstOrDefault(x => x != null);
-                if (!string.IsNullOrWhiteSpace(description_element.Text))
-                {
-                    descriptionText = description_element.Text;
-                }
-            }
-            var jobDetailsContainers = detail.FindElements(By.CssSelector(".artdeco-card.job-details-module"));
-            var salaryOrBudgetOffered = string.Empty;
-            if (jobDetailsContainers.Any())
-            {
-                var salaryElements = _driver.FindElements(By.XPath(".//p[contains(., 'CA$')]"));
-                if (salaryElements.Any())
-                {
-                    var salaryElement = salaryElements.First();
-                    salaryOrBudgetOffered = salaryElement.Text.Trim();
-                }
+        private string ExtractApplicants(IWebElement detail)
+        {
+            var applicants = _wait.Until(driver => driver.FindElements(By.XPath("//div[contains(@class, 'job-details-jobs-unified-top-card__primary-description-container')]")));
+            return applicants.FirstOrDefault()?.Text?.Trim() ?? string.Empty;
+        }
+        private static string ExtractSalary(IWebElement detail)
+        {
+            IEnumerable<IWebElement> jobDetailsContainers(IWebElement scope) => scope.FindElements(By.CssSelector(".artdeco-card.job-details-module"));
+            return jobDetailsContainers(detail)
+                .SelectMany(c => c.FindElements(By.XPath(".//p[contains(., 'CA$')]")))
+                .FirstOrDefault()?.Text?.Trim() ?? string.Empty;
+        }
+        private static string ExtractDescription(IWebElement detail)
+        {
 
-            }
-            var jobOffer = new JobOfferDetail
-            {
-                JobOfferTitle = jobOfferTitle,
-                CompanyName = companyName,
-                ContactHiringSection = contactHiringSection,
-                Applicants = applicantsText,
-                Description = descriptionText,
-                SalaryOrBudgetOffered = salaryOrBudgetOffered,
-                Link = _driver.Url,
-                SearchText = searchText,
+            // Description
+            return detail.FindElements(By.CssSelector("article.jobs-description__container")).FirstOrDefault()?.Text?.Trim() ?? string.Empty;
+        }
 
-            };
-            return jobOffer;
+        private static string ExtractContactHiring(IWebElement detail)
+        {
+
+            // Hiring team
+            return detail.FindElements(By.CssSelector("div.job-details-module .jobs-poster__name strong")).FirstOrDefault()?.Text?.Trim() ?? string.Empty;
+        }
+
+        private static string ExtractCompany(IWebElement header)
+        {
+            return header.FindElements(By.CssSelector(".job-details-jobs-unified-top-card__company-name a")).FirstOrDefault()?.Text?.Trim() ?? string.Empty;
+        }
+
+        private static string ExtractTitle(IWebElement header)
+        {
+            return header.FindElements(By.CssSelector("h1.t-24.t-bold.inline")).FirstOrDefault()?.Text?.Trim() ?? string.Empty;
         }
     }
 }
