@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Models;
 using Newtonsoft.Json;
 using Services.Interfaces;
 
@@ -8,7 +9,7 @@ namespace Services
     {
         private const string StorageFile = "jobs_data.json";
         private readonly ILogger<JsonJobStorageService> _logger;
-        private readonly SemaphoreSlim _fileLock = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _fileLock = new(1, 1);
 
         public JsonJobStorageService(ILogger<JsonJobStorageService> logger)
         {
@@ -16,29 +17,20 @@ namespace Services
             EnsureStorageDirectoryExists();
         }
 
-        public async Task SaveJobsAsync(IEnumerable<string> jobs)
+        public async Task SaveJobsAsync(IEnumerable<JobOfferDetail> jobs)
         {
-            if (jobs == null)
-            {
-                _logger.LogWarning("Attempted to save null jobs collection");
-                throw new ArgumentNullException(nameof(jobs));
-            }
+            if (jobs == null) throw new ArgumentNullException(nameof(jobs));
 
             await _fileLock.WaitAsync();
             try
             {
-                var json = JsonConvert.SerializeObject(jobs, Formatting.Indented, new JsonSerializerSettings
-                {
-                    NullValueHandling = NullValueHandling.Ignore,
-                    DateTimeZoneHandling = DateTimeZoneHandling.Utc
-                });
-
+                var json = JsonConvert.SerializeObject(jobs, Formatting.Indented);
                 await File.WriteAllTextAsync(StorageFile, json);
-                _logger.LogInformation("Successfully saved {JobCount} jobs to storage", jobs.Count());
+                _logger.LogInformation("✅ Saved {JobCount} job details to storage", jobs.Count());
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to save jobs to storage");
+                _logger.LogError(ex, "❌ Failed to save job details");
                 throw;
             }
             finally
@@ -47,27 +39,25 @@ namespace Services
             }
         }
 
-        public async Task<IEnumerable<string>> LoadJobsAsync()
+        public async Task<IEnumerable<JobOfferDetail>> LoadJobsAsync()
         {
             if (!File.Exists(StorageFile))
             {
-                _logger.LogInformation("No storage file found - returning empty collection");
-                return Enumerable.Empty<string>();
+                _logger.LogInformation("⚠️ Storage file not found");
+                return Enumerable.Empty<JobOfferDetail>();
             }
 
             await _fileLock.WaitAsync();
             try
             {
                 var json = await File.ReadAllTextAsync(StorageFile);
-                var jobs = JsonConvert.DeserializeObject<List<string>>(json)
-                          ?? Enumerable.Empty<string>();
-
-                _logger.LogInformation("Loaded {JobCount} jobs from storage", jobs.Count());
+                var jobs = JsonConvert.DeserializeObject<List<JobOfferDetail>>(json) ?? new List<JobOfferDetail>();
+                _logger.LogInformation("✅ Loaded {JobCount} job details", jobs.Count);
                 return jobs;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to load jobs from storage");
+                _logger.LogError(ex, "❌ Failed to load job details");
                 throw;
             }
             finally
@@ -90,12 +80,12 @@ namespace Services
                 if (File.Exists(StorageFile))
                 {
                     File.Delete(StorageFile);
-                    _logger.LogInformation("Job storage cleared successfully");
+                    _logger.LogInformation("✅ Cleared job storage");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to clear job storage");
+                _logger.LogError(ex, "❌ Failed to clear storage");
                 throw;
             }
             finally
@@ -104,27 +94,19 @@ namespace Services
             }
         }
 
-        private void EnsureStorageDirectoryExists()
-        {
-            try
-            {
-                var directory = Path.GetDirectoryName(StorageFile);
-                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to ensure storage directory exists");
-                throw;
-            }
-        }
-
         public void Dispose()
         {
-            _fileLock?.Dispose();
+            _fileLock.Dispose();
             GC.SuppressFinalize(this);
+        }
+
+        private void EnsureStorageDirectoryExists()
+        {
+            var directory = Path.GetDirectoryName(StorageFile);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
         }
     }
 }

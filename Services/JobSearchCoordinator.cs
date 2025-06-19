@@ -15,6 +15,7 @@ namespace Services
         private readonly ExecutionOptions _executionOptions;
         private readonly ICaptureSnapshot _capture;
         private List<string>? _offers;
+        private List<JobOfferDetail>? _offersDetail;
         private readonly IDetailProcessing _jobOfferDetail;
         private readonly IJobSearch _searchService;
         private readonly IPageProcessor _processService;
@@ -54,7 +55,7 @@ namespace Services
                 await _loginService.LoginAsync();
                 var searchText = await _searchService.PerformSearchAsync();
                 _offers = await _processService.ProcessAllPagesAsync();
-                await _jobOfferDetail.ProcessOffersAsync(_offers, searchText);
+                _offersDetail = await _jobOfferDetail.ProcessOffersAsync(_offers, searchText);
                 _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} LinkedIn job search process completed successfully.");
             }
             catch (Exception ex)

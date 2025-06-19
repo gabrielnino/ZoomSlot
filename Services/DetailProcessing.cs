@@ -9,7 +9,6 @@ using Services.Interfaces;
 
 namespace Services
 {
-
     public class DetailProcessing : IDetailProcessing
     {
         private readonly ILogger<DetailProcessing> _logger;
@@ -63,7 +62,7 @@ namespace Services
                         });
                         if (_securityCheck.IsSecurityChek())
                         {
-                            await _securityCheck.TryStartPuzzle();
+                            await _securityCheck.HandleSecurityPage();
                         }
                         await _capture.CaptureArtifactsAsync(FolderPath, "Detailed Job offer");
                         var offersDetail = await ExtractDetail(searchText);
