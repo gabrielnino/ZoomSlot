@@ -1,7 +1,9 @@
-﻿namespace Services.Interfaces
+﻿using Models;
+
+namespace Services.Interfaces
 {
     public interface IJobSearchCoordinator
     {
-        Task SearchJobsAsync();
+        Task<List<JobOfferDetail>> SearchJobsAsync();
     }
 }

@@ -47,7 +47,7 @@ namespace Services
 
 
 
-        public async Task SearchJobsAsync()
+        public async Task<List<JobOfferDetail>> SearchJobsAsync()
         {
             try
             {
@@ -57,6 +57,7 @@ namespace Services
                 _offers = await _processService.ProcessAllPagesAsync();
                 _offersDetail = await _jobOfferDetail.ProcessOffersAsync(_offers, searchText);
                 _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} LinkedIn job search process completed successfully.");
+                return _offersDetail ?? new List<JobOfferDetail>();
             }
             catch (Exception ex)
             {

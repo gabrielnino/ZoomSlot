@@ -82,6 +82,7 @@ public class Program
                 services.AddSingleton<IJobSearch, JobSearch>();
                 services.AddSingleton<IPageProcessor, PageProcessor>();
                 services.AddSingleton<IDirectoryCheck, DirectoryCheck>();
+                services.AddSingleton<IJobStorageService, JsonJobStorageService>();
                 services.AddSingleton<CommandFactory>();
             });
     }
