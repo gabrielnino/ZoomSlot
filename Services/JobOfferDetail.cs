@@ -102,6 +102,9 @@ namespace Services
 
             _logger.LogDebug($"✅ ID:{_executionOptions.TimeStamp} 'See more' button found.");
 
+            var seeMoreButton = seeMoreButtons.FirstOrDefault(x => x != null);
+            seeMoreButton.Click();
+
             await _capture.CaptureArtifacts(FolderPath, "ExtractDescriptionLinkedIn");
 
             var jobOffer = new Models.JobOfferDetail();
