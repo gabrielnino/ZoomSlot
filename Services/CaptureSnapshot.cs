@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using OpenQA.Selenium;
+using Services.interfaces;
 
 namespace Services
 {

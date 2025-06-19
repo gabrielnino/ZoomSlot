@@ -1,8 +1,8 @@
-﻿using System.Text.RegularExpressions;
-using Configuration;
+﻿using Configuration;
 using Microsoft.Extensions.Logging;
 using Models;
 using OpenQA.Selenium;
+using Services.interfaces;
 
 namespace Services
 {

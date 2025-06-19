@@ -1,8 +1,8 @@
-﻿using Configuration;
+﻿
 using Microsoft.Extensions.Logging;
 using Models;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
+using Services.interfaces;
 
 namespace Services
 {

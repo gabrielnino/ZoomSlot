@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Models;
 using Serilog;
 using Services;
+using Services.interfaces;
 
 public class Program
 {

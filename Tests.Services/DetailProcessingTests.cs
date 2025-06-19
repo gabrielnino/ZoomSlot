@@ -5,13 +5,13 @@
     using System.Collections.ObjectModel;
     using System.Threading.Tasks;
     using global::Services;
+    using global::Services.interfaces;
     using Microsoft.Extensions.Logging;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Models;
     using Moq;
     using OpenQA.Selenium;
     using OpenQA.Selenium.Chrome;
-    using Services;
 
     namespace Tests.Services
     {

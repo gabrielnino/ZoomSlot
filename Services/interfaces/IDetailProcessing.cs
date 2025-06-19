@@ -1,6 +1,5 @@
 ﻿using Models;
-
-namespace Services
+namespace Services.interfaces
 {
     public interface IDetailProcessing
     {
