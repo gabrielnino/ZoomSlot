@@ -1,6 +1,6 @@
 ﻿namespace Services
 {
-    public interface IJobOfferDetail
+    public interface IDetailProcessing
     {
         Task<List<Models.JobOfferDetail>> ProcessOffersAsync(IEnumerable<string> offers);
     }

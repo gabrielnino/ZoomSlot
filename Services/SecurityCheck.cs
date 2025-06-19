@@ -7,7 +7,7 @@ namespace Services
 {
     public class SecurityCheck : ISecurityCheck
     {
-        private readonly ILogger<JobOfferDetail> _logger;
+        private readonly ILogger<DetailProcessing> _logger;
         private readonly IWebDriver _driver;
         private readonly WebDriverWait _wait;
         private readonly List<Models.JobOfferDetail> _offersDetail;
@@ -17,7 +17,7 @@ namespace Services
         private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
         private readonly IDirectoryCheck _directoryCheck;
         public SecurityCheck(IWebDriverFactory driverFactory,
-            ILogger<JobOfferDetail> logger,
+            ILogger<DetailProcessing> logger,
             ICaptureSnapshot capture,
             ExecutionOptions executionOptions,
             IDirectoryCheck directoryCheck)

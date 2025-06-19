@@ -5,9 +5,9 @@ using OpenQA.Selenium.Support.UI;
 
 namespace Services
 {
-    public class JobOfferDetail : IJobOfferDetail
+    public class DetailProcessing : IDetailProcessing
     {
-        private readonly ILogger<JobOfferDetail> _logger;
+        private readonly ILogger<DetailProcessing> _logger;
         private readonly IWebDriver _driver;
         private readonly WebDriverWait _wait;
         private readonly List<Models.JobOfferDetail> _offersDetail;
@@ -18,8 +18,8 @@ namespace Services
         private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
         private readonly IDirectoryCheck _directoryCheck;
 
-        public JobOfferDetail(IWebDriverFactory driverFactory,
-            ILogger<JobOfferDetail> logger,
+        public DetailProcessing(IWebDriverFactory driverFactory,
+            ILogger<DetailProcessing> logger,
             ICaptureSnapshot capture,
             ISecurityCheck securityCheck,
             ExecutionOptions executionOptions,
@@ -36,7 +36,7 @@ namespace Services
             _directoryCheck.EnsureDirectoryExists(FolderPath);
         }
 
-        public async Task<List<Models.JobOfferDetail>> ProcessOffersAsync(IEnumerable<string> offers)
+        public async Task<List<JobOfferDetail>> ProcessOffersAsync(IEnumerable<string> offers)
         {
             _logger.LogInformation($"📝 ID:{_executionOptions.TimeStamp} Processing detailed job offer data...");
 

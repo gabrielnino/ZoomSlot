@@ -15,7 +15,7 @@ namespace Services
         private readonly ExecutionOptions _executionOptions;
         private readonly ICaptureSnapshot _capture;
         private List<string>? _offers;
-        private readonly IJobOfferDetail _jobOfferDetail;
+        private readonly IDetailProcessing _jobOfferDetail;
         private readonly IJobSearch _searchService;
         private readonly IPageProcessor _processService;
         private readonly IDirectoryCheck _directoryCheck;
@@ -27,7 +27,7 @@ namespace Services
             ILoginService loginService,
             ICaptureSnapshot capture,
             ExecutionOptions executionOptions,
-            IJobOfferDetail jobOfferDetail,
+            IDetailProcessing jobOfferDetail,
             IJobSearch searchService,
             IPageProcessor processService,
             IDirectoryCheck directoryCheck)

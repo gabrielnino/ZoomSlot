@@ -1,368 +1,21 @@
 
 
-=== FILE: F:\ValkyrieHire\Commands\CommandFactory.cs ===
-
-﻿using Microsoft.Extensions.DependencyInjection;
-namespace Commands
-{
-public class CommandFactory
-{
-private readonly IServiceProvider _serviceProvider;
-public CommandFactory(IServiceProvider serviceProvider)
-{
-_serviceProvider = serviceProvider;
-}
-public ICommand CreateCommand(string[] args)
-{
-if (args.Length == 0 || args.Contains("--help"))
-return _serviceProvider.GetRequiredService<HelpCommand>();
-var command = args.FirstOrDefault(arg =>
-arg == "--search" || arg == "--export") ?? "--help";
-return command switch
-{
-"--search" => _serviceProvider.GetRequiredService<SearchCommand>(),
-"--export" => _serviceProvider.GetRequiredService<ExportCommand>(),
-_ => throw new ArgumentException("Invalid command")
-};
-}
-}
-}
-
-=== FILE: F:\ValkyrieHire\Commands\ExportCommand.cs ===
-
-﻿using Configuration;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Services;
-using Formatting = Newtonsoft.Json.Formatting;
-namespace Commands
-{
-public class ExportCommand : ICommand
-{
-private readonly IJobStorageService _storageService;
-private readonly ILogger<ExportCommand> _logger;
-private readonly AppConfig _config;
-public ExportCommand(
-IJobStorageService storageService,
-ILogger<ExportCommand> logger,
-AppConfig config)
-{
-_storageService = storageService;
-_logger = logger;
-_config = config;
-}
-public async Task ExecuteAsync()
-{
-try
-{
-_logger.LogInformation("Starting job data export...");
-var jobs = await _storageService.LoadJobsAsync();
-if (jobs == null || !jobs.Any())
-{
-_logger.LogWarning("No jobs found to export");
-Console.WriteLine("No jobs available for export");
-return;
-}
-var exportDir = Path.Combine(Directory.GetCurrentDirectory(), "Exports");
-Directory.CreateDirectory(exportDir);
-var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-var exportPath = Path.Combine(exportDir, $"jobs_export_{timestamp}.json");
-var json = JsonConvert.SerializeObject(jobs, Formatting.Indented);
-await File.WriteAllTextAsync(exportPath, json);
-_logger.LogInformation("Successfully exported {JobCount} jobs to {ExportPath}",jobs?.Count() ?? 0,   exportPath);
-Console.WriteLine($"Exported {jobs?.Count() ?? 0} jobs to:\n{exportPath}");
-}
-catch (Exception ex)
-{
-_logger.LogError(ex, "Failed to export jobs");
-throw;
-}
-}
-}
-}
-
-=== FILE: F:\ValkyrieHire\Commands\HelpCommand.cs ===
-
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-namespace Commands
-{
-public class
-HelpCommand : ICommand
-{
-private readonly ILogger<HelpCommand> _logger;
-public HelpCommand(ILogger<HelpCommand> logger = null)
-{
-_logger = logger;
-}
-public Task ExecuteAsync()
-{
-_logger?.LogInformation("Displaying help information");
-Console.WriteLine("Available commands:");
-Console.WriteLine("--search\tSearch for jobs");
-Console.WriteLine("--export\tExport results");
-Console.WriteLine("--help\t\tShow this help");
-return Task.CompletedTask;
-}
-}
-}
-
-=== FILE: F:\ValkyrieHire\Commands\ICommand.cs ===
-
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-namespace Commands
-{
-public interface ICommand
-{
-Task ExecuteAsync();
-}
-}
-
-=== FILE: F:\ValkyrieHire\Commands\SearchCommand.cs ===
-
-﻿using Microsoft.Extensions.Logging;
-using Services;
-namespace Commands
-{
-public class SearchCommand : ICommand
-{
-private readonly ILinkedInService _linkedInService;
-private readonly ILogger<SearchCommand> _logger;
-public SearchCommand(ILinkedInService linkedInService, ILogger<SearchCommand> logger)
-{
-_linkedInService = linkedInService;
-_logger = logger;
-}
-public async Task ExecuteAsync()
-{
-_logger.LogInformation("Starting job search...");
-await _linkedInService.SearchJobsAsync();
-_logger.LogInformation("Job search completed successfully.");
-}
-}
-}
-
-=== FILE: F:\ValkyrieHire\Commands\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ===
-
-using System;
-using System.Reflection;
-[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETCoreApp,Version=v8.0", FrameworkDisplayName = ".NET 8.0")]
-
-=== FILE: F:\ValkyrieHire\Commands\obj\Debug\net8.0\Commands.AssemblyInfo.cs ===
-
-using System;
-using System.Reflection;
-[assembly: System.Reflection.AssemblyCompanyAttribute("Commands")]
-[assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
-[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7d8c00105e30b547e55dce4ce1666b3f27888b68")]
-[assembly: System.Reflection.AssemblyProductAttribute("Commands")]
-[assembly: System.Reflection.AssemblyTitleAttribute("Commands")]
-[assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
-
-=== FILE: F:\ValkyrieHire\Commands\obj\Debug\net8.0\Commands.GlobalUsings.g.cs ===
-
-global using global::System;
-global using global::System.Collections.Generic;
-global using global::System.IO;
-global using global::System.Linq;
-global using global::System.Net.Http;
-global using global::System.Threading;
-global using global::System.Threading.Tasks;
-
-=== FILE: F:\ValkyrieHire\Configuration\AppConfig.cs ===
-
-﻿namespace Configuration
-{
-public class AppConfig
-{
-public LinkedInCredentials LinkedInCredentials { get; set; }
-public JobSearch JobSearch { get; set; }
-public Logging Logging { get; set; }
-}
-}
-
-=== FILE: F:\ValkyrieHire\Configuration\JobSearch.cs ===
-
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-namespace Configuration
-{
-public class JobSearch
-{
-public string SearchText { get; set; }
-public string Location { get; set; }
-public int MaxPages { get; set; }
-}
-}
-
-=== FILE: F:\ValkyrieHire\Configuration\LinkedInCredentials.cs ===
-
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-namespace Configuration
-{
-public class LinkedInCredentials
-{
-public string Email { get; set; }
-public string Password { get; set; }
-}
-}
-
-=== FILE: F:\ValkyrieHire\Configuration\Logging.cs ===
-
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-namespace Configuration
-{
-public class Logging
-{
-public string LogFilePath { get; set; }
-public string FileLogLevel { get; set; }
-}
-}
-
-=== FILE: F:\ValkyrieHire\Configuration\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ===
-
-using System;
-using System.Reflection;
-[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETCoreApp,Version=v8.0", FrameworkDisplayName = ".NET 8.0")]
-
-=== FILE: F:\ValkyrieHire\Configuration\obj\Debug\net8.0\Configuration.AssemblyInfo.cs ===
-
-using System;
-using System.Reflection;
-[assembly: System.Reflection.AssemblyCompanyAttribute("Configuration")]
-[assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
-[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+758245914e100111cf66eed2b6b5df79855c6e00")]
-[assembly: System.Reflection.AssemblyProductAttribute("Configuration")]
-[assembly: System.Reflection.AssemblyTitleAttribute("Configuration")]
-[assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
-
-=== FILE: F:\ValkyrieHire\Configuration\obj\Debug\net8.0\Configuration.GlobalUsings.g.cs ===
-
-global using global::System;
-global using global::System.Collections.Generic;
-global using global::System.IO;
-global using global::System.Linq;
-global using global::System.Net.Http;
-global using global::System.Threading;
-global using global::System.Threading.Tasks;
-
-=== FILE: F:\ValkyrieHire\Exceptions\AppExceptionHandler.cs ===
-
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-namespace Exceptions
-{
-public class AppExceptionHandler
-{
-private readonly ILogger<AppExceptionHandler> _logger;
-public AppExceptionHandler(ILogger<AppExceptionHandler> logger)
-{
-_logger = logger;
-}
-public void Handle(Exception ex, string context)
-{
-_logger.LogError(ex, $"Error in {context}");
-}
-}
-}
-
-=== FILE: F:\ValkyrieHire\Exceptions\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ===
-
-using System;
-using System.Reflection;
-[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETCoreApp,Version=v8.0", FrameworkDisplayName = ".NET 8.0")]
-
-=== FILE: F:\ValkyrieHire\Exceptions\obj\Debug\net8.0\Exceptions.AssemblyInfo.cs ===
-
-using System;
-using System.Reflection;
-[assembly: System.Reflection.AssemblyCompanyAttribute("Exceptions")]
-[assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
-[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+239064c7a571e0bb9f325bacea5b8341611bc4f9")]
-[assembly: System.Reflection.AssemblyProductAttribute("Exceptions")]
-[assembly: System.Reflection.AssemblyTitleAttribute("Exceptions")]
-[assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
-
-=== FILE: F:\ValkyrieHire\Exceptions\obj\Debug\net8.0\Exceptions.GlobalUsings.g.cs ===
-
-global using global::System;
-global using global::System.Collections.Generic;
-global using global::System.IO;
-global using global::System.Linq;
-global using global::System.Net.Http;
-global using global::System.Threading;
-global using global::System.Threading.Tasks;
-
-=== FILE: F:\ValkyrieHire\Models\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ===
-
-using System;
-using System.Reflection;
-[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETCoreApp,Version=v8.0", FrameworkDisplayName = ".NET 8.0")]
-
-=== FILE: F:\ValkyrieHire\Models\obj\Debug\net8.0\Models.AssemblyInfo.cs ===
-
-using System;
-using System.Reflection;
-[assembly: System.Reflection.AssemblyCompanyAttribute("Models")]
-[assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
-[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+239064c7a571e0bb9f325bacea5b8341611bc4f9")]
-[assembly: System.Reflection.AssemblyProductAttribute("Models")]
-[assembly: System.Reflection.AssemblyTitleAttribute("Models")]
-[assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
-
-=== FILE: F:\ValkyrieHire\Models\obj\Debug\net8.0\Models.GlobalUsings.g.cs ===
-
-global using global::System;
-global using global::System.Collections.Generic;
-global using global::System.IO;
-global using global::System.Linq;
-global using global::System.Net.Http;
-global using global::System.Threading;
-global using global::System.Threading.Tasks;
-
-=== FILE: F:\ValkyrieHire\Services\CaptureService.cs ===
+=== FILE: F:\ValkyrieHire\Services\CaptureSnapshot.cs ===
 
 ﻿using Microsoft.Extensions.Logging;
 using OpenQA.Selenium;
 namespace Services
 {
-public class CaptureService : ICaptureService
+public class CaptureSnapshot : ICaptureSnapshot
 {
 private readonly IWebDriver _driver;
-private readonly ILogger<CaptureService> _logger;
-public CaptureService(IWebDriverFactory driverFactory, ILogger<CaptureService> logger)
+private readonly ILogger<CaptureSnapshot> _logger;
+public CaptureSnapshot(IWebDriverFactory driverFactory, ILogger<CaptureSnapshot> logger)
 {
 _driver = driverFactory.Create();
 _logger = logger;
 }
-public async Task CaptureArtifacts(string executionFolder, string stage)
+public async Task<string> CaptureArtifacts(string executionFolder, string stage)
 {
 var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
 _logger.LogWarning($"⚠️ CaptureDebugArtifacts called with {timestamp}");
@@ -378,18 +31,14 @@ await File.WriteAllTextAsync(htmlPath, _driver.PageSource);
 var screenshot = ((ITakesScreenshot)_driver).GetScreenshot();
 screenshot.SaveAsFile(screenshotPath);
 _logger.LogDebug($"📸 Debug capture for '{stage}':\nHTML: {htmlfile}\nScreenshot: {screenshotFile}");
+return timestamp;
 }
 }
 }
 
 === FILE: F:\ValkyrieHire\Services\ChromeDriverFactory.cs ===
 
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 namespace Services
@@ -454,49 +103,85 @@ _driverService?.Dispose();
 }
 }
 
-=== FILE: F:\ValkyrieHire\Services\CommandArgs.cs ===
+=== FILE: F:\ValkyrieHire\Services\DirectoryCheck.cs ===
 
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.Logging;
+using Models;
 namespace Services
 {
-public class CommandArgs
+public class DirectoryCheck : IDirectoryCheck
 {
-public string MainCommand { get; }
-public CommandArgs(string[] args)
+private readonly ILogger<JobSearch> _logger;
+private readonly ExecutionOptions _executionOptions;
+public DirectoryCheck(ILogger<JobSearch> logger, ExecutionOptions executionOptions)
 {
-MainCommand = args.FirstOrDefault(arg =>
-arg == "--search" || arg == "--export") ?? "--help";
+_logger = logger;
+_executionOptions = executionOptions;
+}
+public void EnsureDirectoryExists(string path)
+{
+if (!Directory.Exists(path))
+{
+Directory.CreateDirectory(path);
+_logger.LogInformation($"📁 Created execution folder at: {_executionOptions.ExecutionFolder}");
+}
 }
 }
 }
 
-=== FILE: F:\ValkyrieHire\Services\ICaptureService.cs ===
+=== FILE: F:\ValkyrieHire\Services\ICaptureSnapshot.cs ===
 
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-namespace Services
+﻿namespace Services
 {
-public interface ICaptureService
+public interface ICaptureSnapshot
 {
-Task CaptureArtifacts(string executionFolder, string stage);
+Task<string> CaptureArtifacts(string executionFolder, string stage);
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\IDirectoryCheck.cs ===
+
+﻿namespace Services
+{
+public interface IDirectoryCheck
+{
+void EnsureDirectoryExists(string path);
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\IJobOfferDetail.cs ===
+
+﻿namespace Services
+{
+public interface IJobOfferDetail
+{
+Task<List<Models.JobOfferDetail>> ProcessOffersAsync(IEnumerable<string> offers);
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\IJobSearch.cs ===
+
+﻿namespace Services
+{
+public interface IJobSearch
+{
+Task PerformSearchAsync();
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\IJobSearchCoordinator.cs ===
+
+﻿namespace Services
+{
+public interface IJobSearchCoordinator
+{
+Task SearchJobsAsync();
 }
 }
 
 === FILE: F:\ValkyrieHire\Services\IJobStorageService.cs ===
 
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-namespace Services
+﻿namespace Services
 {
 public interface IJobStorageService
 {
@@ -507,41 +192,42 @@ Task ClearStorageAsync();
 }
 }
 
-=== FILE: F:\ValkyrieHire\Services\ILinkedInService.cs ===
+=== FILE: F:\ValkyrieHire\Services\ILoginService.cs ===
 
 ﻿namespace Services
 {
-public interface ILinkedInService
-{
-Task SearchJobsAsync();
-Task<IEnumerable<string>> GetCurrentPageOffersAsync();
-Task<bool> NavigateToNextPageAsync();
-}
-}
-
-=== FILE: F:\ValkyrieHire\Services\ILoginService.cs ===
-
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-namespace Services
-{
 public interface ILoginService
 {
-Task LoginAsync(string folderName, string timestamp);
+Task LoginAsync();
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\IPageProcessor.cs ===
+
+﻿namespace Services
+{
+public interface IPageProcessor
+{
+Task<List<string>> ProcessAllPagesAsync();
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\ISecurityCheck.cs ===
+
+﻿namespace Services
+{
+public interface ISecurityCheck
+{
+bool IsSecurityChek();
+Task TryStartPuzzle();
+Task HandleSecurityPage();
+Task HandleUnexpectedPage();
 }
 }
 
 === FILE: F:\ValkyrieHire\Services\IWebDriverFactory.cs ===
 
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using OpenQA.Selenium;
+﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 namespace Services
 {
@@ -553,14 +239,281 @@ ChromeOptions GetDefaultOptions();
 }
 }
 
+=== FILE: F:\ValkyrieHire\Services\JobCommandArgs.cs ===
+
+﻿namespace Services
+{
+public class JobCommandArgs(string[] args)
+{
+public string MainCommand { get; } = args.FirstOrDefault(arg => arg == "--search" || arg == "--export") ?? "--help";
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\JobOfferDetail.cs ===
+
+﻿using Microsoft.Extensions.Logging;
+using Models;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
+namespace Services
+{
+public class JobOfferDetail : IJobOfferDetail
+{
+private readonly ILogger<JobOfferDetail> _logger;
+private readonly IWebDriver _driver;
+private readonly WebDriverWait _wait;
+private readonly List<Models.JobOfferDetail> _offersDetail;
+private readonly ICaptureSnapshot _capture;
+private readonly ExecutionOptions _executionOptions;
+private const string FolderName = "Detail";
+private readonly ISecurityCheck _securityCheck;
+private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
+private readonly IDirectoryCheck _directoryCheck;
+public JobOfferDetail(IWebDriverFactory driverFactory,
+ILogger<JobOfferDetail> logger,
+ICaptureSnapshot capture,
+ISecurityCheck securityCheck,
+ExecutionOptions executionOptions,
+IDirectoryCheck directoryCheck)
+{
+_offersDetail = [];
+_driver = driverFactory.Create();
+_logger = logger;
+_wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+_capture = capture;
+_securityCheck = securityCheck;
+_executionOptions = executionOptions;
+_directoryCheck = directoryCheck;
+_directoryCheck.EnsureDirectoryExists(FolderPath);
+}
+public async Task<List<Models.JobOfferDetail>> ProcessOffersAsync(IEnumerable<string> offers)
+{
+_logger.LogInformation($"📝 ID:{_executionOptions.TimeStamp} Processing detailed job offer data...");
+foreach (var offer in offers)
+{
+try
+{
+_logger.LogDebug($"🌐 ID:{_executionOptions.TimeStamp} Navigating to job offer URL: {offer}");
+_driver.Navigate().GoToUrl(offer);
+_wait.Until(driver =>
+{
+var xPathJobs = "
+var el = driver.FindElements(By.XPath(xPathJobs)).FirstOrDefault();
+return el != null && el.Displayed;
+});
+if (_securityCheck.IsSecurityChek())
+{
+await _securityCheck.TryStartPuzzle();
+}
+await _capture.CaptureArtifacts(FolderPath, "Detailed Job offer");
+var offersDetail = await ExtractDescriptionLinkedIn();
+if (offersDetail != null)
+{
+_offersDetail.Add(offersDetail);
+_logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Detailed job offer processed successfully.");
+}
+}
+catch (Exception ex)
+{
+_logger.LogError(ex, $"❌ ID:{_executionOptions.TimeStamp} Failed to process detailed job offer at URL: {offer}");
+await _capture.CaptureArtifacts(FolderPath, "Error in Detailed Job Offer");
+}
+}
+return _offersDetail;
+}
+public async Task<Models.JobOfferDetail> ExtractDescriptionLinkedIn()
+{
+_logger.LogDebug($"🔍 ID:{_executionOptions.TimeStamp} Extracting job details from current page...");
+await _capture.CaptureArtifacts(FolderPath, "Extract description");
+var details = _driver.FindElements(By.XPath("
+if (!details.Any())
+{
+var message = $"❌ Job details container not found. Current URL: {_driver.Url}";
+_logger.LogWarning(message);
+throw new InvalidOperationException(message);
+}
+var detail = details.FirstOrDefault(x => x != null);
+_logger.LogDebug($"✅ ID:{_executionOptions.TimeStamp} Job details container found.");
+var seeMoreButtons = detail.FindElements(By.XPath("
+if (!seeMoreButtons.Any())
+{
+var message = $"❌ ID:{_executionOptions.TimeStamp} 'See more' button not found. Current URL: {_driver.Url}";
+_logger.LogWarning(message);
+throw new InvalidOperationException(message);
+}
+_logger.LogDebug($"✅ ID:{_executionOptions.TimeStamp} 'See more' button found.");
+var seeMoreButton = seeMoreButtons.FirstOrDefault(x => x != null);
+seeMoreButton.Click();
+await _capture.CaptureArtifacts(FolderPath, "ExtractDescriptionLinkedIn");
+var jobOffer = new Models.JobOfferDetail();
+return jobOffer;
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\JobSearch.cs ===
+
+﻿using Configuration;
+using Microsoft.Extensions.Logging;
+using Models;
+using OpenQA.Selenium;
+namespace Services
+{
+public class JobSearch : IJobSearch
+{
+private readonly IWebDriver _driver;
+private readonly AppConfig _config;
+private readonly ILogger<JobSearch> _logger;
+private readonly ExecutionOptions _executionOptions;
+private readonly ICaptureSnapshot _capture;
+private readonly ISecurityCheck _securityCheck;
+private const string FolderName = "Search";
+private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
+private readonly IDirectoryCheck _directoryCheck;
+public JobSearch(IWebDriverFactory driverFactory,
+AppConfig config,
+ILogger<JobSearch> logger,
+ICaptureSnapshot capture,
+ExecutionOptions executionOptions,
+ISecurityCheck securityCheck,
+IDirectoryCheck directoryCheck)
+{
+_driver = driverFactory.Create();
+_config = config;
+_logger = logger;
+_executionOptions = executionOptions;
+_logger.LogInformation($"📁 Created execution folder at: {_executionOptions.ExecutionFolder}");
+_capture = capture;
+_securityCheck = securityCheck;
+_directoryCheck = directoryCheck;
+_directoryCheck.EnsureDirectoryExists(FolderPath);
+}
+public async Task PerformSearchAsync()
+{
+_logger.LogInformation($"🔍 ID:{_executionOptions.TimeStamp} Navigating to LinkedIn Jobs page...");
+_driver.Navigate().GoToUrl("https://www.linkedin.com/jobs");
+await Task.Delay(3000);
+if (_securityCheck.IsSecurityChek())
+{
+await _securityCheck.HandleSecurityPage();
+throw new InvalidOperationException(
+"❌ LinkedIn requires manual security verification. Please complete verification in the browser before proceeding.");
+}
+var searchInput = _driver.FindElements(By.XPath("
+.FirstOrDefault();
+if (searchInput == null)
+{
+await _securityCheck.HandleUnexpectedPage();
+throw new InvalidOperationException(
+$"❌ Job search input field not found. Possibly unexpected page. Current URL: {_driver.Url}");
+}
+await _capture.CaptureArtifacts(FolderPath, "JobsPageLoaded");
+_logger.LogInformation($"🔎 ID:{_executionOptions.TimeStamp} Executing job search with keyword: '{_config.JobSearch.SearchText}'...");
+searchInput.SendKeys(_config.JobSearch.SearchText + Keys.Enter);
+await Task.Delay(3000);
+await _capture.CaptureArtifacts(FolderPath, "SearchExecuted");
+_logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Search executed for: '{_config.JobSearch.SearchText}'.");
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\JobSearchCoordinator.cs ===
+
+﻿using Configuration;
+using Microsoft.Extensions.Logging;
+using Models;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
+namespace Services
+{
+public class JobSearchCoordinator : IJobSearchCoordinator, IDisposable
+{
+private readonly IWebDriver _driver;
+private readonly ILogger<JobSearchCoordinator> _logger;
+private bool _disposed = false;
+private readonly ILoginService _loginService;
+private readonly ExecutionOptions _executionOptions;
+private readonly ICaptureSnapshot _capture;
+private List<string>? _offers;
+private readonly IJobOfferDetail _jobOfferDetail;
+private readonly IJobSearch _searchService;
+private readonly IPageProcessor _processService;
+private readonly IDirectoryCheck _directoryCheck;
+public JobSearchCoordinator(
+IWebDriverFactory driverFactory,
+ILogger<JobSearchCoordinator> logger,
+ILoginService loginService,
+ICaptureSnapshot capture,
+ExecutionOptions executionOptions,
+IJobOfferDetail jobOfferDetail,
+IJobSearch searchService,
+IPageProcessor processService,
+IDirectoryCheck directoryCheck)
+{
+_driver = driverFactory.Create();
+_logger = logger;
+_executionOptions = executionOptions;
+_directoryCheck = directoryCheck;
+_directoryCheck.EnsureDirectoryExists(_executionOptions.ExecutionFolder);
+_loginService = loginService;
+_capture = capture;
+_jobOfferDetail = jobOfferDetail;
+_searchService = searchService;
+_processService = processService;
+}
+public async Task SearchJobsAsync()
+{
+try
+{
+_logger.LogInformation($"🚀 ID:{_executionOptions.TimeStamp} Starting LinkedIn job search process...");
+await _loginService.LoginAsync();
+await _searchService.PerformSearchAsync();
+_offers = await _processService.ProcessAllPagesAsync();
+await _jobOfferDetail.ProcessOffersAsync(_offers);
+_logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} LinkedIn job search process completed successfully.");
+}
+catch (Exception ex)
+{
+var timestamp = await _capture.CaptureArtifacts(_executionOptions.ExecutionFolder, "An unexpected error");
+_logger.LogError(ex, $"❌ ID:{_executionOptions.TimeStamp} An unexpected error occurred during the LinkedIn job search process. Debug artifacts saved at:\nHTML: {timestamp}.html\nScreenshot: {timestamp}.png");
+throw new ApplicationException("Job search failed. See inner exception for details.", ex);
+}
+finally
+{
+_logger.LogInformation($" ID:{_executionOptions.TimeStamp}🧹 Cleaning up resources after job search process...");
+Dispose();
+}
+}
+public void Dispose()
+{
+if (_disposed) return;
+try
+{
+_logger.LogDebug($" ID:{_executionOptions.TimeStamp}🧹 Disposing browser driver and cleaning resources...");
+_driver?.Quit();
+_driver?.Dispose();
+_logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Browser driver and resources disposed successfully.");
+}
+catch (Exception ex)
+{
+_logger.LogError(ex, $"❌ ID:{_executionOptions.TimeStamp} Exception encountered while disposing browser resources.");
+}
+finally
+{
+_disposed = true;
+GC.SuppressFinalize(this);
+}
+}
+~JobSearchCoordinator()
+{
+Dispose();
+}
+}
+}
+
 === FILE: F:\ValkyrieHire\Services\JsonJobStorageService.cs ===
 
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 namespace Services
 {
@@ -678,274 +631,154 @@ GC.SuppressFinalize(this);
 }
 }
 
-=== FILE: F:\ValkyrieHire\Services\LinkedInLoginService.cs ===
+=== FILE: F:\ValkyrieHire\Services\LoginService.cs ===
 
 ﻿using Configuration;
 using Microsoft.Extensions.Logging;
+using Models;
 using OpenQA.Selenium;
 namespace Services
 {
-public class LinkedInLoginService : ILoginService
+public class LoginService : ILoginService
 {
 private readonly AppConfig _config;
 private readonly IWebDriver _driver;
-private readonly ILogger<LinkedInLoginService> _logger;
-private readonly ICaptureService _capture;
-private readonly bool _debugMode;
-public LinkedInLoginService(
+private readonly ILogger<LoginService> _logger;
+private readonly ICaptureSnapshot _capture;
+private readonly ExecutionOptions _executionOptions;
+private const string FolderName = "Login";
+private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
+private readonly ISecurityCheck _securityCheck;
+private readonly IDirectoryCheck _directoryCheck;
+public LoginService(
 AppConfig config,
 IWebDriverFactory driverFactory,
-ILogger<LinkedInLoginService> logger,
-ICaptureService capture)
+ILogger<LoginService> logger,
+ICaptureSnapshot capture,
+ExecutionOptions executionOptions,
+ISecurityCheck securityCheck,
+IDirectoryCheck directoryCheck)
 {
 _config = config;
 _driver = driverFactory.Create();
 _logger = logger;
 _capture = capture;
+_executionOptions = executionOptions;
+_securityCheck = securityCheck;
+_directoryCheck = directoryCheck;
+_directoryCheck.EnsureDirectoryExists(FolderPath);
 }
-public async Task LoginAsync(string folderName, string timestamp)
+public async Task LoginAsync()
 {
-_logger.LogInformation("🔐 Attempting to login to LinkedIn...");
+_logger.LogInformation($"🔐 ID:{_executionOptions.TimeStamp} Attempting to login to LinkedIn...");
 _driver.Navigate().GoToUrl("https://www.linkedin.com/login");
 await Task.Delay(3000);
 if (!IsOnLoginPage())
 {
-if (IsSecurityCheckPresent())
+if (_securityCheck.IsSecurityChek())
 {
+await _securityCheck.HandleSecurityPage();
 throw new InvalidOperationException(
 "LinkedIn requires manual security verification. Please login manually in browser first.");
 }
-if (_debugMode)
-{
-await HandleUnexpectedPage(folderName, timestamp);
-}
+await _securityCheck.HandleUnexpectedPage();
 throw new InvalidOperationException(
 $"Failed to load LinkedIn login page. Current URL: {_driver.Url}");
 }
 var emailInput = _driver.FindElement(By.Id("username"));
 emailInput.SendKeys(_config.LinkedInCredentials.Email);
 await Task.Delay(3000);
-await _capture.CaptureArtifacts(folderName, "Entered email");
+await _capture.CaptureArtifacts(FolderPath, "Entered email");
 var passwordInput = _driver.FindElement(By.Id("password"));
 passwordInput.SendKeys(_config.LinkedInCredentials.Password + Keys.Enter);
 await Task.Delay(3000);
-await _capture.CaptureArtifacts(folderName, "Entered password");
-_logger.LogInformation("✅ Successfully authenticated with LinkedIn");
+await _capture.CaptureArtifacts(FolderPath, "Entered password");
+_logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Successfully authenticated with LinkedIn");
 }
 private bool IsOnLoginPage()
 {
 var usernameElements = _driver.FindElements(By.Id("username"));
 var passwordElements = _driver.FindElements(By.Id("password"));
 var urlContainsLogin = _driver.Url.Contains("/login");
-return usernameElements.Count > 0 && passwordElements.Count > 0 && urlContainsLogin;
-}
-private bool IsSecurityCheckPresent()
-{
-var securityCheckHeader = _driver.FindElements(By.XPath("
-var startPuzzleButton = _driver.FindElements(By.XPath("
-return securityCheckHeader.Count > 0 || startPuzzleButton.Count > 0;
-}
-private async Task HandleUnexpectedPage(string folderName, string timestamp)
-{
-await _capture.CaptureArtifacts(folderName, "UnexpectedPageDetected");
-_logger.LogError($"Unexpected page layout detected.");
-Console.WriteLine("\n╔════════════════════════════════════════════╗");
-Console.WriteLine("║           UNEXPECTED PAGE DETECTED          ║");
-Console.WriteLine("╠════════════════════════════════════════════╣");
-Console.WriteLine($"║ Current URL: {_driver.Url,-30} ║");
-Console.WriteLine("║                                            ║");
-Console.WriteLine($"║ HTML saved to: {timestamp}.html ║");
-Console.WriteLine($"║ Screenshot saved to: {timestamp}.png ║");
-Console.WriteLine("╚════════════════════════════════════════════╝\n");
+return usernameElements.Any() && passwordElements.Any() && urlContainsLogin;
 }
 }
 }
 
-=== FILE: F:\ValkyrieHire\Services\LinkedInService.cs ===
+=== FILE: F:\ValkyrieHire\Services\PageProcessor.cs ===
 
-﻿using System.Diagnostics;
-using System.Reactive;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+using Models;
 using OpenQA.Selenium;
 namespace Services
 {
-public class LinkedInService : ILinkedInService, IDisposable
+public class PageProcessor : IPageProcessor
 {
-private const string ErrorMessage = "Job search operation failed";
 private readonly IWebDriver _driver;
 private readonly AppConfig _config;
-private readonly ILogger<LinkedInService> _logger;
-private bool _disposed = false;
-private readonly ILoginService _loginService;
-private readonly string _executionFolder;
-private readonly string _folderName;
-private readonly string _timestamp;
-private readonly ICaptureService _capture;
-public LinkedInService(
-IWebDriverFactory driverFactory,
+private readonly ILogger<PageProcessor> _logger;
+private readonly ExecutionOptions _executionOptions;
+private const string FolderName = "Page";
+private readonly ISecurityCheck _securityCheck;
+private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
+private readonly ICaptureSnapshot _capture;
+private readonly IDirectoryCheck _directoryCheck;
+public PageProcessor(IWebDriverFactory driverFactory,
 AppConfig config,
-ILogger<LinkedInService> logger,
-CommandArgs commandArgs,
-ILoginService loginService,
-ICaptureService capture)
+ILogger<PageProcessor> logger,
+ExecutionOptions executionOptions,
+ICaptureSnapshot capture,
+ISecurityCheck securityCheck,
+IDirectoryCheck directoryCheck)
 {
 _driver = driverFactory.Create();
 _config = config;
 _logger = logger;
-_timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-_folderName = $"Execution_{_timestamp}";
-_executionFolder = Path.Combine(Directory.GetCurrentDirectory(), _folderName);
-EnsureDirectoryExists(_executionFolder);
-_logger.LogInformation($"📁 Created execution folder at: {_executionFolder}");
-_loginService = loginService;
+_executionOptions = executionOptions;
 _capture = capture;
+_securityCheck = securityCheck;
+_directoryCheck = directoryCheck;
+_directoryCheck.EnsureDirectoryExists(FolderPath);
 }
-private void EnsureDirectoryExists(string path)
-{
-if (!Directory.Exists(path))
-{
-Directory.CreateDirectory(path);
-}
-}
-public async Task SearchJobsAsync()
-{
-try
-{
-_logger.LogInformation("🚀 Starting LinkedIn job search process");
-await _loginService.LoginAsync(_folderName, _timestamp);
-await PerformSearchAsync();
-await ProcessAllPagesAsync();
-_logger.LogInformation("✅ Job search completed successfully");
-}
-catch (Exception ex)
-{
-await _capture.CaptureArtifacts(_executionFolder, ErrorMessage);
-_logger.LogError(ex, $"❌ Critical error during job search. Debug info saved to:\nHTML: {_timestamp}.html\nScreenshot: {_timestamp}.png");
-throw new ApplicationException("Job search failed. See inner exception for details.", ex);
-}
-finally
-{
-Dispose();
-}
-}
-private async Task PerformSearchAsync()
-{
-_logger.LogInformation("🔍 Navigating to LinkedIn Jobs page...");
-_driver.Navigate().GoToUrl("https://www.linkedin.com/jobs");
-await Task.Delay(3000);
-await _capture.CaptureArtifacts(_executionFolder, "JobsPageLoaded");
-var search = By.XPath("
-var searchInput = _driver.FindElements(search).FirstOrDefault();
-if (searchInput == null)
-{
-var message = $"Job search input not found on page. Current URL: {_driver.Url}";
-throw new InvalidOperationException(message);
-}
-_logger.LogInformation($"🔎 Searching for: '{_config.JobSearch.SearchText}'");
-searchInput.SendKeys(_config.JobSearch.SearchText + Keys.Enter);
-await Task.Delay(3000);
-await _capture.CaptureArtifacts(_executionFolder, "SearchExecuted");
-_logger.LogInformation($"✅ Search completed for: '{_config.JobSearch.SearchText}'");
-}
-private async Task ProcessAllPagesAsync()
+public async Task<List<string>> ProcessAllPagesAsync()
 {
 int pageCount = 0;
+_logger.LogInformation($"📄 ID:{_executionOptions.TimeStamp} Beginning processing of up to {_config.JobSearch.MaxPages} result pages...");
 var offers = new List<string>();
-_logger.LogInformation($"📄 Processing up to {_config.JobSearch.MaxPages} pages of results");
 do
 {
+await _capture.CaptureArtifacts(FolderPath, "Page");
 ScrollMove();
 await Task.Delay(3000);
 pageCount++;
-_logger.LogInformation($"📖 Processing page {pageCount}...");
+_logger.LogInformation($"📖 ID:{_executionOptions.TimeStamp} Processing results page {pageCount}...");
 var pageOffers = await GetCurrentPageOffersAsync();
+if (pageOffers == null) continue;
 offers.AddRange(pageOffers);
-_logger.LogInformation($"✔️ Page {pageCount} processed. Found {pageOffers?.Count() ?? 0} listings");
+_logger.LogInformation($"✔️ ID:{_executionOptions.TimeStamp} Results page {pageCount} processed. Found {pageOffers.Count()} listings.");
 if (pageCount >= _config.JobSearch.MaxPages)
 {
-_logger.LogInformation($"ℹ️ Reached maximum page limit of {_config.JobSearch.MaxPages}");
+_logger.LogInformation($"ℹ️ ID:{_executionOptions.TimeStamp} Reached maximum configured page limit of {_config.JobSearch.MaxPages}.");
 break;
 }
 } while (await NavigateToNextPageAsync());
-var jsonPath = Path.Combine(_executionFolder, $"Offers_{DateTime.Now:yyyyMMdd_HHmmss}.json");
-var jsonContent = JsonConvert.SerializeObject(offers, Formatting.Indented);
-await File.WriteAllTextAsync(jsonPath, jsonContent);
-_logger.LogInformation($"💾 Offers data saved to {jsonPath}");
-_logger.LogInformation($"🎉 Completed processing. Total {offers.Count} opportunities found across {pageCount} pages");
-}
-public void ScrollMove()
-{
-var xpathSearchResults = "
-var scrollable = _driver.FindElements(By.XPath(xpathSearchResults)).FirstOrDefault();
-if (scrollable == null)
-{
-_logger.LogWarning("⚠️ Scroll container not found - skipping scroll operation");
-return;
-}
-var jsExecutor = (IJavaScriptExecutor)_driver;
-long scrollHeight = (long)jsExecutor.ExecuteScript("return arguments[0].scrollHeight", scrollable);
-long currentPosition = 0;
-_logger.LogDebug($"🖱️ Beginning scroll through results (height: {scrollHeight}px)");
-while (currentPosition < scrollHeight)
-{
-currentPosition += 10;
-jsExecutor.ExecuteScript("arguments[0].scrollTop = arguments[1];", scrollable, currentPosition);
-Thread.Sleep(50);
-}
-_logger.LogDebug("🖱️ Finished scrolling to bottom of results");
-}
-public async Task<IEnumerable<string>?> GetCurrentPageOffersAsync()
-{
-await Task.Delay(2000);
-var jobContainer = _driver.FindElements(By.XPath("
-.FirstOrDefault();
-if (jobContainer == null)
-{
-_logger.LogWarning("⚠️ Job listings container not found on page");
-return null;
-}
-var offers = new List<string>();
-var jobNodes = jobContainer.FindElements(By.XPath(".
-if (jobNodes == null || !jobNodes.Any())
-{
-_logger.LogWarning("⚠️ No job listings found on current page");
-return null;
-}
-_logger.LogDebug($"🔍 Found {jobNodes.Count} job listings on page");
-foreach (var jobNode in jobNodes)
-{
-try
-{
-var jobUrl = ExtractJobUrl(jobNode);
-if (!string.IsNullOrEmpty(jobUrl))
-{
-var url = ExtractJobIdUrl("https://www.linkedin.com", jobUrl);
-offers.Add(url);
-}
-}
-catch (Exception ex)
-{
-_logger.LogWarning(ex, $"⚠️ Failed to process job listing {jobNode.GetAttribute("id")}");
-}
-}
 return offers;
 }
-public string? ExtractJobIdUrl(string urlLinkedin, string url)
+private string? ExtractJobIdUrl(string urlLinkedin, string url)
 {
 var uri = new Uri(url);
-string[] segments = uri.Segments;
+var segments = uri.Segments;
 if (segments.Length >= 4 && segments[2].Equals("view/", StringComparison.OrdinalIgnoreCase))
 {
-string jobId = segments[3].TrimEnd('/');
+var jobId = segments[3].TrimEnd('/');
 return $"{urlLinkedin}/jobs/view/{jobId}/";
 }
 var queryParams = System.Web.HttpUtility.ParseQueryString(uri.Query);
 if (queryParams["currentJobId"] != null)
 {
-string jobId = queryParams["currentJobId"];
+var jobId = queryParams["currentJobId"];
 return $"{urlLinkedin}/jobs/view/{jobId}/";
 }
 return null;
@@ -958,22 +791,43 @@ var card = jobNode.FindElements(By.XPath(".
 .FirstOrDefault();
 if (card == null)
 {
-throw new Exception($"Job card element not found in listing {jobNode.GetAttribute("id")}");
+throw new Exception($"❌ ID:{_executionOptions.TimeStamp} Job card element not found in listing {jobNode.GetAttribute("id")}");
 }
 var jobAnchor = card.FindElements(By.CssSelector("a.job-card-job-posting-card-wrapper__card-link"))
 .FirstOrDefault();
 if (jobAnchor == null)
 {
-throw new Exception($"Job link element not found in listing {jobNode.GetAttribute("id")}");
+throw new Exception($"❌ ID:{_executionOptions.TimeStamp} Job link element not found in listing {jobNode.GetAttribute("id")}");
 }
 var jobUrl = jobAnchor.GetAttribute("href");
 if (string.IsNullOrEmpty(jobUrl))
 {
-throw new Exception($"Empty URL in listing {jobNode.GetAttribute("id")}");
+throw new Exception($"❌ ID:{_executionOptions.TimeStamp} Empty URL in listing {jobNode.GetAttribute("id")}");
 }
 return jobUrl;
 }
-public async Task<bool> NavigateToNextPageAsync()
+private void ScrollMove()
+{
+var scrollable = _driver.FindElements(By.XPath("
+.FirstOrDefault();
+if (scrollable == null)
+{
+_logger.LogWarning("⚠️ ID:{_executionOptions.TimeStamp} Scrollable results container not found; skipping scroll operation.");
+return;
+}
+var jsExecutor = (IJavaScriptExecutor)_driver;
+long scrollHeight = (long)jsExecutor.ExecuteScript("return arguments[0].scrollHeight", scrollable);
+long currentPosition = 0;
+_logger.LogDebug($"🖱️ ID:{_executionOptions.TimeStamp} Scrolling through job results container (total height: {scrollHeight}px)...");
+while (currentPosition < scrollHeight)
+{
+currentPosition += 10;
+jsExecutor.ExecuteScript("arguments[0].scrollTop = arguments[1];", scrollable, currentPosition);
+Thread.Sleep(50);
+}
+_logger.LogDebug($"🖱️ ID:{_executionOptions.TimeStamp} Scrolling completed.");
+}
+private async Task<bool> NavigateToNextPageAsync()
 {
 try
 {
@@ -981,43 +835,172 @@ var nextButton = _driver.FindElements(By.XPath("
 .FirstOrDefault(b => b.Enabled);
 if (nextButton == null)
 {
-_logger.LogInformation("⏹️ No more pages available - reached end of results");
+_logger.LogInformation($"⏹️ ID:{_executionOptions.TimeStamp} No additional results pages detected; pagination completed.");
 return false;
 }
-_logger.LogDebug("⏭️ Attempting to navigate to next page");
+_logger.LogDebug($"⏭️ ID:{_executionOptions.TimeStamp} Clicking to navigate to next page...");
 nextButton.Click();
 await Task.Delay(3000);
+if (_securityCheck.IsSecurityChek())
+{
+await _securityCheck.HandleSecurityPage();
+throw new InvalidOperationException(
+$"❌ ID:{_executionOptions.TimeStamp} LinkedIn requires manual security verification. Please complete verification in the browser before proceeding.");
+}
+var jobContainer = _driver.FindElements(By.XPath("
+if (jobContainer == null)
+{
+await _securityCheck.HandleUnexpectedPage();
+throw new InvalidOperationException(
+$"❌ ID:{_executionOptions.TimeStamp} Failed to load next page of job listings. Current URL: {_driver.Url}");
+}
+_logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Successfully navigated to the next page of results.");
 return true;
 }
 catch (Exception ex)
 {
-_logger.LogWarning(ex, "⚠️ Error while attempting to navigate to next page");
+_logger.LogWarning(ex, $"⚠️ ID:{_executionOptions.TimeStamp} Exception encountered while navigating to the next page.");
 return false;
 }
 }
-public void Dispose()
+private async Task<IEnumerable<string>?> GetCurrentPageOffersAsync()
 {
-if (_disposed) return;
+await Task.Delay(2000);
+var jobContainer = _driver.FindElements(By.XPath("
+.FirstOrDefault();
+if (jobContainer == null)
+{
+_logger.LogWarning($"⚠️ ID:{_executionOptions.TimeStamp} No job listings container found on the current page.");
+return null;
+}
+var jobNodes = jobContainer.FindElements(By.XPath(".
+if (jobNodes == null || !jobNodes.Any())
+{
+_logger.LogWarning($"⚠️ ID:{_executionOptions.TimeStamp} No job listings detected on the current page.");
+return null;
+}
+_logger.LogDebug($"🔍 ID:{_executionOptions.TimeStamp} Detected {jobNodes.Count} job listings on the current page.");
+var offers = new List<string>();
+foreach (var jobNode in jobNodes)
+{
 try
 {
-_logger.LogDebug("🧹 Cleaning up browser resources...");
-_driver?.Quit();
-_driver?.Dispose();
-_logger.LogInformation("✅ Resources cleaned up successfully");
+var jobUrl = ExtractJobUrl(jobNode);
+if (!string.IsNullOrEmpty(jobUrl))
+{
+var url = ExtractJobIdUrl("https://www.linkedin.com", jobUrl);
+if (!string.IsNullOrWhiteSpace(url))
+{
+offers.Add(url);
+}
+}
 }
 catch (Exception ex)
 {
-_logger.LogError(ex, "❌ Error occurred during cleanup");
+_logger.LogWarning(ex, $"⚠️ ID:{_executionOptions.TimeStamp} Failed to extract job URL for listing with ID: {jobNode.GetAttribute("id")}");
 }
-finally
+}
+return offers;
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\SecurityCheck.cs ===
+
+﻿using Microsoft.Extensions.Logging;
+using Models;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
+namespace Services
 {
-_disposed = true;
-GC.SuppressFinalize(this);
-}
-}
-~LinkedInService()
+public class SecurityCheck : ISecurityCheck
 {
-Dispose();
+private readonly ILogger<JobOfferDetail> _logger;
+private readonly IWebDriver _driver;
+private readonly WebDriverWait _wait;
+private readonly List<Models.JobOfferDetail> _offersDetail;
+private readonly ICaptureSnapshot _capture;
+private readonly ExecutionOptions _executionOptions;
+private const string FolderName = "SecurityCheck";
+private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
+private readonly IDirectoryCheck _directoryCheck;
+public SecurityCheck(IWebDriverFactory driverFactory,
+ILogger<JobOfferDetail> logger,
+ICaptureSnapshot capture,
+ExecutionOptions executionOptions,
+IDirectoryCheck directoryCheck)
+{
+_offersDetail = new List<Models.JobOfferDetail>();
+_driver = driverFactory.Create();
+_logger = logger;
+_wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+_capture = capture;
+_executionOptions = executionOptions;
+_directoryCheck = directoryCheck;
+_directoryCheck.EnsureDirectoryExists(FolderPath);
+}
+public bool IsSecurityChek()
+{
+var title = _driver.Title.Contains("Security Verification");
+var captcha = _driver.FindElements(By.Id("captcha-internal")).Any();
+var text = _driver.FindElements(By.XPath("
+return title || captcha || text;
+}
+public async Task TryStartPuzzle()
+{
+try
+{
+_logger.LogDebug($"🔎 ID:{_executionOptions.TimeStamp} Searching for 'Start Puzzle' button...");
+await _capture.CaptureArtifacts(_executionOptions.ExecutionFolder, "Error in Detailed Job Offer");
+var startPuzzleButton = _wait.Until(driver =>
+{
+var xpathText = "
+var button = driver.FindElements(By.XPath(xpathText))
+.FirstOrDefault();
+return (button != null && button.Displayed && button.Enabled) ? button : null;
+});
+await _capture.CaptureArtifacts(FolderPath, "Error in Detailed Job Offer");
+if (startPuzzleButton == null)
+{
+_logger.LogWarning($"⚠️ ID:{_executionOptions.TimeStamp} 'Start Puzzle' button not found on security check page.");
+}
+if (!startPuzzleButton.Displayed || !startPuzzleButton.Enabled)
+{
+_logger.LogWarning($"⚠️ ID:{_executionOptions.TimeStamp} 'Start Puzzle' button is not interactable.");
+}
+_logger.LogInformation($"🧩 ID:{_executionOptions.TimeStamp} Clicking 'Start Puzzle' button...");
+startPuzzleButton.Click();
+}
+catch (Exception ex)
+{
+_logger.LogError(ex, $"❌ ID:{_executionOptions.TimeStamp} Failed to click 'Start Puzzle' button.");
+}
+}
+public async Task HandleSecurityPage()
+{
+var timestamp = await _capture.CaptureArtifacts(FolderPath, "SecurityPageDetected");
+_logger.LogError($" ID:{_executionOptions.TimeStamp} Unexpected page layout detected.");
+Console.WriteLine("\n╔════════════════════════════════════════════╗");
+Console.WriteLine("║           SECURITY PAGE DETECTED          ║");
+Console.WriteLine("╠════════════════════════════════════════════╣");
+Console.WriteLine($"║ Current URL: {_driver.Url,-30} ║");
+Console.WriteLine("║                                            ║");
+Console.WriteLine($"║ HTML saved to: {timestamp}.html ║");
+Console.WriteLine($"║ Screenshot saved to: {timestamp}.png ║");
+Console.WriteLine("╚════════════════════════════════════════════╝\n");
+}
+public async Task HandleUnexpectedPage()
+{
+var timestamp = await _capture.CaptureArtifacts(FolderPath, "UnexpectedPageDetected");
+_logger.LogError($" ID:{_executionOptions.TimeStamp} Unexpected page layout detected.");
+Console.WriteLine("\n╔════════════════════════════════════════════╗");
+Console.WriteLine("║           UNEXPECTED PAGE DETECTED          ║");
+Console.WriteLine("╠════════════════════════════════════════════╣");
+Console.WriteLine($"║ Current URL: {_driver.Url,-30} ║");
+Console.WriteLine("║                                            ║");
+Console.WriteLine($"║ HTML saved to: {timestamp}.html ║");
+Console.WriteLine($"║ Screenshot saved to: {timestamp}.png ║");
+Console.WriteLine("╚════════════════════════════════════════════╝\n");
 }
 }
 }
@@ -1035,173 +1018,12 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Services")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7d8c00105e30b547e55dce4ce1666b3f27888b68")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+34aec973365813b2c095606106da7523a588daab")]
 [assembly: System.Reflection.AssemblyProductAttribute("Services")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Services")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
 
 === FILE: F:\ValkyrieHire\Services\obj\Debug\net8.0\Services.GlobalUsings.g.cs ===
-
-global using global::System;
-global using global::System.Collections.Generic;
-global using global::System.IO;
-global using global::System.Linq;
-global using global::System.Net.Http;
-global using global::System.Threading;
-global using global::System.Threading.Tasks;
-
-=== FILE: F:\ValkyrieHire\Tests\LinkedInServiceTests.cs ===
-
-﻿using System.Threading.Tasks;
-namespace Tests
-{
-public class LinkedInServiceTests
-{
-}
-}
-
-=== FILE: F:\ValkyrieHire\Tests\obj\Debug\.NETFramework,Version=v4.7.2.AssemblyAttributes.cs ===
-
-using System;
-using System.Reflection;
-[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETFramework,Version=v4.7.2", FrameworkDisplayName = ".NET Framework 4.7.2")]
-
-=== FILE: F:\ValkyrieHire\Tests\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ===
-
-using System;
-using System.Reflection;
-[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETCoreApp,Version=v8.0", FrameworkDisplayName = ".NET 8.0")]
-
-=== FILE: F:\ValkyrieHire\Tests\obj\Debug\net8.0\Tests.AssemblyInfo.cs ===
-
-using System;
-using System.Reflection;
-[assembly: System.Reflection.AssemblyCompanyAttribute("Tests")]
-[assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
-[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+758245914e100111cf66eed2b6b5df79855c6e00")]
-[assembly: System.Reflection.AssemblyProductAttribute("Tests")]
-[assembly: System.Reflection.AssemblyTitleAttribute("Tests")]
-[assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
-
-=== FILE: F:\ValkyrieHire\Tests\obj\Debug\net8.0\Tests.GlobalUsings.g.cs ===
-
-global using global::Microsoft.VisualStudio.TestTools.UnitTesting;
-global using global::System;
-global using global::System.Collections.Generic;
-global using global::System.IO;
-global using global::System.Linq;
-global using global::System.Net.Http;
-global using global::System.Threading;
-global using global::System.Threading.Tasks;
-
-=== FILE: F:\ValkyrieHire\Tests\Properties\AssemblyInfo.cs ===
-
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-[assembly: AssemblyTitle("Tests")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Tests")]
-[assembly: AssemblyCopyright("Copyright ©  2025")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
-[assembly: ComVisible(false)]
-[assembly: Guid("86725d53-2ac9-4433-ab16-2149d8d18633")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
-
-=== FILE: F:\ValkyrieHire\ValkyrieConsole\Program.cs ===
-
-﻿using Commands;
-using Configuration;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Serilog;
-using Services;
-public class Program
-{
-private static CommandArgs? commandArgs;
-public static async Task Main(string[] args)
-{
-commandArgs = new CommandArgs(args);
-Log.Logger = new LoggerConfiguration()
-.MinimumLevel.Debug()
-.WriteTo.Console()
-.WriteTo.File(
-path: "Logs/valkyriehire-.log",
-rollingInterval: RollingInterval.Day,
-fileSizeLimitBytes: 5_000_000,
-retainedFileCountLimit: 3,
-rollOnFileSizeLimit: true
-)
-.CreateLogger();
-try
-{
-Log.Information("ValkyrieHire application starting");
-var host = CreateHostBuilder(args).Build();
-var commandFactory = host.Services.GetRequiredService<CommandFactory>();
-var command = commandFactory.CreateCommand(args);
-await command.ExecuteAsync();
-Log.Information("ValkyrieHire application completed successfully");
-}
-catch (Exception ex)
-{
-Log.Fatal(ex, "Fatal error occurred");
-Console.WriteLine("Use --help for usage information");
-}
-finally
-{
-Log.CloseAndFlush();
-}
-}
-private static IHostBuilder CreateHostBuilder(string[] args) =>
-Host.CreateDefaultBuilder(args)
-.UseSerilog()
-.ConfigureAppConfiguration((hostingContext, config) =>
-{
-config.SetBasePath(Directory.GetCurrentDirectory());
-config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-config.AddEnvironmentVariables();
-})
-.ConfigureServices((hostingContext, services) =>
-{
-var config = hostingContext.Configuration.Get<AppConfig>();
-services.AddSingleton(config);
-services.AddSingleton(commandArgs);
-services.AddTransient<HelpCommand>();
-services.AddTransient<SearchCommand>();
-services.AddSingleton<CommandFactory>();
-services.AddTransient<ILinkedInService, LinkedInService>();
-services.AddTransient <ILoginService, LinkedInLoginService>();
-services.AddTransient<ICaptureService, CaptureService>();
-services.AddSingleton<IWebDriverFactory, ChromeDriverFactory>();
-services.AddSingleton<CommandFactory>();
-});
-}
-
-=== FILE: F:\ValkyrieHire\ValkyrieConsole\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ===
-
-using System;
-using System.Reflection;
-[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETCoreApp,Version=v8.0", FrameworkDisplayName = ".NET 8.0")]
-
-=== FILE: F:\ValkyrieHire\ValkyrieConsole\obj\Debug\net8.0\ValkyrieConsole.AssemblyInfo.cs ===
-
-using System;
-using System.Reflection;
-[assembly: System.Reflection.AssemblyCompanyAttribute("ValkyrieConsole")]
-[assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
-[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7d8c00105e30b547e55dce4ce1666b3f27888b68")]
-[assembly: System.Reflection.AssemblyProductAttribute("ValkyrieConsole")]
-[assembly: System.Reflection.AssemblyTitleAttribute("ValkyrieConsole")]
-[assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
-
-=== FILE: F:\ValkyrieHire\ValkyrieConsole\obj\Debug\net8.0\ValkyrieConsole.GlobalUsings.g.cs ===
 
 global using global::System;
 global using global::System.Collections.Generic;

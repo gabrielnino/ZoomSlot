@@ -72,7 +72,7 @@ public class Program
                 services.AddTransient<SearchCommand>();
                 services.AddSingleton<CommandFactory>();
                 services.AddTransient<IJobSearchCoordinator, JobSearchCoordinator>();
-                services.AddTransient<IJobOfferDetail, Services.JobOfferDetail>();
+                services.AddTransient<IDetailProcessing, Services.DetailProcessing>();
                 services.AddTransient<ILoginService, LoginService>();
                 services.AddTransient<ISecurityCheck, SecurityCheck>();
                 services.AddTransient<ICaptureSnapshot, CaptureSnapshot>();
