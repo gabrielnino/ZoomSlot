@@ -38,7 +38,7 @@ namespace Services
 
         public async Task PerformSearchAsync()
         {
-            _logger.LogInformation($"🔍ID:{_executionOptions.TimeStamp} Navigating to LinkedIn Jobs page...");
+            _logger.LogInformation($"🔍 ID:{_executionOptions.TimeStamp} Navigating to LinkedIn Jobs page...");
             _driver.Navigate().GoToUrl("https://www.linkedin.com/jobs");
             await Task.Delay(3000);
 
@@ -62,12 +62,12 @@ namespace Services
 
             await _capture.CaptureArtifacts(FolderPath, "JobsPageLoaded");
 
-            _logger.LogInformation($"🔎ID:{_executionOptions.TimeStamp} Executing job search with keyword: '{_config.JobSearch.SearchText}'...");
+            _logger.LogInformation($"🔎 ID:{_executionOptions.TimeStamp} Executing job search with keyword: '{_config.JobSearch.SearchText}'...");
             searchInput.SendKeys(_config.JobSearch.SearchText + Keys.Enter);
             await Task.Delay(3000);
 
             await _capture.CaptureArtifacts(FolderPath, "SearchExecuted");
-            _logger.LogInformation($"✅ID:{_executionOptions.TimeStamp} Search executed for: '{_config.JobSearch.SearchText}'.");
+            _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Search executed for: '{_config.JobSearch.SearchText}'.");
         }
     }
 }

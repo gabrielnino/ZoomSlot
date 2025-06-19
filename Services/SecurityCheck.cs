@@ -43,7 +43,7 @@ namespace Services
         {
             try
             {
-                _logger.LogDebug($"🔎ID:{_executionOptions.TimeStamp} Searching for 'Start Puzzle' button...");
+                _logger.LogDebug($"🔎 ID:{_executionOptions.TimeStamp} Searching for 'Start Puzzle' button...");
                 await _capture.CaptureArtifacts(_executionOptions.ExecutionFolder, "Error in Detailed Job Offer");
                 var startPuzzleButton = _wait.Until(driver =>
                 {
@@ -57,27 +57,27 @@ namespace Services
 
                 if (startPuzzleButton == null)
                 {
-                    _logger.LogWarning($"⚠️ID:{_executionOptions.TimeStamp} 'Start Puzzle' button not found on security check page.");
+                    _logger.LogWarning($"⚠️ ID:{_executionOptions.TimeStamp} 'Start Puzzle' button not found on security check page.");
                 }
 
                 if (!startPuzzleButton.Displayed || !startPuzzleButton.Enabled)
                 {
-                    _logger.LogWarning($"⚠️ID:{_executionOptions.TimeStamp} 'Start Puzzle' button is not interactable.");
+                    _logger.LogWarning($"⚠️ ID:{_executionOptions.TimeStamp} 'Start Puzzle' button is not interactable.");
                 }
 
-                _logger.LogInformation($"🧩ID:{_executionOptions.TimeStamp} Clicking 'Start Puzzle' button...");
+                _logger.LogInformation($"🧩 ID:{_executionOptions.TimeStamp} Clicking 'Start Puzzle' button...");
                 startPuzzleButton.Click();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"❌ID:{_executionOptions.TimeStamp} Failed to click 'Start Puzzle' button.");
+                _logger.LogError(ex, $"❌ ID:{_executionOptions.TimeStamp} Failed to click 'Start Puzzle' button.");
             }
         }
 
         public async Task HandleSecurityPage()
         {
             var timestamp = await _capture.CaptureArtifacts(FolderPath, "SecurityPageDetected");
-            _logger.LogError($"ID:{_executionOptions.TimeStamp} Unexpected page layout detected.");
+            _logger.LogError($" ID:{_executionOptions.TimeStamp} Unexpected page layout detected.");
             Console.WriteLine("\n╔════════════════════════════════════════════╗");
             Console.WriteLine("║           SECURITY PAGE DETECTED          ║");
             Console.WriteLine("╠════════════════════════════════════════════╣");
@@ -91,7 +91,7 @@ namespace Services
         public async Task HandleUnexpectedPage()
         {
             var timestamp = await _capture.CaptureArtifacts(FolderPath, "UnexpectedPageDetected");
-            _logger.LogError($"ID:{_executionOptions.TimeStamp} Unexpected page layout detected.");
+            _logger.LogError($" ID:{_executionOptions.TimeStamp} Unexpected page layout detected.");
             Console.WriteLine("\n╔════════════════════════════════════════════╗");
             Console.WriteLine("║           UNEXPECTED PAGE DETECTED          ║");
             Console.WriteLine("╠════════════════════════════════════════════╣");

@@ -37,7 +37,7 @@ namespace Services
 
         public async Task LoginAsync()
         {
-            _logger.LogInformation($"🔐ID:{_executionOptions.TimeStamp} Attempting to login to LinkedIn...");
+            _logger.LogInformation($"🔐 ID:{_executionOptions.TimeStamp} Attempting to login to LinkedIn...");
             _driver.Navigate().GoToUrl("https://www.linkedin.com/login");
             await Task.Delay(3000);
 
@@ -62,7 +62,7 @@ namespace Services
             passwordInput.SendKeys(_config.LinkedInCredentials.Password + Keys.Enter);
             await Task.Delay(3000);
             await _capture.CaptureArtifacts(FolderPath, "Entered password");
-            _logger.LogInformation($"✅ID:{_executionOptions.TimeStamp} Successfully authenticated with LinkedIn");
+            _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Successfully authenticated with LinkedIn");
         }
 
         private bool IsOnLoginPage()

@@ -38,13 +38,13 @@ namespace Services
 
         public async Task<List<Models.JobOfferDetail>> ProcessOffersAsync(IEnumerable<string> offers)
         {
-            _logger.LogInformation($"📝ID:{_executionOptions.TimeStamp} Processing detailed job offer data...");
+            _logger.LogInformation($"📝 ID:{_executionOptions.TimeStamp} Processing detailed job offer data...");
 
             foreach (var offer in offers)
             {
                 try
                 {
-                    _logger.LogDebug($"🌐ID:{_executionOptions.TimeStamp} Navigating to job offer URL: {offer}");
+                    _logger.LogDebug($"🌐 ID:{_executionOptions.TimeStamp} Navigating to job offer URL: {offer}");
                     _driver.Navigate().GoToUrl(offer);
                     _wait.Until(driver =>
                     {
@@ -63,12 +63,12 @@ namespace Services
                     if (offersDetail != null)
                     {
                         _offersDetail.Add(offersDetail);
-                        _logger.LogInformation($"✅ID:{_executionOptions.TimeStamp} Detailed job offer processed successfully.");
+                        _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Detailed job offer processed successfully.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"❌ID:{_executionOptions.TimeStamp} Failed to process detailed job offer at URL: {offer}");
+                    _logger.LogError(ex, $"❌ ID:{_executionOptions.TimeStamp} Failed to process detailed job offer at URL: {offer}");
                     await _capture.CaptureArtifacts(FolderPath, "Error in Detailed Job Offer");
                     // Continue with next offer instead of stopping
                 }
@@ -77,7 +77,7 @@ namespace Services
         }
         public async Task<Models.JobOfferDetail> ExtractDescriptionLinkedIn()
         {
-            _logger.LogDebug($"🔍ID:{_executionOptions.TimeStamp} Extracting job details from current page...");
+            _logger.LogDebug($"🔍 ID:{_executionOptions.TimeStamp} Extracting job details from current page...");
 
             await _capture.CaptureArtifacts(FolderPath, "Extract description");
 
@@ -90,17 +90,17 @@ namespace Services
             }
 
             var detail = details.FirstOrDefault(x => x != null);
-            _logger.LogDebug($"✅ID:{_executionOptions.TimeStamp} Job details container found.");
+            _logger.LogDebug($"✅ ID:{_executionOptions.TimeStamp} Job details container found.");
 
             var seeMoreButtons = detail.FindElements(By.XPath("//button[contains(@class, 'jobs-description__footer-button') and contains(., 'See more')]"));
             if (!seeMoreButtons.Any())
             {
-                var message = $"❌ID:{_executionOptions.TimeStamp} 'See more' button not found. Current URL: {_driver.Url}";
+                var message = $"❌ ID:{_executionOptions.TimeStamp} 'See more' button not found. Current URL: {_driver.Url}";
                 _logger.LogWarning(message);
                 throw new InvalidOperationException(message);
             }
 
-            _logger.LogDebug($"✅ID:{_executionOptions.TimeStamp} 'See more' button found.");
+            _logger.LogDebug($"✅ ID:{_executionOptions.TimeStamp} 'See more' button found.");
 
             await _capture.CaptureArtifacts(FolderPath, "ExtractDescriptionLinkedIn");
 

@@ -50,22 +50,22 @@ namespace Services
         {
             try
             {
-                _logger.LogInformation($"🚀ID:{_executionOptions.TimeStamp} Starting LinkedIn job search process...");
+                _logger.LogInformation($"🚀 ID:{_executionOptions.TimeStamp} Starting LinkedIn job search process...");
                 await _loginService.LoginAsync();
                 await _searchService.PerformSearchAsync();
                 _offers = await _processService.ProcessAllPagesAsync();
                 await _jobOfferDetail.ProcessOffersAsync(_offers);
-                _logger.LogInformation($"✅ID:{_executionOptions.TimeStamp} LinkedIn job search process completed successfully.");
+                _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} LinkedIn job search process completed successfully.");
             }
             catch (Exception ex)
             {
                 var timestamp = await _capture.CaptureArtifacts(_executionOptions.ExecutionFolder, "An unexpected error");
-                _logger.LogError(ex, $"❌ID:{_executionOptions.TimeStamp} An unexpected error occurred during the LinkedIn job search process. Debug artifacts saved at:\nHTML: {timestamp}.html\nScreenshot: {timestamp}.png");
+                _logger.LogError(ex, $"❌ ID:{_executionOptions.TimeStamp} An unexpected error occurred during the LinkedIn job search process. Debug artifacts saved at:\nHTML: {timestamp}.html\nScreenshot: {timestamp}.png");
                 throw new ApplicationException("Job search failed. See inner exception for details.", ex);
             }
             finally
             {
-                _logger.LogInformation($"ID:{_executionOptions.TimeStamp}🧹 Cleaning up resources after job search process...");
+                _logger.LogInformation($" ID:{_executionOptions.TimeStamp}🧹 Cleaning up resources after job search process...");
                 Dispose();
             }
         }
@@ -76,14 +76,14 @@ namespace Services
 
             try
             {
-                _logger.LogDebug($"ID:{_executionOptions.TimeStamp}🧹 Disposing browser driver and cleaning resources...");
+                _logger.LogDebug($" ID:{_executionOptions.TimeStamp}🧹 Disposing browser driver and cleaning resources...");
                 _driver?.Quit();
                 _driver?.Dispose();
-                _logger.LogInformation($"✅ID:{_executionOptions.TimeStamp} Browser driver and resources disposed successfully.");
+                _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Browser driver and resources disposed successfully.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"❌ID:{_executionOptions.TimeStamp} Exception encountered while disposing browser resources.");
+                _logger.LogError(ex, $"❌ ID:{_executionOptions.TimeStamp} Exception encountered while disposing browser resources.");
             }
             finally
             {

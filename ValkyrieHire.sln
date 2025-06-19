@@ -23,9 +23,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "05_DependencyInjection", "0
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ValkyrieConsole", "ValkyrieConsole\ValkyrieConsole.csproj", "{65D86DC3-F21A-4344-8981-2E9E079F6786}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "06_ErrorHandling", "06_ErrorHandling", "{1AD87D2B-0AA9-42EF-966F-CA39FCAE050C}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "08_Testing", "08_Testing", "{7124FB41-22EB-4945-AB8E-36E799825948}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "06_Testing", "06_Testing", "{7124FB41-22EB-4945-AB8E-36E799825948}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{86725D53-2AC9-4433-AB16-2149D8D18633}"
 EndProject

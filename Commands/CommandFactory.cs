@@ -2,14 +2,9 @@
 
 namespace Commands
 {
-    public class CommandFactory
+    public class CommandFactory(IServiceProvider serviceProvider)
     {
-        private readonly IServiceProvider _serviceProvider;
-
-        public CommandFactory(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-        }
+        private readonly IServiceProvider _serviceProvider = serviceProvider;
 
         public ICommand CreateCommand(string[] args)
         {
