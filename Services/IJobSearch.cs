@@ -2,6 +2,6 @@
 {
     public interface IJobSearch
     {
-        Task PerformSearchAsync();
+        Task<string> PerformSearchAsync();
     }
 }

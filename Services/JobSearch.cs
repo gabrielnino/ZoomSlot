@@ -36,7 +36,7 @@ namespace Services
             _directoryCheck.EnsureDirectoryExists(FolderPath);
         }
 
-        public async Task PerformSearchAsync()
+        public async Task<string> PerformSearchAsync()
         {
             _logger.LogInformation($"🔍 ID:{_executionOptions.TimeStamp} Navigating to LinkedIn Jobs page...");
             _driver.Navigate().GoToUrl("https://www.linkedin.com/jobs");
@@ -68,6 +68,7 @@ namespace Services
 
             await _capture.CaptureArtifacts(FolderPath, "SearchExecuted");
             _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Search executed for: '{_config.JobSearch.SearchText}'.");
+            return _config.JobSearch.SearchText;
         }
     }
 }

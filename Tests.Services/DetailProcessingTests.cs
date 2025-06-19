@@ -91,7 +91,7 @@
                 var offers = new List<string> { url };
 
                 // Act
-                var result = await detailProcessing.ProcessOffersAsync(offers);
+                var result = await detailProcessing.ProcessOffersAsync(offers, "search text");
 
                 // Assert
                 Assert.IsNotNull(result, "Result should not be null");
@@ -158,7 +158,7 @@
                 var offers = new List<string> { "https://www.linkedin.com/jobs/view/123456" };
 
                 // Act
-                var result = await detailProcessing.ProcessOffersAsync(offers);
+                var result = await detailProcessing.ProcessOffersAsync(offers, "Search text");
 
                 // Assert
                 Assert.IsNotNull(result, "Result should not be null");

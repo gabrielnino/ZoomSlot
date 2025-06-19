@@ -9,5 +9,7 @@
         public required string SalaryOrBudgetOffered { get; set; }
         public required string Link { get; set; }
         public required string Applicants { get; set; }
+        public required string SearchText { get; set; }
+        
     }
 }

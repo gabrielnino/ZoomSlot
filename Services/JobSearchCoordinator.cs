@@ -52,9 +52,9 @@ namespace Services
             {
                 _logger.LogInformation($"🚀 ID:{_executionOptions.TimeStamp} Starting LinkedIn job search process...");
                 await _loginService.LoginAsync();
-                await _searchService.PerformSearchAsync();
+                var searchText = await _searchService.PerformSearchAsync();
                 _offers = await _processService.ProcessAllPagesAsync();
-                await _jobOfferDetail.ProcessOffersAsync(_offers);
+                await _jobOfferDetail.ProcessOffersAsync(_offers, searchText);
                 _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} LinkedIn job search process completed successfully.");
             }
             catch (Exception ex)
