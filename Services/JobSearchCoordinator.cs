@@ -53,11 +53,12 @@ namespace Services
             {
                 _logger.LogInformation($"🚀 ID:{_executionOptions.TimeStamp} Starting LinkedIn job search process...");
                 await _loginService.LoginAsync();
+
                 var searchText = await _searchService.PerformSearchAsync();
                 _offers = await _processService.ProcessAllPagesAsync();
                 _offersDetail = await _jobOfferDetail.ProcessOffersAsync(_offers, searchText);
                 _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} LinkedIn job search process completed successfully.");
-                return _offersDetail ?? new List<JobOfferDetail>();
+                return _offersDetail ?? [];
             }
             catch (Exception ex)
             {
@@ -71,6 +72,7 @@ namespace Services
                 Dispose();
             }
         }
+
 
         public void Dispose()
         {

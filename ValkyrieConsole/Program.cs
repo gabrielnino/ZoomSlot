@@ -1,4 +1,5 @@
-﻿using Commands;
+﻿using System;
+using Commands;
 using Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -65,7 +66,6 @@ public class Program
                 // Configuration
                 var config = hostingContext.Configuration.Get<AppConfig>();
                 services.AddSingleton(config);
-               
                 var execution = new ExecutionOptions();
                 services.AddSingleton<ExecutionOptions>(execution);
                 services.AddSingleton(commandArgs);
@@ -78,12 +78,11 @@ public class Program
                 services.AddTransient<ISecurityCheck, SecurityCheck>();
                 services.AddTransient<ICaptureSnapshot, CaptureSnapshot>();
                 services.AddSingleton<IWebDriverFactory, ChromeDriverFactory>();
-                services.AddSingleton<IWebDriverFactory, ChromeDriverFactory>();
-                services.AddSingleton<IJobSearch, JobSearch>();
-                services.AddSingleton<IPageProcessor, PageProcessor>();
+                services.AddTransient<IJobSearch, JobSearch>();          // ⚠️ Cambiado a Transient
+                services.AddTransient<IPageProcessor, PageProcessor>();  // ⚠️ Cambiado a Transient
                 services.AddSingleton<IDirectoryCheck, DirectoryCheck>();
                 services.AddSingleton<IJobStorageService, JsonJobStorageService>();
-                services.AddSingleton<CommandFactory>();
+                services.AddTransient<ExportCommand>();
             });
     }
 }
