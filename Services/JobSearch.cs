@@ -44,7 +44,7 @@ namespace Services
             await Task.Delay(3000);
 
             // Check for security verification or unexpected pages before proceeding
-            if (_securityCheck.IsSecurityChek())
+            if (_securityCheck.IsSecurityCheck())
             {
                 await _securityCheck.HandleSecurityPage();
                 throw new InvalidOperationException(

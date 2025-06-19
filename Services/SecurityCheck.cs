@@ -32,12 +32,73 @@ namespace Services
             _directoryCheck = directoryCheck;
             _directoryCheck.EnsureDirectoryExists(FolderPath);
         }
-        public bool IsSecurityChek()
+
+        public bool IsSecurityCheck()
         {
-            var title = _driver.Title.Contains("Security Verification");
-            var captcha = _driver.FindElements(By.Id("captcha-internal")).Any();
-            var text = _driver.FindElements(By.XPath("//h1[contains(text(), 'Let’s do a quick security check')]")).Any();
-            return title || captcha || text;
+            try
+            {
+                var title = _driver.Title.Contains("Security Verification");
+                if (title)
+                {
+                    _logger.LogWarning("⚠️ Title Security Verification detected on the page.");
+                    return true;
+                }
+                var captcha = _driver.FindElements(By.Id("captcha-internal")).Any();
+                if (captcha)
+                {
+                    _logger.LogWarning("⚠️ CAPTCHA image detected on the page.");
+                    return true;
+                }
+
+                var text = _driver.FindElements(By.XPath("//h1[contains(text(), 'Let’s do a quick security check')]")).Any();
+
+                if (text)
+                {
+                    _logger.LogWarning("⚠️ Text 'Let’s do a quick security check' detected on the page.");
+                    return true;
+                }
+
+                // Detect common CAPTCHA indicators
+                var captchaImages = _driver.FindElements(By.XPath("//img[contains(@src, 'captcha')]")).Any();
+                if (captchaImages)
+                {
+                    _logger.LogWarning("⚠️ CAPTCHA image detected on the page.");
+                    return true;
+                }
+
+                //// Detect reCAPTCHA iframe or divs
+                //var recaptchaFrames = _driver.FindElements(By.XPath("//iframe[contains(@src, 'recaptcha')]"));
+                //if (recaptchaFrames.Any())
+                //{
+                //    _logger.LogWarning("⚠️ reCAPTCHA iframe detected on the page.");
+                //    return true;
+                //}
+
+                // Detect common texts indicating human check
+                var bodyText = _driver.FindElement(By.TagName("body")).Text;
+                var indicators = new[] { "are you a human", "please verify", "unusual activity", "security check", "confirm your identity" };
+
+                if (indicators.Any(indicator => bodyText.IndexOf(indicator, StringComparison.OrdinalIgnoreCase) >= 0))
+                {
+                    _logger.LogWarning("⚠️ Security check text detected on the page.");
+                    return true;
+                }
+
+                // Optionally: detect if login form re-appeared
+                var loginForm = _driver.FindElements(By.XPath("//input[@name='session_key']"));
+                if (loginForm.Any())
+                {
+                    _logger.LogWarning("⚠️ Unexpected LinkedIn login form detected. Session might have expired.");
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "⚠️ Error while checking for security verification.");
+                return false; // Fail-safe: assume no security check if we can't verify
+            }
         }
 
         public async Task TryStartPuzzle()

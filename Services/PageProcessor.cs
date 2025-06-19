@@ -157,7 +157,7 @@ namespace Services
                 nextButton.Click();
                 await Task.Delay(3000);
 
-                if (_securityCheck.IsSecurityChek())
+                if (_securityCheck.IsSecurityCheck())
                 {
                     await _securityCheck.HandleSecurityPage();
                     throw new InvalidOperationException(

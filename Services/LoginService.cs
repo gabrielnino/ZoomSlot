@@ -44,7 +44,7 @@ namespace Services
 
             if (!IsOnLoginPage())
             {
-                if (_securityCheck.IsSecurityChek())
+                if (_securityCheck.IsSecurityCheck())
                 {
                     await _securityCheck.HandleSecurityPage();
                     throw new InvalidOperationException(

@@ -78,7 +78,7 @@
                 mockFactory.Setup(f => f.Create()).Returns(driver);
                 mockCapture.Setup(c => c.CaptureArtifactsAsync(It.IsAny<string>(), It.IsAny<string>()))
                            .ReturnsAsync("dummyTimestamp");
-                mockSecurity.Setup(s => s.IsSecurityChek()).Returns(false);
+                mockSecurity.Setup(s => s.IsSecurityCheck()).Returns(false);
                 var executionOptions = new ExecutionOptions();
                 var detailProcessing = new DetailProcessing(
                     mockFactory.Object,
@@ -142,7 +142,7 @@
                 mockCapture.Setup(c => c.CaptureArtifactsAsync(It.IsAny<string>(), It.IsAny<string>()))
                            .ReturnsAsync("dummyTimestamp");
 
-                mockSecurity.Setup(s => s.IsSecurityChek()).Returns(false);
+                mockSecurity.Setup(s => s.IsSecurityCheck()).Returns(false);
 
                 var executionOptions = new ExecutionOptions();
 

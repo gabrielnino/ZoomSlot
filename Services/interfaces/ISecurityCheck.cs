@@ -2,7 +2,7 @@
 {
     public interface ISecurityCheck
     {
-        bool IsSecurityChek();
+        bool IsSecurityCheck();
         Task TryStartPuzzle();
         Task HandleSecurityPage();
         Task HandleUnexpectedPage();

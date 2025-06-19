@@ -32,7 +32,7 @@ namespace Services
             _offersDetail = [];
             _driver = driverFactory.Create();
             _logger = logger;
-            _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(30));
+            _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(90));
             _capture = capture;
             _securityCheck = securityCheck;
             _executionOptions = executionOptions;
@@ -60,7 +60,7 @@ namespace Services
                             var el = driver.FindElements(By.XPath(xPathJobs)).FirstOrDefault();
                             return el != null && el.Displayed;
                         });
-                        if (_securityCheck.IsSecurityChek())
+                        if (_securityCheck.IsSecurityCheck())
                         {
                             await _securityCheck.HandleSecurityPage();
                         }
@@ -87,6 +87,10 @@ namespace Services
                             _logger.LogWarning($"⚠️ ID:{_executionOptions.TimeStamp} Retrying ({retryCount}/3) for URL: {offer}");
                             await Task.Delay(2000 * retryCount);  // Exponential backoff
                         }
+                    }
+                    if(retryCount != 0)
+                    {
+                        await Task.Delay(3000 * retryCount + new Random().Next(1000, 3000));
                     }
                 }
             }
