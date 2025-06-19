@@ -10,10 +10,10 @@ using Services;
 
 public class Program
 {
-    private static CommandArgs? commandArgs;
+    private static JobCommandArgs? commandArgs;
     public static async Task Main(string[] args)
     {
-        commandArgs = new CommandArgs(args);
+        commandArgs = new JobCommandArgs(args);
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
             .WriteTo.Console()
@@ -76,7 +76,7 @@ public class Program
                 services.AddSingleton<CommandFactory>();
                 services.AddTransient<IJobSearchCoordinator, JobSearchCoordinator>();
                 services.AddTransient<IJobOfferDetail, Services.JobOfferDetail>();
-                services.AddTransient<ILoginService, LinkedInLoginService>();
+                services.AddTransient<ILoginService, LoginService>();
                 services.AddTransient<ISecurityCheck, SecurityCheck>();
                 services.AddTransient<ICaptureSnapshot, CaptureSnapshot>();
                 services.AddSingleton<IWebDriverFactory, ChromeDriverFactory>();

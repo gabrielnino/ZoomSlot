@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Configuration;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Models;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
@@ -19,22 +12,27 @@ namespace Services
         private readonly WebDriverWait _wait;
         private readonly List<Models.JobOfferDetail> _offersDetail;
         private readonly ICaptureSnapshot _capture;
+        private readonly ExecutionOptions _executionOptions;
+        private const string FolderName = "Detail";
         private readonly string _executionFolder;
-        private readonly ISecurityCheck _securityCheckHelper;
+        private readonly ISecurityCheck _securityCheck;
+        private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
 
         public JobOfferDetail(IWebDriverFactory driverFactory,
             ILogger<JobOfferDetail> logger,
             ICaptureSnapshot capture,
             string executionFolder,
-            ISecurityCheck securityCheckHelper)
+            ISecurityCheck securityCheck,
+            ExecutionOptions executionOptions)
         {
-            _offersDetail = new List<Models.JobOfferDetail>();
+            _offersDetail = [];
             _driver = driverFactory.Create();
             _logger = logger;
             _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
             _capture = capture;
             _executionFolder = executionFolder;
-            _securityCheckHelper = securityCheckHelper;
+            _securityCheck = securityCheck;
+            _executionOptions = executionOptions;
         }
 
         public async Task<List<Models.JobOfferDetail>> ProcessOffersAsync(IEnumerable<string> offers)
@@ -53,9 +51,9 @@ namespace Services
                         var el = driver.FindElements(By.XPath(xPathJobs)).FirstOrDefault();
                         return el != null && el.Displayed;
                     });
-                    if (_securityCheckHelper.IsSecurityChek())
+                    if (_securityCheck.IsSecurityChek())
                     {
-                        await _securityCheckHelper.TryStartPuzzle();
+                        await _securityCheck.TryStartPuzzle();
                     }
 
                     await _capture.CaptureArtifacts(_executionFolder, "Detailed Job offer");
@@ -79,6 +77,8 @@ namespace Services
         public async Task<Models.JobOfferDetail> ExtractDescriptionLinkedIn()
         {
             _logger.LogDebug("🔍 Extracting job details from current page...");
+
+            await _capture.CaptureArtifacts(FolderPath, "Extract description");
 
             var details = _driver.FindElements(By.XPath("//div[contains(@class, 'jobs-box--with-cta-large')]"));
             if (!details.Any())

@@ -8,10 +8,7 @@ namespace Services
 {
     public class JobSearchCoordinator : IJobSearchCoordinator, IDisposable
     {
-        private const string ErrorMessage = "Job search operation failed";
         private readonly IWebDriver _driver;
-        private readonly WebDriverWait _wait;
-        private readonly AppConfig _config;
         private readonly ILogger<JobSearchCoordinator> _logger;
         private bool _disposed = false;
         private readonly ILoginService _loginService;
@@ -25,9 +22,7 @@ namespace Services
 
         public JobSearchCoordinator(
             IWebDriverFactory driverFactory,
-            AppConfig config,
             ILogger<JobSearchCoordinator> logger,
-            CommandArgs commandArgs,
             ILoginService loginService,
             ICaptureSnapshot capture,
             ExecutionOptions executionOptions,
@@ -36,13 +31,11 @@ namespace Services
             IPageProcessor processService)
         {
             _driver = driverFactory.Create();
-            _config = config;
             _logger = logger;
             _executionOptions = executionOptions;
             EnsureDirectoryExists(_executionOptions.ExecutionFolder);
             _loginService = loginService;
             _capture = capture;
-            _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
             _jobOfferDetail = jobOfferDetail;
             _searchService = searchService;
             _processService = processService;

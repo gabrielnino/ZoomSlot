@@ -5,20 +5,20 @@ using OpenQA.Selenium;
 
 namespace Services
 {
-    public class LinkedInLoginService : ILoginService
+    public class LoginService : ILoginService
     {
         private readonly AppConfig _config;
         private readonly IWebDriver _driver;
-        private readonly ILogger<LinkedInLoginService> _logger;
+        private readonly ILogger<LoginService> _logger;
         private readonly ICaptureSnapshot _capture;
         private readonly ExecutionOptions _executionOptions;
         private const string FolderName = "Login";
         private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
         private readonly ISecurityCheck _securityCheck;
-        public LinkedInLoginService(
+        public LoginService(
             AppConfig config, 
             IWebDriverFactory driverFactory, 
-            ILogger<LinkedInLoginService> logger, 
+            ILogger<LoginService> logger, 
             ICaptureSnapshot capture,
             ExecutionOptions executionOptions,
             ISecurityCheck securityCheck)

@@ -1,4 +1,5 @@
-﻿using Configuration;
+﻿using System.Text.RegularExpressions;
+using Configuration;
 using Microsoft.Extensions.Logging;
 using Models;
 using OpenQA.Selenium;
@@ -11,15 +12,23 @@ namespace Services
         private readonly AppConfig _config;
         private readonly ILogger<PageProcessor> _logger;
         private readonly ExecutionOptions _executionOptions;
+        private const string FolderName = "Page";
+        private readonly ISecurityCheck _securityCheck;
+        private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
+        private readonly ICaptureSnapshot _capture;
         public PageProcessor(IWebDriverFactory driverFactory,
             AppConfig config,
             ILogger<PageProcessor> logger,
-            ExecutionOptions executionOptions)
+            ExecutionOptions executionOptions,
+            ICaptureSnapshot capture,
+            ISecurityCheck securityCheck)
         {
             _driver = driverFactory.Create();
             _config = config;
             _logger = logger;
             _executionOptions = executionOptions;
+            _capture = capture;
+            _securityCheck = securityCheck;
         }
 
         public async Task<List<string>> ProcessAllPagesAsync()
@@ -29,6 +38,7 @@ namespace Services
             var offers = new List<string>();
             do
             {
+                await _capture.CaptureArtifacts(FolderPath, "Page");
                 ScrollMove();
                 await Task.Delay(3000);
                 pageCount++;
@@ -135,7 +145,7 @@ namespace Services
 
                 if (nextButton == null)
                 {
-                    _logger.LogInformation("⏹️ No additional results pages detected; ending pagination.");
+                    _logger.LogInformation("⏹️ No additional results pages detected; pagination completed.");
                     return false;
                 }
 
@@ -143,11 +153,28 @@ namespace Services
                 nextButton.Click();
                 await Task.Delay(3000);
 
+                if (_securityCheck.IsSecurityChek())
+                {
+                    await _securityCheck.HandleSecurityPage();
+                    throw new InvalidOperationException(
+                        "❌ LinkedIn requires manual security verification. Please complete verification in the browser before proceeding.");
+                }
+
+                // Optional: If you want to verify page load consistency here
+                var jobContainer = _driver.FindElements(By.XPath("//ul[contains(@class, 'semantic-search-results-list')]")).FirstOrDefault();
+                if (jobContainer == null)
+                {
+                    await _securityCheck.HandleUnexpectedPage();
+                    throw new InvalidOperationException(
+                        $"❌ Failed to load next page of job listings. Current URL: {_driver.Url}");
+                }
+
+                _logger.LogInformation("✅ Successfully navigated to the next page of results.");
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "⚠️ Failed to navigate to the next page of results.");
+                _logger.LogWarning(ex, "⚠️ Exception encountered while navigating to the next page.");
                 return false;
             }
         }
