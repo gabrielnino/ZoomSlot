@@ -2,15 +2,12 @@
 {
     public class JobOfferDetail
     {
-        public string JobOfferTitle { get; set; }
-        public string CompanyName { get; set; }
-        public string ContactHiringSection { get; set; }
-        public string Description { get; set; }
-        public string SalaryOrBudgetOffered { get; set; }
-        public string Link { get; set; }
-        public string Position { get; set; }
-        public string Country { get; set; }
-        public string Providence { get; set; }
-        public string Applicants { get; set; }
+        public required string JobOfferTitle { get; set; }
+        public required string CompanyName { get; set; }
+        public required string ContactHiringSection { get; set; }
+        public required string Description { get; set; }
+        public required string SalaryOrBudgetOffered { get; set; }
+        public required string Link { get; set; }
+        public required string Applicants { get; set; }
     }
 }

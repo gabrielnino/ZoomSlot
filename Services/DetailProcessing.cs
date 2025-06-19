@@ -14,6 +14,7 @@ namespace Services
         private readonly ICaptureSnapshot _capture;
         private readonly ExecutionOptions _executionOptions;
         private const string FolderName = "Detail";
+
         private readonly ISecurityCheck _securityCheck;
         private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
         private readonly IDirectoryCheck _directoryCheck;
@@ -91,23 +92,111 @@ namespace Services
 
             var detail = details.FirstOrDefault(x => x != null);
             _logger.LogDebug($"✅ ID:{_executionOptions.TimeStamp} Job details container found.");
-
             var seeMoreButtons = detail.FindElements(By.XPath("//button[contains(@class, 'jobs-description__footer-button') and contains(., 'See more')]"));
-            if (!seeMoreButtons.Any())
+            if (seeMoreButtons.Any())
             {
-                var message = $"❌ ID:{_executionOptions.TimeStamp} 'See more' button not found. Current URL: {_driver.Url}";
+                var seeMoreButton = seeMoreButtons.FirstOrDefault(x => x != null);
+                seeMoreButton.Click();
+            }
+
+            _logger.LogDebug($"✅ ID:{_executionOptions.TimeStamp} 'See more' button found.");
+            await _capture.CaptureArtifacts(FolderPath, "ExtractDescriptionLinkedIn");
+            var headers = detail.FindElements(By.CssSelector("div.t-14.artdeco-card"));
+            if (!headers.Any())
+            {
+                var message = $"❌ ID:{_executionOptions.TimeStamp} 'Header not found. Current URL: {_driver.Url}";
+                _logger.LogWarning(message);
+                throw new InvalidOperationException(message);
+            }
+            var header = headers.FirstOrDefault(x => x != null);
+            var job_title_elements = header.FindElements(By.CssSelector("h1.t-24.t-bold.inline"));
+            var jobOfferTitle = string.Empty;
+            if (job_title_elements.Any())
+            {
+                var job_title_element = job_title_elements.FirstOrDefault(x => x != null);
+                if (!string.IsNullOrWhiteSpace(job_title_element.Text))
+                {
+                    jobOfferTitle = job_title_element.Text;
+                }
+            }
+            
+
+            var company_name_elements = header.FindElements(By.CssSelector(".job-details-jobs-unified-top-card__company-name a"));
+            if (!company_name_elements.Any())
+            {
+                var message = $"❌ ID:{_executionOptions.TimeStamp} 'Company name not found. Current URL: {_driver.Url}";
                 _logger.LogWarning(message);
                 throw new InvalidOperationException(message);
             }
 
-            _logger.LogDebug($"✅ ID:{_executionOptions.TimeStamp} 'See more' button found.");
+            var company_name_element = company_name_elements.FirstOrDefault(x => x != null);
+            var companyName = string.Empty;
+            if (!string.IsNullOrWhiteSpace(company_name_element.Text))
+            {
+                companyName = company_name_element.Text;
+            }
 
-            var seeMoreButton = seeMoreButtons.FirstOrDefault(x => x != null);
-            seeMoreButton.Click();
+            var hiring_team_sections = detail.FindElements(By.CssSelector("div.job-details-module"));
+            if (!hiring_team_sections.Any())
+            {
+                var message = $"❌ ID:{_executionOptions.TimeStamp} 'Hiring team not found. Current URL: {_driver.Url}";
+                _logger.LogWarning(message);
+                throw new InvalidOperationException(message);
+            }
+            var hiring_team_section = hiring_team_sections.FirstOrDefault(x => x != null);
+            var name_elements = hiring_team_section.FindElements(By.CssSelector(".jobs-poster__name strong"));
+            var contactHiringSection = string.Empty ;
+            if (name_elements.Any())
+            {
+                var name_element = name_elements.FirstOrDefault(x => x != null);
+                if (!string.IsNullOrWhiteSpace(name_element.Text))
+                {
+                    contactHiringSection = name_element.Text;
+                }
+            }
+            
+            var aplicantsXPath = "//div[contains(@class, 'job-details-jobs-unified-top-card__primary-description-container')]";
+            var applicants = _wait.Until(driver => _driver.FindElements(By.XPath(aplicantsXPath)));
+            if (!applicants.Any())
+            {
+                var message = $"❌ ID:{_executionOptions.TimeStamp} 'Company name not found. Current URL: {_driver.Url}";
+                _logger.LogWarning(message);
+                throw new InvalidOperationException(message);
+            }
+            var applicant = applicants.FirstOrDefault(x => x != null);
+            var description_elements = detail.FindElements(By.CssSelector("article.jobs-description__container"));
+            if (!description_elements.Any())
+            {
+                var message = $"❌ ID:{_executionOptions.TimeStamp} 'Description not found. Current URL: {_driver.Url}";
+                _logger.LogWarning(message);
+                throw new InvalidOperationException(message);
+            }
+            var description_element = description_elements.FirstOrDefault(x => x != null);
+            var jobDetailsContainers = detail.FindElements(By.CssSelector(".artdeco-card.job-details-module"));
+            var salaryOrBudgetOffered = string.Empty;
+            if (jobDetailsContainers.Any())
+            {
+                var salaryElements = _driver.FindElements(By.XPath(".//p[contains(., 'CA$')]"));
+                if (salaryElements.Any())
+                {
+                    var salaryElement = salaryElements.First();
+                    salaryOrBudgetOffered = salaryElement.Text.Trim();
+                }
 
-            await _capture.CaptureArtifacts(FolderPath, "ExtractDescriptionLinkedIn");
+            }
 
-            var jobOffer = new Models.JobOfferDetail();
+
+            var jobOffer = new JobOfferDetail
+            {
+                JobOfferTitle = jobOfferTitle,
+                CompanyName = companyName,
+                ContactHiringSection = contactHiringSection,
+                Applicants = applicant.Text,
+                Description = description_element.Text,
+                SalaryOrBudgetOffered = salaryOrBudgetOffered,
+                Link = _driver.Url,
+
+            };
             return jobOffer;
         }
     }
