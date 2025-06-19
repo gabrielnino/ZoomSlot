@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Services.interfaces;
+using Services.Interfaces;
 
 namespace Services
 {

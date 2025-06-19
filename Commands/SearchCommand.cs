@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using Services.interfaces;
+using Services.Interfaces;
 
 namespace Commands
 {

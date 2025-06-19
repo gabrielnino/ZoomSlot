@@ -1,7 +1,7 @@
 ﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 
-namespace Services.interfaces
+namespace Services.Interfaces
 {
     public interface IWebDriverFactory
     {

@@ -1,11 +1,15 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
+using Microsoft.Extensions.Logging;
 using Models;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using Services.interfaces;
+using Services.Interfaces;
+
 
 namespace Services
 {
+
     public class DetailProcessing : IDetailProcessing
     {
         private readonly ILogger<DetailProcessing> _logger;
@@ -15,7 +19,6 @@ namespace Services
         private readonly ICaptureSnapshot _capture;
         private readonly ExecutionOptions _executionOptions;
         private const string FolderName = "Detail";
-
         private readonly ISecurityCheck _securityCheck;
         private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
         private readonly IDirectoryCheck _directoryCheck;
@@ -30,7 +33,7 @@ namespace Services
             _offersDetail = [];
             _driver = driverFactory.Create();
             _logger = logger;
-            _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+            _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(30));
             _capture = capture;
             _securityCheck = securityCheck;
             _executionOptions = executionOptions;
@@ -41,6 +44,10 @@ namespace Services
         public async Task<List<JobOfferDetail>> ProcessOffersAsync(IEnumerable<string> offers, string searchText)
         {
             _logger.LogInformation($"📝 ID:{_executionOptions.TimeStamp} Processing detailed job offer data...");
+            var options = new ParallelOptions
+            {
+                MaxDegreeOfParallelism = _executionOptions.MaxParallelism,
+            };
 
             foreach (var offer in offers)
             {
@@ -48,42 +55,43 @@ namespace Services
                 {
                     _logger.LogDebug($"🌐 ID:{_executionOptions.TimeStamp} Navigating to job offer URL: {offer}");
                     _driver.Navigate().GoToUrl(offer);
-                    await Wait();
-                    await _capture.CaptureArtifacts(FolderPath, "Detailed Job offer");
+                    _wait.Until(driver =>
+                    {
+                        var xPathJobs = "//div[contains(@class, 'jobs-box--with-cta-large')]";
+                        var el = driver.FindElements(By.XPath(xPathJobs)).FirstOrDefault();
+                        return el != null && el.Displayed;
+                    });
+                    if (_securityCheck.IsSecurityChek())
+                    {
+                        await _securityCheck.TryStartPuzzle();
+                    }
+
+                    await _capture.CaptureArtifactsAsync(FolderPath, "Detailed Job offer");
+
                     var offersDetail = await ExtractDetail(searchText);
-                    _offersDetail.Add(offersDetail);
-                    _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Detailed job offer processed successfully.");
+                    if (offersDetail != null)
+                    {
+                        offersDetail.SearchText = searchText;
+                        _offersDetail.Add(offersDetail);
+                        _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Detailed job offer processed successfully.");
+                    }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, $"❌ ID:{_executionOptions.TimeStamp} Failed to process detailed job offer at URL: {offer}");
-                    await _capture.CaptureArtifacts(FolderPath, "Error in Detailed Job Offer");
+                    await _capture.CaptureArtifactsAsync(FolderPath, "Error in Detailed Job Offer");
                     // Continue with next offer instead of stopping
                 }
             }
+
             return _offersDetail;
         }
-
-        private async Task Wait()
-        {
-            _wait.Until(driver =>
-            {
-                var xPathJobs = "//div[contains(@class, 'jobs-box--with-cta-large')]";
-                var el = driver.FindElements(By.XPath(xPathJobs)).FirstOrDefault();
-                return el != null && el.Displayed;
-            });
-            if (_securityCheck.IsSecurityChek())
-            {
-                await _securityCheck.TryStartPuzzle();
-            }
-        }
-
         public async Task<JobOfferDetail> ExtractDetail(string searchText)
         {
             _logger.LogDebug($"🔍 ID:{_executionOptions.TimeStamp} Extracting job details from current page...");
-            await _capture.CaptureArtifacts(FolderPath, "ExtractDescription_Start");
+            await _capture.CaptureArtifactsAsync(FolderPath, "ExtractDescription_Start");
             var detail = ExtractDetail();
-            await _capture.CaptureArtifacts(FolderPath, "ExtractDescription_AfterSeeMore");
+            await _capture.CaptureArtifactsAsync(FolderPath, "ExtractDescription_AfterSeeMore");
             var header = ExtractHeader();
             var jobOfferTitle = ExtractTitle(header);
             var companyName = ExtractCompany(header);
@@ -113,6 +121,7 @@ namespace Services
                 _logger.LogWarning(message);
                 throw new InvalidOperationException(message);
             }
+
             return header;
         }
 
@@ -132,12 +141,19 @@ namespace Services
 
         private void ClickSeeMore(IWebElement detail)
         {
-            // Try to expand description
-            var seeMoreButton = detail.FindElements(By.XPath(".//button[contains(@class, 'jobs-description__footer-button') and contains(., 'See more')]")).FirstOrDefault();
-            if (seeMoreButton != null)
+            try
             {
-                seeMoreButton.Click();
-                _logger.LogDebug($"✅ ID:{_executionOptions.TimeStamp} 'See more' button clicked.");
+                // Try to expand description
+                var seeMoreButton = detail.FindElements(By.XPath(".//button[contains(@class, 'jobs-description__footer-button') and contains(., 'See more')]")).FirstOrDefault();
+                if (seeMoreButton != null)
+                {
+                    seeMoreButton.Click();
+                    _logger.LogDebug($"✅ ID:{_executionOptions.TimeStamp} 'See more' button clicked.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning($"⚠️ ID:{_executionOptions.TimeStamp} Could not click 'See more' button: {ex.Message}");
             }
         }
 

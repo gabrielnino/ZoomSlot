@@ -1,4 +1,4 @@
-﻿namespace Services.interfaces
+﻿namespace Services.Interfaces
 {
     public interface IJobSearch
     {

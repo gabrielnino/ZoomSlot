@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Models;
 using OpenQA.Selenium;
-using Services.interfaces;
+using Services.Interfaces;
 
 namespace Services
 {
@@ -61,13 +61,13 @@ namespace Services
                     $"❌ Job search input field not found. Possibly unexpected page. Current URL: {_driver.Url}");
             }
 
-            await _capture.CaptureArtifacts(FolderPath, "JobsPageLoaded");
+            await _capture.CaptureArtifactsAsync(FolderPath, "JobsPageLoaded");
 
             _logger.LogInformation($"🔎 ID:{_executionOptions.TimeStamp} Executing job search with keyword: '{_config.JobSearch.SearchText}'...");
             searchInput.SendKeys(_config.JobSearch.SearchText + Keys.Enter);
             await Task.Delay(3000);
 
-            await _capture.CaptureArtifacts(FolderPath, "SearchExecuted");
+            await _capture.CaptureArtifactsAsync(FolderPath, "SearchExecuted");
             _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Search executed for: '{_config.JobSearch.SearchText}'.");
             return _config.JobSearch.SearchText;
         }

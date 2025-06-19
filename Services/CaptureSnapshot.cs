@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using OpenQA.Selenium;
-using Services.interfaces;
+using Services.Interfaces;
 
 namespace Services
 {
@@ -15,7 +15,7 @@ namespace Services
             _logger = logger;
         }
 
-        public async Task<string> CaptureArtifacts(string executionFolder, string stage)
+        public async Task<string> CaptureArtifactsAsync(string executionFolder, string stage)
         {
             var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
             _logger.LogWarning($"⚠️ CaptureDebugArtifacts called with {timestamp}");

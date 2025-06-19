@@ -1,7 +1,7 @@
-﻿namespace Services.interfaces
+﻿namespace Services.Interfaces
 {
     public interface ICaptureSnapshot
     {
-        Task<string> CaptureArtifacts(string executionFolder, string stage);
+        Task<string> CaptureArtifactsAsync(string executionFolder, string stage);
     }
 }

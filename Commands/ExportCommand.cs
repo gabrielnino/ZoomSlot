@@ -1,7 +1,7 @@
 ﻿using Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Services.interfaces;
+using Services.Interfaces;
 using Formatting = Newtonsoft.Json.Formatting;
 
 namespace Commands

@@ -1,5 +1,5 @@
 ﻿using Models;
-namespace Services.interfaces
+namespace Services.Interfaces
 {
     public interface IDetailProcessing
     {

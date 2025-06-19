@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Models;
-using Services.interfaces;
+using Services.Interfaces;
 
 namespace Services
 {

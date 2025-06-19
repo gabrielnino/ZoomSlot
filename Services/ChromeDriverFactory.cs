@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
-using Services.interfaces;
+using Services.Interfaces;
 
 namespace Services
 {

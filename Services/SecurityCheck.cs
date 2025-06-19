@@ -2,7 +2,7 @@
 using Models;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using Services.interfaces;
+using Services.Interfaces;
 
 namespace Services
 {
@@ -45,7 +45,7 @@ namespace Services
             try
             {
                 _logger.LogDebug($"🔎 ID:{_executionOptions.TimeStamp} Searching for 'Start Puzzle' button...");
-                await _capture.CaptureArtifacts(_executionOptions.ExecutionFolder, "Error in Detailed Job Offer");
+                await _capture.CaptureArtifactsAsync(_executionOptions.ExecutionFolder, "Error in Detailed Job Offer");
                 var startPuzzleButton = _wait.Until(driver =>
                 {
                     var xpathText = "//button[contains(text(), 'Start Puzzle')]";
@@ -54,7 +54,7 @@ namespace Services
                     return (button != null && button.Displayed && button.Enabled) ? button : null;
                 });
 
-                await _capture.CaptureArtifacts(FolderPath, "Error in Detailed Job Offer");
+                await _capture.CaptureArtifactsAsync(FolderPath, "Error in Detailed Job Offer");
 
                 if (startPuzzleButton == null)
                 {
@@ -77,7 +77,7 @@ namespace Services
 
         public async Task HandleSecurityPage()
         {
-            var timestamp = await _capture.CaptureArtifacts(FolderPath, "SecurityPageDetected");
+            var timestamp = await _capture.CaptureArtifactsAsync(FolderPath, "SecurityPageDetected");
             _logger.LogError($" ID:{_executionOptions.TimeStamp} Unexpected page layout detected.");
             Console.WriteLine("\n╔════════════════════════════════════════════╗");
             Console.WriteLine("║           SECURITY PAGE DETECTED          ║");
@@ -91,7 +91,7 @@ namespace Services
 
         public async Task HandleUnexpectedPage()
         {
-            var timestamp = await _capture.CaptureArtifacts(FolderPath, "UnexpectedPageDetected");
+            var timestamp = await _capture.CaptureArtifactsAsync(FolderPath, "UnexpectedPageDetected");
             _logger.LogError($" ID:{_executionOptions.TimeStamp} Unexpected page layout detected.");
             Console.WriteLine("\n╔════════════════════════════════════════════╗");
             Console.WriteLine("║           UNEXPECTED PAGE DETECTED          ║");

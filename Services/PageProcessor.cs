@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Models;
 using OpenQA.Selenium;
-using Services.interfaces;
+using Services.Interfaces;
 
 namespace Services
 {
@@ -42,7 +42,7 @@ namespace Services
             var offers = new List<string>();
             do
             {
-                await _capture.CaptureArtifacts(FolderPath, "Page");
+                await _capture.CaptureArtifactsAsync(FolderPath, "Page");
                 ScrollMove();
                 await Task.Delay(3000);
                 pageCount++;

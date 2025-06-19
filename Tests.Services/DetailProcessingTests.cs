@@ -5,7 +5,7 @@
     using System.Collections.ObjectModel;
     using System.Threading.Tasks;
     using global::Services;
-    using global::Services.interfaces;
+    using global::Services.Interfaces;
     using Microsoft.Extensions.Logging;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Models;
@@ -76,7 +76,7 @@
                 mockParentElement.Setup(e => e.FindElements(It.IsAny<By>())).Returns(childElements);
                 var parentElements = new ReadOnlyCollection<IWebElement>(new List<IWebElement> { mockParentElement.Object });
                 mockFactory.Setup(f => f.Create()).Returns(driver);
-                mockCapture.Setup(c => c.CaptureArtifacts(It.IsAny<string>(), It.IsAny<string>()))
+                mockCapture.Setup(c => c.CaptureArtifactsAsync(It.IsAny<string>(), It.IsAny<string>()))
                            .ReturnsAsync("dummyTimestamp");
                 mockSecurity.Setup(s => s.IsSecurityChek()).Returns(false);
                 var executionOptions = new ExecutionOptions();
@@ -97,7 +97,7 @@
                 Assert.IsNotNull(result, "Result should not be null");
                 Assert.AreEqual(1, result.Count, "Should have processed one job offer");
 
-                mockCapture.Verify(c => c.CaptureArtifacts(It.IsAny<string>(), It.IsAny<string>()), Times.AtLeastOnce);
+                mockCapture.Verify(c => c.CaptureArtifactsAsync(It.IsAny<string>(), It.IsAny<string>()), Times.AtLeastOnce);
                 mockLogger.Verify(l => l.Log(
                     It.IsAny<Microsoft.Extensions.Logging.LogLevel>(),
                     It.IsAny<EventId>(),
@@ -139,7 +139,7 @@
                 mockFactory.Setup(f => f.Create()).Returns(mockDriver.Object);
 
                 // Setup CaptureSnapshot and SecurityCheck
-                mockCapture.Setup(c => c.CaptureArtifacts(It.IsAny<string>(), It.IsAny<string>()))
+                mockCapture.Setup(c => c.CaptureArtifactsAsync(It.IsAny<string>(), It.IsAny<string>()))
                            .ReturnsAsync("dummyTimestamp");
 
                 mockSecurity.Setup(s => s.IsSecurityChek()).Returns(false);
@@ -165,7 +165,7 @@
                 Assert.AreEqual(1, result.Count, "Should have processed one job offer");
 
                 mockDriver.Verify(d => d.Navigate().GoToUrl(offers[0]), Times.Once);
-                mockCapture.Verify(c => c.CaptureArtifacts(It.IsAny<string>(), It.IsAny<string>()), Times.AtLeastOnce);
+                mockCapture.Verify(c => c.CaptureArtifactsAsync(It.IsAny<string>(), It.IsAny<string>()), Times.AtLeastOnce);
                 mockLogger.Verify(l => l.Log(
                     It.IsAny<Microsoft.Extensions.Logging.LogLevel>(),
                     It.IsAny<EventId>(),
