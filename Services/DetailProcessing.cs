@@ -44,48 +44,56 @@ namespace Services
         public async Task<List<JobOfferDetail>> ProcessOffersAsync(IEnumerable<string> offers, string searchText)
         {
             _logger.LogInformation($"📝 ID:{_executionOptions.TimeStamp} Processing detailed job offer data...");
-            var options = new ParallelOptions
-            {
-                MaxDegreeOfParallelism = _executionOptions.MaxParallelism,
-            };
 
             foreach (var offer in offers)
             {
-                try
+                int retryCount = 0;
+                bool success = false;
+                while (retryCount < 3 && !success) 
                 {
-                    _logger.LogDebug($"🌐 ID:{_executionOptions.TimeStamp} Navigating to job offer URL: {offer}");
-                    _driver.Navigate().GoToUrl(offer);
-                    _wait.Until(driver =>
+                    try
                     {
-                        var xPathJobs = "//div[contains(@class, 'jobs-box--with-cta-large')]";
-                        var el = driver.FindElements(By.XPath(xPathJobs)).FirstOrDefault();
-                        return el != null && el.Displayed;
-                    });
-                    if (_securityCheck.IsSecurityChek())
-                    {
-                        await _securityCheck.TryStartPuzzle();
+                        _logger.LogDebug($"🌐 ID:{_executionOptions.TimeStamp} Navigating to job offer URL: {offer} (Attempt {retryCount + 1})");
+                        _driver.Navigate().GoToUrl(offer);
+                        _wait.Until(driver =>
+                        {
+                            var xPathJobs = "//div[contains(@class, 'jobs-box--with-cta-large')]";
+                            var el = driver.FindElements(By.XPath(xPathJobs)).FirstOrDefault();
+                            return el != null && el.Displayed;
+                        });
+                        if (_securityCheck.IsSecurityChek())
+                        {
+                            await _securityCheck.TryStartPuzzle();
+                        }
+                        await _capture.CaptureArtifactsAsync(FolderPath, "Detailed Job offer");
+                        var offersDetail = await ExtractDetail(searchText);
+                        if (offersDetail != null)
+                        {
+                            offersDetail.SearchText = searchText;
+                            _offersDetail.Add(offersDetail);
+                            _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Detailed job offer processed successfully.");
+                        }
+                        success = true;
                     }
-
-                    await _capture.CaptureArtifactsAsync(FolderPath, "Detailed Job offer");
-
-                    var offersDetail = await ExtractDetail(searchText);
-                    if (offersDetail != null)
+                    catch (Exception ex)
                     {
-                        offersDetail.SearchText = searchText;
-                        _offersDetail.Add(offersDetail);
-                        _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Detailed job offer processed successfully.");
+                        retryCount++;
+                        if (retryCount >= 3)
+                        {
+                            _logger.LogError(ex, $"❌ ID:{_executionOptions.TimeStamp} Failed to process detailed job offer at URL: {offer}");
+                            await _capture.CaptureArtifactsAsync(FolderPath, $"Error_Attempt_{retryCount}");
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"⚠️ ID:{_executionOptions.TimeStamp} Retrying ({retryCount}/3) for URL: {offer}");
+                            await Task.Delay(2000 * retryCount);  // Exponential backoff
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"❌ ID:{_executionOptions.TimeStamp} Failed to process detailed job offer at URL: {offer}");
-                    await _capture.CaptureArtifactsAsync(FolderPath, "Error in Detailed Job Offer");
-                    // Continue with next offer instead of stopping
                 }
             }
-
             return _offersDetail;
         }
+
         public async Task<JobOfferDetail> ExtractDetail(string searchText)
         {
             _logger.LogDebug($"🔍 ID:{_executionOptions.TimeStamp} Extracting job details from current page...");
