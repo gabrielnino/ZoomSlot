@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Models;
 using OpenQA.Selenium;
@@ -21,13 +22,15 @@ namespace Services
         private readonly ISecurityCheck _securityCheck;
         private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
         private readonly IDirectoryCheck _directoryCheck;
+        private readonly IUtil _util;
 
         public DetailProcessing(IWebDriverFactory driverFactory,
             ILogger<DetailProcessing> logger,
             ICaptureSnapshot capture,
             ISecurityCheck securityCheck,
             ExecutionOptions executionOptions,
-            IDirectoryCheck directoryCheck)
+            IDirectoryCheck directoryCheck,
+            IUtil util)
         {
             _offersDetail = [];
             _driver = driverFactory.Create();
@@ -38,6 +41,7 @@ namespace Services
             _executionOptions = executionOptions;
             _directoryCheck = directoryCheck;
             _directoryCheck.EnsureDirectoryExists(FolderPath);
+            _util = util;
         }
 
         public async Task<List<JobOfferDetail>> ProcessOffersAsync(IEnumerable<string> offers, string searchText)
@@ -110,15 +114,22 @@ namespace Services
             var applicants = ExtractApplicants(detail);
             var descriptionText = ExtractDescription(detail);
             var salaryOrBudgetOffered = ExtractSalary(detail);
+            var url = _driver.Url;
+            var id = _util.ExtractJobId(url);
+            if (id == null)
+            {
+                throw new ArgumentException($"Invalid url: {url} does not have a valid ID");
+            }
             return new JobOfferDetail
             {
+                ID = id,
                 JobOfferTitle = jobOfferTitle,
                 CompanyName = companyName,
                 ContactHiringSection = contactHiringSection,
                 Applicants = applicants,
                 Description = descriptionText,
                 SalaryOrBudgetOffered = salaryOrBudgetOffered,
-                Link = _driver.Url,
+                Link = url,
                 SearchText = searchText
             };
         }

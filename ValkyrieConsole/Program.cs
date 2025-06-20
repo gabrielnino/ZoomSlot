@@ -83,6 +83,7 @@ public class Program
                 services.AddTransient<IPageProcessor, PageProcessor>();  // ⚠️ Cambiado a Transient
                 services.AddSingleton<IDirectoryCheck, DirectoryCheck>();
                 services.AddSingleton<IJobStorageService, JsonJobStorageService>();
+                services.AddSingleton<IUtil, Util>();
                 services.AddTransient<ExportCommand>();
             });
     }
