@@ -13,7 +13,7 @@ namespace Commands
                 return [_serviceProvider.GetRequiredService<HelpCommand>()];
 
             var commands = args
-                .Where(arg => arg == "--search" || arg == "--export")
+                .Where(arg => arg == "--search" || arg == "--export" || arg == "--apply")
                 .Distinct()
                 .ToList();
 
