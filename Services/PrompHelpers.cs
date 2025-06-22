@@ -59,11 +59,11 @@ namespace Services
             };
         }
 
-        public static Prompt GenerateResumeeJsonPrompt(string resumeString)
+        public static Prompt GenerateResumeJsonPrompt(string resumeText)
         {
-            if (string.IsNullOrWhiteSpace(resumeString))
+            if (string.IsNullOrWhiteSpace(resumeText))
             {
-                throw new ArgumentNullException(nameof(resumeString), "Resumeee string cannot be null or empty.");
+                throw new ArgumentException("Resume text cannot be null or empty.", nameof(resumeText));
             }
 
             const string JsonSchema = @"
@@ -78,7 +78,6 @@ namespace Services
               },
               ""Professional Summary"": ""string"",
               ""Bullet Points"": [""string""],
-              ""Closing Paragraph"": ""string"",
               ""Technical Skills"": [""string""],
               ""Soft Skills"": [""string""],
               ""Languages"": [""string""],
@@ -102,27 +101,32 @@ namespace Services
             }";
 
             const string SystemContent = @"
-            You are an expert recruiter specializing in the selection and evaluation, 
-            focusing on identifying top talent with the required technical skills, qualifications, 
-            and experience to meet specific job requirements in the software development industry.";
+            You are an expert recruiter specializing in technical talent evaluation.
+            Your task is to extract and structure resume information into a standardized JSON format.
+            Focus on identifying:
+            - Clear technical skills (without proficiency levels)
+            - Relevant experience with specific technologies
+            - Key achievements and responsibilities
+            - Clean educational background";
 
-            const string TaskDescription = @"
-            Analyze the following resumee and extract specific information. 
-            For the properties ""Essential Technical Skill Qualifications"" and ""Other Technical Skill Qualifications"", 
-            include only the names of the technical skills without specifying time or additional comments. 
-            The output should be in a structured JSON format, adhering to the schema below.";
+                    const string TaskInstructions = @"
+            Analyze the following resume text and extract the requested information.
+            Follow these guidelines:
+            1. Include only skill names for technical skills (no durations or comments)
+            2. Keep descriptions concise and achievement-oriented
+            3. Maintain consistent formatting for dates and locations
+            4. Output must strictly adhere to the provided JSON schema";
 
-            string userContent = $@"
-            {TaskDescription}
-
-            Resumme String:
-            {resumeString}
+                    string userContent = $@"
+            Resume Text to Process:
+            {resumeText}
 
             Output Requirements:
-            Present the extracted information in the following JSON schema:
+            {TaskInstructions}
 
-            JSON Schema:
+            Required JSON Structure:
             {JsonSchema}";
+
             return new Prompt
             {
                 SystemContent = SystemContent,
