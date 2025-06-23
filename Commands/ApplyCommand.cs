@@ -26,40 +26,37 @@ namespace Commands
         public async Task ExecuteAsync(Dictionary<string, string>? arguments = null)
         {
             _logger.LogInformation("Starting job application process...");
-
-            var jobDetails = await _linkedInService.SearchJobsAsync();
+            var jobDetails = await _storageService.LoadJobsAsync();
+            _logger.LogInformation("Found {JobCount} job(s) to apply for.", jobDetails.Count());
             if (jobDetails != null && jobDetails.Any())
             {
-                _logger.LogInformation("Found {JobCount} job(s) to apply for.", jobDetails.Count);
-
-                if (arguments == null || !arguments.ContainsKey("--apply"))
+                foreach (var job in jobDetails)
                 {
-                    _logger.LogError("❌ '--apply' argument is missing.");
-                    throw new ArgumentException("'--apply' argument is required to specify the resume file path.");
+                    _logger.LogInformation("Found job: {JobTitle} at {CompanyName}", job.SearchText, job.CompanyName);
+                    if (arguments == null || !arguments.ContainsKey("--apply"))
+                    {
+                        _logger.LogError("❌ '--apply' argument is missing.");
+                        throw new ArgumentException("'--apply' argument is required to specify the resume file path.");
+                    }
+                    string resumeFilePath = arguments["--apply"];
+                    string urlJobBoard = arguments.GetValueOrDefault("--urljobboard", string.Empty);
+                    string inputResumeContent;
+                    try
+                    {
+                        _logger.LogInformation("Reading resume file from path: {ResumeFilePath}", resumeFilePath);
+                        inputResumeContent = await File.ReadAllTextAsync(resumeFilePath);
+                        _logger.LogInformation("✅ Resume file read successfully.");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "❌ Failed to read resume file at: {ResumeFilePath}", resumeFilePath);
+                        throw new IOException($"Error reading resume file at {resumeFilePath}", ex);
+                    }
+                    _logger.LogInformation("Generating application document...");
+                    await _documentCoordinator.GenerateDocumentAsync(inputResumeContent, urlJobBoard);
+                    _logger.LogInformation("✅ Application document generated successfully.");
+                    await _storageService.SaveJobsAsync(jobDetails);
                 }
-
-                string resumeFilePath = arguments["--apply"];
-                string urlJobBoard = arguments.GetValueOrDefault("--urljobboard", string.Empty);
-
-                string inputResumeContent;
-                try
-                {
-                    _logger.LogInformation("Reading resume file from path: {ResumeFilePath}", resumeFilePath);
-                    inputResumeContent = await File.ReadAllTextAsync(resumeFilePath);
-                    _logger.LogInformation("✅ Resume file read successfully.");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "❌ Failed to read resume file at: {ResumeFilePath}", resumeFilePath);
-                    throw new IOException($"Error reading resume file at {resumeFilePath}", ex);
-                }
-
-                _logger.LogInformation("Generating application document...");
-                await _documentCoordinator.GenerateDocumentAsync(inputResumeContent, urlJobBoard);
-                _logger.LogInformation("✅ Application document generated successfully.");
-
-                await _storageService.SaveJobsAsync(jobDetails);
-                _logger.LogInformation("✅ Job details saved successfully.");
             }
             else
             {

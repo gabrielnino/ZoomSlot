@@ -86,7 +86,10 @@ public class Program
                 services.AddSingleton<IDirectoryCheck, DirectoryCheck>();
                 services.AddSingleton<IJobStorageService, JsonJobStorageService>();
                 services.AddSingleton<IDocumentParse, DocumentParse>();
+                services.AddSingleton<IGenerator, Generator>();
                 services.AddSingleton<IDocumentCoordinator, DocumentCoordinator>();
+                services.AddSingleton<IOpenAIClient, OpenAIClient>();
+                services.AddSingleton<IDocumentPDF, DocumentPDF>();
                 services.AddSingleton<IUtil, Util>();
             });
 }

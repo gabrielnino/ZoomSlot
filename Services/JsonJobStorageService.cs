@@ -47,13 +47,6 @@ namespace Services
 
         public async Task<IEnumerable<JobOfferDetail>> LoadJobsAsync()
         {
-            if (!File.Exists(StorageFile))
-            {
-                _logger.LogWarning("⚠️ Storage file '{StorageFile}' not found", StorageFile);
-                return Enumerable.Empty<JobOfferDetail>();
-            }
-
-            await _fileLock.WaitAsync();
             try
             {
                 var lastFolder = GetLatestJobFolder();
@@ -86,25 +79,18 @@ namespace Services
                 _logger.LogError(ex, "❌ Failed to load job details");
                 throw;
             }
-            finally
-            {
-                _fileLock.Release();
-            }
         }
 
         private string? GetLatestJobFolder()
         {
             var directoryPath = Directory.GetCurrentDirectory();
-            var directories = Directory.GetDirectories(directoryPath, $"*{ExecutionOptions.FolderName}_*", SearchOption.TopDirectoryOnly);
-            return directories
-                .OrderByDescending(d => d, StringComparer.OrdinalIgnoreCase)
-                .FirstOrDefault();
+            return directoryPath;
         }
 
         private string? GetJobDataFilePath(string folderPath)
         {
-            return Directory.GetFiles(folderPath, $"jobs_data_{_executionOptions.TimeStamp}.json", SearchOption.TopDirectoryOnly)
-                .FirstOrDefault();
+            var filesPath = Directory.GetFiles(folderPath, "jobs_data_*.json", SearchOption.TopDirectoryOnly);
+            return filesPath.OrderByDescending(f => f).FirstOrDefault();
         }
 
 

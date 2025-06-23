@@ -3,6 +3,7 @@
     using System.Reflection;
     using Models;
     using PdfSharp.Drawing;
+    using PdfSharp.Fonts;
     using PdfSharp.Pdf;
 
     internal static class PdfHeaderBuilder
@@ -25,8 +26,14 @@
             margin = 50;
             interline = 20;
             yPosition = margin;
+            XFont titleFont;
+            VerdanaFontResolver verdanaFontResolver = new VerdanaFontResolver();
 
-            var titleFont = new XFont(familyName, 18, XFontStyleEx.Bold);
+            GlobalFontSettings.FontResolver = verdanaFontResolver;
+
+            titleFont = new XFont(familyName, 18, XFontStyleEx.Bold);
+
+
             gfx.DrawString(resume.Name, titleFont, XBrushes.Black, margin, yPosition);
             yPosition += interline;
 

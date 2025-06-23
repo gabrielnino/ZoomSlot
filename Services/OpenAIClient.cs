@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Json;
+using Configuration;
 using Models;
 using Services.Interfaces;
 
@@ -9,11 +10,11 @@ namespace Services
         private readonly string _apiKey;
         private readonly HttpClient _httpClient;
 
-        public OpenAIClient(string apiKey, string uriString, HttpClient? httpClient = null)
+        public OpenAIClient(AppConfig appConfig, HttpClient? httpClient = null)
         {
 
 
-            _apiKey = Environment.GetEnvironmentVariable(apiKey, EnvironmentVariableTarget.Machine);
+            _apiKey = Environment.GetEnvironmentVariable(appConfig.Llm.ApiKey, EnvironmentVariableTarget.Machine);
 
             if (string.IsNullOrWhiteSpace(_apiKey))
             {
@@ -21,7 +22,7 @@ namespace Services
             }
 
             _httpClient = httpClient ?? new HttpClient();
-            _httpClient.BaseAddress = new Uri(uriString);
+            _httpClient.BaseAddress = new Uri(appConfig.Llm.Url);
             if (!_httpClient.DefaultRequestHeaders.Contains("Authorization"))
             {
                 _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_apiKey}");

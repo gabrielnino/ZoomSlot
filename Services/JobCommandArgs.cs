@@ -14,7 +14,7 @@
 
         public JobCommandArgs(string[] args)
         {
-            MainCommand = args.FirstOrDefault(IsCommand) ?? "--help";
+            MainCommand = args.FirstOrDefault(IsCommand) ?? args.FirstOrDefault(IsArgument).Split("=").FirstOrDefault();
 
             Arguments = args
                 .Where(IsArgument)
@@ -30,7 +30,6 @@
 
         private static bool IsCommand(string arg) => ValidCommands.Contains(arg);
 
-        private static bool IsArgument(string arg) =>
-            arg.StartsWith("--") && arg.Contains("=");
+        private static bool IsArgument(string arg) =>  arg.StartsWith("--") && arg.Contains("=");
     }
 }

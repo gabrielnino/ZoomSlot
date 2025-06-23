@@ -7,12 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Fonts\verdana.ttf" />
+    <None Remove="Fonts\verdanab.ttf" />
     <None Remove="PDF\Addional\Images\email-icon.png" />
     <None Remove="PDF\Addional\Images\linkedin-icon.png" />
     <None Remove="PDF\Addional\Images\phone-icon.png" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Fonts\verdana.ttf" />
+    <EmbeddedResource Include="Fonts\verdanab.ttf" />
     <EmbeddedResource Include="PDF\Addional\Images\email-icon.png" />
     <EmbeddedResource Include="PDF\Addional\Images\linkedin-icon.png" />
     <EmbeddedResource Include="PDF\Addional\Images\phone-icon.png" />
