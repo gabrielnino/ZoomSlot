@@ -7,13 +7,27 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="PDF\Addional\Images\email-icon.png" />
+    <None Remove="PDF\Addional\Images\linkedin-icon.png" />
+    <None Remove="PDF\Addional\Images\phone-icon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="PDF\Addional\Images\email-icon.png" />
+    <EmbeddedResource Include="PDF\Addional\Images\linkedin-icon.png" />
+    <EmbeddedResource Include="PDF\Addional\Images\phone-icon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Configuration\Configuration.csproj" />
     <ProjectReference Include="..\Models\Models.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="HtmlAgilityPack" Version="1.12.1" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.6" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="PDFsharp" Version="6.2.0" />
     <PackageReference Include="Selenium.WebDriver" Version="4.33.0" />
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="9.0.6" />
     <PackageReference Include="System.Reactive" Version="6.0.1" />

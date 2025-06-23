@@ -74,7 +74,7 @@ public class Program
                 services.AddTransient<SearchCommand>();
                 services.AddSingleton<CommandFactory>();
                 services.AddTransient<IJobSearchCoordinator, JobSearchCoordinator>();
-                services.AddTransient<IDetailProcessing, Services.DetailProcessing>();
+                services.AddTransient<IDetailProcessing, DetailProcessing>();
                 services.AddTransient<ILoginService, LoginService>();
                 services.AddTransient<ISecurityCheck, SecurityCheck>();
                 services.AddTransient<ICaptureSnapshot, CaptureSnapshot>();
@@ -83,7 +83,7 @@ public class Program
                 services.AddTransient<IPageProcessor, PageProcessor>();  // ⚠️ Cambiado a Transient
                 services.AddSingleton<IDirectoryCheck, DirectoryCheck>();
                 services.AddSingleton<IJobStorageService, JsonJobStorageService>();
-                services.AddSingleton<IDocumentMapper, DocumentMapper>();
+                services.AddSingleton<IDocumentParse, DocumentParse>();
                 services.AddSingleton<IUtil, Util>();
                 services.AddTransient<ExportCommand>();
             });

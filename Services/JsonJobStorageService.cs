@@ -7,13 +7,19 @@ namespace Services
 {
     public class JsonJobStorageService : IJobStorageService, IDisposable
     {
-        private const string StorageFile = "jobs_data.json";
+        private readonly string? StorageFile;
         private readonly ILogger<JsonJobStorageService> _logger;
         private readonly SemaphoreSlim _fileLock = new(1, 1);
+        private readonly ExecutionOptions _executionOptions;
 
-        public JsonJobStorageService(ILogger<JsonJobStorageService> logger)
+        public JsonJobStorageService(ILogger<JsonJobStorageService> logger, ExecutionOptions executionOptions)
         {
             _logger = logger;
+            _executionOptions = executionOptions;
+            if(StorageFile == null)
+            {
+                StorageFile = $"jobs_data_{_executionOptions.TimeStamp}.json";
+            }
             EnsureStorageDirectoryExists();
         }
 
@@ -46,11 +52,15 @@ namespace Services
                 _logger.LogInformation("⚠️ Storage file not found");
                 return Enumerable.Empty<JobOfferDetail>();
             }
-
+            
             await _fileLock.WaitAsync();
             try
             {
-                var json = await File.ReadAllTextAsync(StorageFile);
+                var directoryPath = Directory.GetCurrentDirectory();
+                var directories = Directory.GetDirectories(directoryPath, $"*{ExecutionOptions.FolderName}_*", SearchOption.TopDirectoryOnly);
+                var lastFolder = directories.OrderByDescending(d => d).FirstOrDefault();
+                var filePath = Directory.GetFiles(lastFolder, $"jobs_data_{_executionOptions.TimeStamp}.json", SearchOption.TopDirectoryOnly).FirstOrDefault();
+                var json = await File.ReadAllTextAsync(filePath);
                 var jobs = JsonConvert.DeserializeObject<List<JobOfferDetail>>(json) ?? new List<JobOfferDetail>();
                 _logger.LogInformation("✅ Loaded {JobCount} job details", jobs.Count);
                 return jobs;
