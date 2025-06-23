@@ -2,6 +2,6 @@
 {
     public interface IDocumentCoordinator
     {
-        void GenerateDocumentAsync();
+        Task GenerateDocumentAsync(string inputResume, string urlJobBoard);
     }
 }

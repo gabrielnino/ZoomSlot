@@ -17,7 +17,7 @@ namespace Commands
             _logger = logger;
         }
 
-        public Task ExecuteAsync()
+        public Task ExecuteAsync(Dictionary<string, string>? Arguments)
         {
             _logger?.LogInformation("Displaying help information");
             Console.WriteLine("Available commands:");

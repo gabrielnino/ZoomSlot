@@ -16,7 +16,7 @@ namespace Commands
             _storageService = storageService;
         }
 
-        public async Task ExecuteAsync()
+        public async Task ExecuteAsync(Dictionary<string, string>? arguments = null)
         {
             _logger.LogInformation("Starting job search...");
             var jobDetails = await _linkedInService.SearchJobsAsync();

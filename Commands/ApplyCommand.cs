@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Services;
 using Services.Interfaces;
 
 namespace Commands
@@ -8,21 +9,24 @@ namespace Commands
         private readonly IJobSearchCoordinator _linkedInService;
         private readonly ILogger<SearchCommand> _logger;
         private readonly IJobStorageService _storageService;
+        private readonly IDocumentCoordinator _documentCoordinator;
 
-        public ApplyCommand(IJobSearchCoordinator linkedInService, ILogger<SearchCommand> logger, IJobStorageService storageService)
+        public ApplyCommand(ILogger<SearchCommand> logger, IDocumentCoordinator documentCoordinator)
         {
-            _linkedInService = linkedInService;
             _logger = logger;
-            _storageService = storageService;
+            _documentCoordinator = documentCoordinator;
         }
 
-        public async Task ExecuteAsync()
+        public async Task ExecuteAsync(Dictionary<string, string>? arguments = null)
         {
             _logger.LogInformation("Starting job search...");
             var jobDetails = await _linkedInService.SearchJobsAsync();
             if (jobDetails != null && jobDetails.Any())
             {
-                await _storageService.SaveJobsAsync(jobDetails);
+                string inputResume = arguments["--apply"];
+                string urlJobBoard = arguments["--urljobboard"];
+                await _documentCoordinator.GenerateDocumentAsync(inputResume, urlJobBoard);
+
                 _logger.LogInformation("✅ Job search completed and job details saved.");
             }
             else

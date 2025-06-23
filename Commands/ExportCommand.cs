@@ -22,7 +22,7 @@ namespace Commands
             _config = config;
         }
 
-        public async Task ExecuteAsync()
+        public async Task ExecuteAsync(Dictionary<string, string>? arguments = null)
         {
             try
             {

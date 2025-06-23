@@ -2,6 +2,6 @@
 {
     public interface ICommand
     {
-        Task ExecuteAsync();
+        Task ExecuteAsync(Dictionary<string, string>? arguments=null);
     }
 }

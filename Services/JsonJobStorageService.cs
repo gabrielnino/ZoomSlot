@@ -49,20 +49,36 @@ namespace Services
         {
             if (!File.Exists(StorageFile))
             {
-                _logger.LogInformation("⚠️ Storage file not found");
+                _logger.LogWarning("⚠️ Storage file '{StorageFile}' not found", StorageFile);
                 return Enumerable.Empty<JobOfferDetail>();
             }
-            
+
             await _fileLock.WaitAsync();
             try
             {
-                var directoryPath = Directory.GetCurrentDirectory();
-                var directories = Directory.GetDirectories(directoryPath, $"*{ExecutionOptions.FolderName}_*", SearchOption.TopDirectoryOnly);
-                var lastFolder = directories.OrderByDescending(d => d).FirstOrDefault();
-                var filePath = Directory.GetFiles(lastFolder, $"jobs_data_{_executionOptions.TimeStamp}.json", SearchOption.TopDirectoryOnly).FirstOrDefault();
+                var lastFolder = GetLatestJobFolder();
+                if (lastFolder == null)
+                {
+                    _logger.LogWarning("⚠️ No matching job folders found");
+                    return Enumerable.Empty<JobOfferDetail>();
+                }
+
+                var filePath = GetJobDataFilePath(lastFolder);
+                if (filePath == null || !File.Exists(filePath))
+                {
+                    _logger.LogWarning("⚠️ Job data file not found in '{LastFolder}'", lastFolder);
+                    return Enumerable.Empty<JobOfferDetail>();
+                }
+
                 var json = await File.ReadAllTextAsync(filePath);
+                if (string.IsNullOrWhiteSpace(json))
+                {
+                    _logger.LogWarning("⚠️ Job data file '{FilePath}' is empty", filePath);
+                    return Enumerable.Empty<JobOfferDetail>();
+                }
+
                 var jobs = JsonConvert.DeserializeObject<List<JobOfferDetail>>(json) ?? new List<JobOfferDetail>();
-                _logger.LogInformation("✅ Loaded {JobCount} job details", jobs.Count);
+                _logger.LogInformation("✅ Loaded {JobCount} job details from '{FilePath}'", jobs.Count, filePath);
                 return jobs;
             }
             catch (Exception ex)
@@ -75,6 +91,22 @@ namespace Services
                 _fileLock.Release();
             }
         }
+
+        private string? GetLatestJobFolder()
+        {
+            var directoryPath = Directory.GetCurrentDirectory();
+            var directories = Directory.GetDirectories(directoryPath, $"*{ExecutionOptions.FolderName}_*", SearchOption.TopDirectoryOnly);
+            return directories
+                .OrderByDescending(d => d, StringComparer.OrdinalIgnoreCase)
+                .FirstOrDefault();
+        }
+
+        private string? GetJobDataFilePath(string folderPath)
+        {
+            return Directory.GetFiles(folderPath, $"jobs_data_{_executionOptions.TimeStamp}.json", SearchOption.TopDirectoryOnly)
+                .FirstOrDefault();
+        }
+
 
         public async Task<int> GetJobCountAsync()
         {

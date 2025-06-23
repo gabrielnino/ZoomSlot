@@ -1,35 +1,42 @@
 ﻿using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Services;
 
 namespace Commands
 {
-    public class CommandFactory(IServiceProvider serviceProvider)
+    public class CommandFactory
     {
-        private readonly IServiceProvider _serviceProvider = serviceProvider;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly JobCommandArgs _jobCommandArgs;
 
-        public IEnumerable<ICommand> CreateCommand(string[] args)
+        public CommandFactory(IServiceProvider serviceProvider, JobCommandArgs jobCommandArgs)
         {
-            if (args.Length == 0 || args.Contains("--help"))
-                return [_serviceProvider.GetRequiredService<HelpCommand>()];
-
-            var commands = args
-                .Where(arg => arg == "--search" || arg == "--export" || arg == "--apply")
-                .Distinct()
-                .ToList();
-
-            if (commands.Contains("--search") && commands[0] != "--search")
-            {
-                commands.Remove("--search");
-                commands.Insert(0, "--search");
-            }
-
-            return [.. commands.Select<string, ICommand>(arg => arg switch
-            {
-                "--search" => _serviceProvider.GetRequiredService<SearchCommand>(),
-                "--export" => _serviceProvider.GetRequiredService<ExportCommand>(),
-                _ => throw new ArgumentException($"Invalid command argument: {arg}")
-            })];
+            _serviceProvider = serviceProvider;
+            _jobCommandArgs = jobCommandArgs;
         }
 
+        public IEnumerable<ICommand> CreateCommand()
+        {
+            var commands = new List<ICommand>();
+
+            switch (_jobCommandArgs.MainCommand.ToLowerInvariant())
+            {
+                case "--search":
+                    commands.Add(_serviceProvider.GetRequiredService<SearchCommand>());
+                    break;
+                case "--export":
+                    commands.Add(_serviceProvider.GetRequiredService<ExportCommand>());
+                    break;
+                case "--apply":
+                    commands.Add(_serviceProvider.GetRequiredService<ApplyCommand>());
+                    break;
+                default:
+                    commands.Add(_serviceProvider.GetRequiredService<HelpCommand>());
+                    break;
+            }
+
+            return commands;
+        }
     }
 }
+

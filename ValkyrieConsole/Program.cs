@@ -11,10 +11,8 @@ using Services.Interfaces;
 
 public class Program
 {
-    private static JobCommandArgs? commandArgs;
     public static async Task Main(string[] args)
     {
-        commandArgs = new JobCommandArgs(args);
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
             .WriteTo.Console()
@@ -34,11 +32,14 @@ public class Program
             var host = CreateHostBuilder(args).Build();
 
             var commandFactory = host.Services.GetRequiredService<CommandFactory>();
-            var commands = commandFactory.CreateCommand(args);
+            var commands = commandFactory.CreateCommand();
+
             foreach (var command in commands)
             {
-                await command.ExecuteAsync();
+                var jobArgs = host.Services.GetRequiredService<JobCommandArgs>();
+                await command.ExecuteAsync(jobArgs.Arguments);
             }
+
             Log.Information("ValkyrieHire application completed successfully");
         }
         catch (Exception ex)
@@ -52,9 +53,8 @@ public class Program
         }
     }
 
-    private static IHostBuilder CreateHostBuilder(string[] args)
-    {
-        return Host.CreateDefaultBuilder(args)
+    private static IHostBuilder CreateHostBuilder(string[] args) =>
+        Host.CreateDefaultBuilder(args)
             .UseSerilog()
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
@@ -62,30 +62,31 @@ public class Program
                 config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
                 config.AddEnvironmentVariables();
             })
-            .ConfigureServices(static (hostingContext, services) =>
+            .ConfigureServices((hostingContext, services) =>
             {
-                // Configuration
                 var config = hostingContext.Configuration.Get<AppConfig>();
                 services.AddSingleton(config);
-                var execution = new ExecutionOptions();
-                services.AddSingleton<ExecutionOptions>(execution);
-                services.AddSingleton(commandArgs);
+                services.AddSingleton(new ExecutionOptions());
+                services.AddSingleton(new JobCommandArgs(args));
+
+                services.AddSingleton<CommandFactory>();
                 services.AddTransient<HelpCommand>();
                 services.AddTransient<SearchCommand>();
-                services.AddSingleton<CommandFactory>();
+                services.AddTransient<ExportCommand>();
+                services.AddTransient<ApplyCommand>();
+
                 services.AddTransient<IJobSearchCoordinator, JobSearchCoordinator>();
                 services.AddTransient<IDetailProcessing, DetailProcessing>();
                 services.AddTransient<ILoginService, LoginService>();
                 services.AddTransient<ISecurityCheck, SecurityCheck>();
                 services.AddTransient<ICaptureSnapshot, CaptureSnapshot>();
                 services.AddSingleton<IWebDriverFactory, ChromeDriverFactory>();
-                services.AddTransient<IJobSearch, JobSearch>();          // ⚠️ Cambiado a Transient
-                services.AddTransient<IPageProcessor, PageProcessor>();  // ⚠️ Cambiado a Transient
+                services.AddTransient<IJobSearch, JobSearch>();
+                services.AddTransient<IPageProcessor, PageProcessor>();
                 services.AddSingleton<IDirectoryCheck, DirectoryCheck>();
                 services.AddSingleton<IJobStorageService, JsonJobStorageService>();
                 services.AddSingleton<IDocumentParse, DocumentParse>();
+                services.AddSingleton<IDocumentCoordinator, DocumentCoordinator>();
                 services.AddSingleton<IUtil, Util>();
-                services.AddTransient<ExportCommand>();
             });
-    }
 }
