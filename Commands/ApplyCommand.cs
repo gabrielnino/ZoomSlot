@@ -32,12 +32,12 @@ namespace Commands
                 foreach (var job in jobDetails)
                 {
                     _logger.LogInformation("Found job: {JobTitle} at {CompanyName}", job.SearchText, job.CompanyName);
-                    if (arguments == null || !arguments.ContainsKey("--apply"))
+                    if (arguments == null || !arguments.TryGetValue("--apply", out string? resumeFilePath))
                     {
                         _logger.LogError("❌ '--apply' argument is missing.");
                         throw new ArgumentException("'--apply' argument is required to specify the resume file path.");
                     }
-                    string resumeFilePath = arguments["--apply"];
+
                     string urlJobBoard = arguments.GetValueOrDefault("--urljobboard", string.Empty);
                     string inputResumeContent;
                     try
