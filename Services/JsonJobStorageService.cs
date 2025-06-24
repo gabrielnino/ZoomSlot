@@ -78,21 +78,18 @@ namespace Services
                     _logger.LogWarning("⚠️ No matching job folders found");
                     return [];
                 }
-
                 var filePath = GetJobDataFilePath(lastFolder);
                 if (filePath == null || !File.Exists(filePath))
                 {
                     _logger.LogWarning("⚠️ Job data file not found in '{LastFolder}'", lastFolder);
                     return [];
                 }
-
                 var json = await File.ReadAllTextAsync(filePath);
                 if (string.IsNullOrWhiteSpace(json))
                 {
                     _logger.LogWarning("⚠️ Job data file '{FilePath}' is empty", filePath);
                     return [];
                 }
-
                 var jobs = JsonConvert.DeserializeObject<List<string>>(json) ?? new List<string>();
                 _logger.LogInformation("✅ Loaded {JobCount} job details from '{FilePath}'", jobs.Count, filePath);
                 return jobs;
@@ -114,21 +111,18 @@ namespace Services
                     _logger.LogWarning("⚠️ No matching job folders found");
                     return Enumerable.Empty<JobOfferDetail>();
                 }
-
                 var filePath = GetJobDataFilePath(lastFolder);
                 if (filePath == null || !File.Exists(filePath))
                 {
                     _logger.LogWarning("⚠️ Job data file not found in '{LastFolder}'", lastFolder);
                     return Enumerable.Empty<JobOfferDetail>();
                 }
-
                 var json = await File.ReadAllTextAsync(filePath);
                 if (string.IsNullOrWhiteSpace(json))
                 {
                     _logger.LogWarning("⚠️ Job data file '{FilePath}' is empty", filePath);
                     return Enumerable.Empty<JobOfferDetail>();
                 }
-
                 var jobs = JsonConvert.DeserializeObject<List<JobOfferDetail>>(json) ?? new List<JobOfferDetail>();
                 _logger.LogInformation("✅ Loaded {JobCount} job details from '{FilePath}'", jobs.Count, filePath);
                 return jobs;

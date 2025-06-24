@@ -5,7 +5,7 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<RunArguments>--search --export</RunArguments>
+		<RunArguments>--search --detailed</RunArguments>
 	</PropertyGroup>
 
 	<ItemGroup>

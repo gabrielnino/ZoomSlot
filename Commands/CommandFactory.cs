@@ -23,9 +23,6 @@ namespace Commands
                 case "--search":
                     commands.Add(_serviceProvider.GetRequiredService<SearchCommand>());
                     break;
-                case "--detailed":
-                    commands.Add(_serviceProvider.GetRequiredService<DetailedCommand>());
-                    break;
                 case "--apply":
                     commands.Add(_serviceProvider.GetRequiredService<ApplyCommand>());
                     break;

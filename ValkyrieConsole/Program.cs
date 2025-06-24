@@ -56,7 +56,7 @@ public class Program
         catch (Exception ex)
         {
             Log.Fatal(ex, "Application terminated unexpectedly");
-            Environment.ExitCode = 1; // Signal error to calling process
+            Environment.ExitCode = 1; 
         }
         finally
         {
@@ -82,7 +82,6 @@ public class Program
                services.AddSingleton<CommandFactory>();
                services.AddTransient<HelpCommand>();
                services.AddTransient<SearchCommand>();
-               services.AddTransient<DetailedCommand>();
                services.AddTransient<ApplyCommand>();
                services.AddTransient<IJobSearchCoordinator, JobSearchCoordinator>();
                services.AddTransient<IDetailProcessing, DetailProcessing>();

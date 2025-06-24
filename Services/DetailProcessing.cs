@@ -15,7 +15,7 @@ namespace Services
         private readonly List<JobOfferDetail> _offersDetail;
         private readonly ICaptureSnapshot _capture;
         private readonly ExecutionOptions _executionOptions;
-
+        private readonly ILoginService _loginService;
         private string OffersFilePath => Path.Combine(_executionOptions.ExecutionFolder, "offers.json");
         private string OffersDetailFilePath => Path.Combine(_executionOptions.ExecutionFolder, "offers_detail.json");
 
@@ -25,19 +25,28 @@ namespace Services
             IWebDriverFactory driverFactory,
             ILogger<DetailProcessing> logger,
             ICaptureSnapshot capture,
-            ExecutionOptions executionOptions)
+            ExecutionOptions executionOptions,
+            ILoginService loginService)
         {
             _driver = driverFactory.Create();
             _logger = logger;
             _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(90));
-            _offersDetail = new List<JobOfferDetail>();
+            _offersDetail = [];
             _capture = capture;
             _executionOptions = executionOptions;
             _offersPending = LoadPendingOffers();
+            _loginService = loginService;
         }
 
         public async Task<List<JobOfferDetail>> ProcessOffersAsync(IEnumerable<string> offers, string searchText)
         {
+            if (_offersPending != null && _offersPending.Any())
+            {
+                offers = _offersPending;
+               _logger.LogInformation($"💼 ID:{_executionOptions.TimeStamp} Loaded {offers.Count()}.");
+            }
+
+            await _loginService.LoginAsync(); // Ensure login before processing offers
             foreach (var offer in offers)
             {
                 try
@@ -50,7 +59,6 @@ namespace Services
                     _offersPending.Remove(offer);
                     await SavePendingOffersAsync();
                     await SaveOffersDetailAsync();
-
                     _logger.LogInformation("Successfully processed job offer: {Url}", offer);
                 }
                 catch (WebDriverException ex)

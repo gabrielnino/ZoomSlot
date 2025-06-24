@@ -15,7 +15,6 @@
         public JobCommandArgs(string[] args)
         {
             MainCommand = args.FirstOrDefault(IsCommand) ?? args.FirstOrDefault(IsArgument).Split("=").FirstOrDefault();
-
             Arguments = args
                 .Where(IsArgument)
                 .Select(arg =>

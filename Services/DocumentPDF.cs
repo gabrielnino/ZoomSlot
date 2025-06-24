@@ -18,12 +18,10 @@ namespace Services
         public void GenerateCoverLetterPdf(string outputPath, CoverLetterRequest coverLetterRequest)
         {
             _logger.LogInformation("📝 Generating cover letter PDF at: {OutputPath}", outputPath);
-
             var jobTitle = StringHelpers.NormalizeCompanyName(coverLetterRequest.JobOffer.JobOfferTitle);
             var companyName = StringHelpers.NormalizeCompanyName(coverLetterRequest.JobOffer.CompanyName);
             var fileNameCoverLetter = $"{companyName}_covertLetter_{jobTitle}.pdf";
             var fileNameJobOfferPath = Path.Combine(outputPath, fileNameCoverLetter);
-
             CoverLetterPdf.Generate(fileNameJobOfferPath, coverLetterRequest);
             _logger.LogInformation("✅ Cover letter PDF generated successfully at: {OutputPath}", outputPath);
         }

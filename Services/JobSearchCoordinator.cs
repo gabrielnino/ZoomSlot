@@ -56,13 +56,10 @@ namespace Services
                         return _offers;
                     }
                 }
-
-
                 _logger.LogInformation($"🚀 ID:{_executionOptions.TimeStamp} Starting LinkedIn job search process...");
                 await _loginService.LoginAsync();
                 var searchText = await _searchService.PerformSearchAsync();
                 _offers = await _processService.ProcessAllPagesAsync();
-
                 await SaveOffersAsync(_offers);
                 _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} LinkedIn job search process completed successfully with {_offers?.Count ?? 0} offers found.");
                 return _offers ?? [];
