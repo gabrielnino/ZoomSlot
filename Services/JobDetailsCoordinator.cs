@@ -6,7 +6,7 @@ using System.Text.Json;
 
 namespace Services
 {
-    public class JobSearchCoordinator : IJobSearchCoordinator, IDisposable
+    public class JobDetailsCoordinator : IJobDetailsCoordinator, IDisposable
     {
         private readonly IWebDriver _driver;
         private readonly ILogger<JobSearchCoordinator> _logger;
@@ -15,18 +15,21 @@ namespace Services
         private readonly ExecutionOptions _executionOptions;
         private readonly ICaptureSnapshot _capture;
         private List<string>? _offers;
+        private List<@string>? _offersDetail;
+        private readonly IDetailProcessing _jobOfferDetail;
         private readonly IJobSearch _searchService;
         private readonly IPageProcessor _processService;
         private readonly IDirectoryCheck _directoryCheck;
 
         private string OffersFilePath => Path.Combine(_executionOptions.ExecutionFolder, "offers.json");
 
-        public JobSearchCoordinator(
+        public JobDetailsCoordinator(
             IWebDriverFactory driverFactory,
             ILogger<JobSearchCoordinator> logger,
             ILoginService loginService,
             ICaptureSnapshot capture,
             ExecutionOptions executionOptions,
+            IDetailProcessing jobOfferDetail,
             IJobSearch searchService,
             IPageProcessor processService,
             IDirectoryCheck directoryCheck)
@@ -38,21 +41,23 @@ namespace Services
             _directoryCheck.EnsureDirectoryExists(_executionOptions.ExecutionFolder);
             _loginService = loginService;
             _capture = capture;
+            _jobOfferDetail = jobOfferDetail;
             _searchService = searchService;
             _processService = processService;
         }
 
-        public async Task<List<string>> SearchJobsAsync()
+        public async Task<List<@string>> DetailJobsAsync()
         {
             try
             {
-                _logger.LogInformation($"🚀 ID:{_executionOptions.TimeStamp} Starting LinkedIn job search process...");
-                await _loginService.LoginAsync();
-                var searchText = await _searchService.PerformSearchAsync();
-                _offers = await _processService.ProcessAllPagesAsync();
-                await SaveOffersAsync();
-                _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} LinkedIn job search process completed successfully.");
-                return _offers ?? [];
+                //_logger.LogInformation($"🚀 ID:{_executionOptions.TimeStamp} Starting LinkedIn job search process...");
+                //await _loginService.LoginAsync();
+                //var searchText = await _searchService.PerformSearchAsync();
+                //_offers = await _processService.ProcessAllPagesAsync();
+                //await SaveOffersAsync();
+                //_offersDetail = await _jobOfferDetail.ProcessOffersAsync(_offers, searchText);
+                //_logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} LinkedIn job search process completed successfully.");
+                return _offersDetail ?? [];
             }
             catch (Exception ex)
             {
@@ -104,7 +109,7 @@ namespace Services
             }
         }
 
-        ~JobSearchCoordinator()
+        ~JobDetailsCoordinator()
         {
             Dispose();
         }

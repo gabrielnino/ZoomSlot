@@ -14,10 +14,7 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
-        const int MAX_RETRIES = 3;
-        const int BASE_DELAY_MS = 2000;
         var executionOptions = new ExecutionOptions();
-        // Initialize directories
         Directory.CreateDirectory(executionOptions.ExecutionFolder);
         var logPath = Path.Combine(executionOptions.ExecutionFolder, "Logs");
         Directory.CreateDirectory(logPath);
@@ -32,60 +29,39 @@ public class Program
                 rollOnFileSizeLimit: true
             )
             .CreateLogger();
-        int intented = Random.Shared.Next(1, 90);
-        int series = 0;
-        do
-        {
 
-            try
+        try
+        {
+            using var host = CreateHostBuilder(args, executionOptions).Build();
+            var commandFactory = host.Services.GetRequiredService<CommandFactory>();
+            var commands = commandFactory.CreateCommand().ToList();
+            var jobArgs = host.Services.GetRequiredService<JobCommandArgs>();
+            Log.Information($"Starting processing {commands.Count} commands");
+            foreach (var command in commands)
             {
-                using var host = CreateHostBuilder(args, executionOptions).Build();
-                var commandFactory = host.Services.GetRequiredService<CommandFactory>();
-                var commands = commandFactory.CreateCommand().ToList();
-                var jobArgs = host.Services.GetRequiredService<JobCommandArgs>();
-                Log.Information($"Starting processing {commands.Count} commands");
-                foreach (var command in commands)
+                try
                 {
-                    int attempt = 0;
-                    bool succeeded = false;
-                    while (attempt <= MAX_RETRIES && !succeeded)
-                    {
-                        attempt++;
-                        try
-                        {
-                            Log.Information($"Executing {command.GetType().Name} (Attempt {attempt}/{MAX_RETRIES})");
-                            await command.ExecuteAsync(jobArgs.Arguments);
-                            succeeded = true;
-                            Log.Information($"{command.GetType().Name} completed successfully");
-                        }
-                        catch (Exception ex) when (attempt < MAX_RETRIES)
-                        {
-                            double begining = Math.Pow(2, attempt - 1);
-                            int end = Random.Shared.Next(6_000, 900_000);
-                            var delay = (int)(BASE_DELAY_MS * begining + end);
-                            Log.Warning(ex, $"Attempt {attempt} failed. Retrying in {delay}ms");
-                            await Task.Delay(delay);
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.Error(ex, $"Final attempt {attempt} failed for {command.GetType().Name}");
-                            throw new AggregateException($"Failed to execute {command.GetType().Name} after {MAX_RETRIES} attempts", ex);
-                        }
-                    }
+                    Log.Information($"Executing");
+                    await command.ExecuteAsync(jobArgs.Arguments);
+                    Log.Information($"{command.GetType().Name} completed successfully");
                 }
-                Log.Information("All commands processed successfully"); ;
+                catch (Exception ex)
+                {
+                    Log.Error(ex, $"Final attempt failed for {command.GetType().Name}");
+                    throw new AggregateException($"Failed to execute {command.GetType().Name} after attempts", ex);
+                }
             }
-            catch (Exception ex)
-            {
-                Log.Fatal(ex, "Application terminated unexpectedly");
-                Environment.ExitCode = 1; // Signal error to calling process
-            }
-            finally
-            {
-                await Log.CloseAndFlushAsync();
-            }
-            series++;
-        } while (series < intented);
+            Log.Information("All commands processed successfully"); ;
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Application terminated unexpectedly");
+            Environment.ExitCode = 1; // Signal error to calling process
+        }
+        finally
+        {
+            await Log.CloseAndFlushAsync();
+        }
     }
 
     private static IHostBuilder CreateHostBuilder(string[] args, ExecutionOptions executionOptions) =>
@@ -105,7 +81,7 @@ public class Program
                services.AddSingleton(new JobCommandArgs(args));
                services.AddSingleton<CommandFactory>();
                services.AddTransient<HelpCommand>();
-               services.AddTransient<SearchCommand>();
+               services.AddTransient<DetailedCommand>();
                services.AddTransient<ExportCommand>();
                services.AddTransient<ApplyCommand>();
                services.AddTransient<IJobSearchCoordinator, JobSearchCoordinator>();

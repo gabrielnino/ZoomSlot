@@ -11,7 +11,7 @@ namespace Services
         private readonly ILogger<DetailProcessing> _logger;
         private readonly IWebDriver _driver;
         private readonly WebDriverWait _wait;
-        private readonly List<Models.JobOfferDetail> _offersDetail;
+        private readonly List<Models.@string> _offersDetail;
         private readonly ICaptureSnapshot _capture;
         private readonly ExecutionOptions _executionOptions;
         private const string FolderName = "SecurityCheck";
@@ -23,7 +23,7 @@ namespace Services
             ExecutionOptions executionOptions,
             IDirectoryCheck directoryCheck)
         {
-            _offersDetail = new List<Models.JobOfferDetail>();
+            _offersDetail = new List<Models.@string>();
             _driver = driverFactory.Create();
             _logger = logger;
             _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));

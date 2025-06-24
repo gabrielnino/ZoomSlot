@@ -44,7 +44,7 @@ namespace Services
 
             try
             {
-                var listJobOfferDetail = await _jobStorageService.LoadJobsAsync();
+                var listJobOfferDetail = await _jobStorageService.LoadJobsDetailAsync();
                 _logger.LogInformation("📊 Loaded {JobCount} job offers from storage", listJobOfferDetail.Count());
 
                 if (!listJobOfferDetail.Any())

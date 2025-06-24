@@ -21,7 +21,7 @@ namespace Commands
             switch (_jobCommandArgs.MainCommand.ToLowerInvariant())
             {
                 case "--search":
-                    commands.Add(_serviceProvider.GetRequiredService<SearchCommand>());
+                    commands.Add(_serviceProvider.GetRequiredService<DetailedCommand>());
                     break;
                 case "--export":
                     commands.Add(_serviceProvider.GetRequiredService<ExportCommand>());

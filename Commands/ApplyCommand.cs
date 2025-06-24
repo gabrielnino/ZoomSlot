@@ -25,13 +25,13 @@ namespace Commands
         public async Task ExecuteAsync(Dictionary<string, string>? arguments = null)
         {
             _logger.LogInformation("Starting job application process...");
-            var jobDetails = await _storageService.LoadJobsAsync();
+            var jobDetails = await _storageService.LoadJobsDetailAsync();
             _logger.LogInformation("Found {JobCount} job(s) to apply for.", jobDetails.Count());
             if (jobDetails != null && jobDetails.Any())
             {
                 foreach (var job in jobDetails)
                 {
-                    _logger.LogInformation("Found job: {JobTitle} at {CompanyName}", job.SearchText, job.CompanyName);
+                    _logger.LogInformation("Found job: {JobTitle}", job);
                     if (arguments == null || !arguments.TryGetValue("--apply", out string? resumeFilePath))
                     {
                         _logger.LogError("❌ '--apply' argument is missing.");
@@ -54,7 +54,7 @@ namespace Commands
                     _logger.LogInformation("Generating application document...");
                     await _documentCoordinator.GenerateDocumentAsync(inputResumeContent, urlJobBoard);
                     _logger.LogInformation("✅ Application document generated successfully.");
-                    await _storageService.SaveJobsAsync(jobDetails);
+                    await _storageService.SaveJobOfferDetailAsync(jobDetails);
                 }
             }
             else

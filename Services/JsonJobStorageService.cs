@@ -23,7 +23,7 @@ namespace Services
             EnsureStorageDirectoryExists();
         }
 
-        public async Task SaveJobsAsync(IEnumerable<JobOfferDetail> jobs)
+        public async Task SaveJobOfferDetailAsync(IEnumerable<JobOfferDetail> jobs)
         {
             if (jobs == null) throw new ArgumentNullException(nameof(jobs));
 
@@ -45,7 +45,66 @@ namespace Services
             }
         }
 
-        public async Task<IEnumerable<JobOfferDetail>> LoadJobsAsync()
+        public async Task SaveJobsAsync(IEnumerable<string> jobs)
+        {
+            if (jobs == null) throw new ArgumentNullException(nameof(jobs));
+
+            await _fileLock.WaitAsync();
+            try
+            {
+                var json = JsonConvert.SerializeObject(jobs, Formatting.Indented);
+                await File.WriteAllTextAsync(StorageFile, json);
+                _logger.LogInformation("✅ Saved {JobCount} job details to storage", jobs.Count());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Failed to save job details");
+                throw;
+            }
+            finally
+            {
+                _fileLock.Release();
+            }
+        }
+
+
+        public async Task<IEnumerable<string>> LoadJobsAsync()
+        {
+            try
+            {
+                var lastFolder = GetLatestJobFolder();
+                if (lastFolder == null)
+                {
+                    _logger.LogWarning("⚠️ No matching job folders found");
+                    return [];
+                }
+
+                var filePath = GetJobDataFilePath(lastFolder);
+                if (filePath == null || !File.Exists(filePath))
+                {
+                    _logger.LogWarning("⚠️ Job data file not found in '{LastFolder}'", lastFolder);
+                    return [];
+                }
+
+                var json = await File.ReadAllTextAsync(filePath);
+                if (string.IsNullOrWhiteSpace(json))
+                {
+                    _logger.LogWarning("⚠️ Job data file '{FilePath}' is empty", filePath);
+                    return [];
+                }
+
+                var jobs = JsonConvert.DeserializeObject<List<string>>(json) ?? new List<string>();
+                _logger.LogInformation("✅ Loaded {JobCount} job details from '{FilePath}'", jobs.Count, filePath);
+                return jobs;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Failed to load job details");
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<JobOfferDetail>> LoadJobsDetailAsync()
         {
             try
             {
