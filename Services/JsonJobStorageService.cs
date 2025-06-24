@@ -93,7 +93,6 @@ namespace Services
             return filesPath.OrderByDescending(f => f).FirstOrDefault();
         }
 
-
         public async Task<int> GetJobCountAsync()
         {
             var jobs = await LoadJobsAsync();

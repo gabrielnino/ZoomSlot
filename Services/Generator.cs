@@ -35,7 +35,7 @@ namespace Services
             stringGenerateResume = StringHelpers.ExtractJsonContent(stringGenerateResume);
             _logger.LogDebug("Extracted JSON content for resume.");
 
-            var generateResume = JsonConvert.DeserializeObject<Resume>(stringGenerateResume);
+            var generateResume = System.Text.Json.JsonSerializer.Deserialize<Resume>(stringGenerateResume);
 
             if (generateResume == null)
             {
@@ -63,7 +63,7 @@ namespace Services
             stringCoverLetter = StringHelpers.ExtractJsonContent(stringCoverLetter);
             _logger.LogDebug("Extracted JSON content for cover letter.");
 
-            var coverLetter = JsonConvert.DeserializeObject<CoverLetter>(stringCoverLetter);
+            var coverLetter = System.Text.Json.JsonSerializer.Deserialize<CoverLetter>(stringCoverLetter);
 
             if (coverLetter == null)
             {

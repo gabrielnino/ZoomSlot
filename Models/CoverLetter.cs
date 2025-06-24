@@ -19,6 +19,7 @@ namespace Models
         public List<string> SoftSkills { get; set; }
         public List<string> Languages { get; set; }
         public List<ProfessionalExperience> ProfessionalExperience { get; set; }
+        [JsonPropertyName("Additional Qualifications")]
         public List<string> AdditionalQualifications { get; set; }
         public Education Education { get; set; }
     }

@@ -117,7 +117,6 @@
                 gfx.DrawString(tech, normalFont, XBrushes.Black, margin, yPosition);
                 yPosition += 10;
             }
-            //gfx.DrawString(techStackString, normalFont, XBrushes.Black, margin, yPosition);
             yPosition += 10;
         }
     }

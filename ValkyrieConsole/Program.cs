@@ -68,13 +68,11 @@ public class Program
                 services.AddSingleton(config);
                 services.AddSingleton(new ExecutionOptions());
                 services.AddSingleton(new JobCommandArgs(args));
-
                 services.AddSingleton<CommandFactory>();
                 services.AddTransient<HelpCommand>();
                 services.AddTransient<SearchCommand>();
                 services.AddTransient<ExportCommand>();
                 services.AddTransient<ApplyCommand>();
-
                 services.AddTransient<IJobSearchCoordinator, JobSearchCoordinator>();
                 services.AddTransient<IDetailProcessing, DetailProcessing>();
                 services.AddTransient<ILoginService, LoginService>();

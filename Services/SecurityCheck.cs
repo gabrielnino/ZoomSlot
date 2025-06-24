@@ -66,14 +66,6 @@ namespace Services
                     return true;
                 }
 
-                //// Detect reCAPTCHA iframe or divs
-                //var recaptchaFrames = _driver.FindElements(By.XPath("//iframe[contains(@src, 'recaptcha')]"));
-                //if (recaptchaFrames.Any())
-                //{
-                //    _logger.LogWarning("⚠️ reCAPTCHA iframe detected on the page.");
-                //    return true;
-                //}
-
                 // Detect common texts indicating human check
                 var bodyText = _driver.FindElement(By.TagName("body")).Text;
                 var indicators = new[] { "are you a human", "please verify", "unusual activity", "security check", "confirm your identity" };

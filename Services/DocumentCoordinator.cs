@@ -47,18 +47,17 @@ namespace Services
             foreach (var jobOfferDetail in listJobOfferDetail)
             {
                 _logger.LogInformation("Processing job offer ID: {JobID}", jobOfferDetail.ID);
-
                 var jobOffer = await _documentParse.ParseJobOfferAsync(jobOfferDetail.Description);
+                jobOffer.Url = jobOfferDetail.Link;
+                jobOffer.RawJobDescription = jobOfferDetail.Description.Split(Environment.NewLine);
+                jobOffer.Description = jobOfferDetail.Description;
                 var resume = await _documentParse.ParseResumeAsync(inputResume);
-
                 _logger.LogInformation("Generating customized resume and cover letter for job ID: {JobID}", jobOfferDetail.ID);
                 var resumeModify = await _generator.CreateResume(jobOffer, resume);
                 var coverLetter = await _generator.CreateCoverLetter(jobOffer, resume);
-
-                var documentFolder = Path.Combine(_executionOptions.ExecutionFolder, jobOfferDetail.ID);
+                var documentFolder = Path.Combine(FolderPath, jobOfferDetail.ID);
                 _directoryCheck.EnsureDirectoryExists(documentFolder);
                 _logger.LogInformation("Ensured document folder exists: {DocumentFolder}", documentFolder);
-
                 var coverLetterRequest = new CoverLetterRequest
                 {
                     UrlJobBoard = urlJobBoard,
@@ -68,10 +67,8 @@ namespace Services
                 };
                 _documentPDF.GenerateCoverLetterPdf(documentFolder, coverLetterRequest);
                 _logger.LogInformation("✅ Generated cover letter PDF for job ID: {JobID}", jobOfferDetail.ID);
-
                 _documentPDF.GenerateJobOfferPdf(documentFolder, jobOffer);
                 _logger.LogInformation("✅ Generated job offer PDF for job ID: {JobID}", jobOfferDetail.ID);
-
                 var resumeRequest = new ResumeRequest
                 {
                     UrlJobBoard = urlJobBoard,

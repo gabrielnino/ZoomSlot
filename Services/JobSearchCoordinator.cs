@@ -45,8 +45,6 @@ namespace Services
             _processService = processService;
         }
 
-
-
         public async Task<List<JobOfferDetail>> SearchJobsAsync()
         {
             try
@@ -95,7 +93,6 @@ namespace Services
                 GC.SuppressFinalize(this);
             }
         }
-
         ~JobSearchCoordinator()
         {
             Dispose();

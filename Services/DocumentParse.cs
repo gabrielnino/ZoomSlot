@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using Models;
 using Services.Interfaces;
-using Services.PDF;
 
 namespace Services
 {

@@ -1,7 +1,4 @@
-﻿using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Models;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
