@@ -86,10 +86,7 @@
                     mockFactory.Object,
                     mockLogger.Object,
                     mockCapture.Object,
-                    mockSecurity.Object,
-                    executionOptions,
-                    mockDirCheck.Object,
-                    mockUtil.Object
+                    executionOptions
                 );
                 var offers = new List<string> { url };
 

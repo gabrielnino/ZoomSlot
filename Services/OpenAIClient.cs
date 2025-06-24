@@ -8,21 +8,14 @@ namespace Services
     public class OpenAIClient : IOpenAIClient
     {
         private readonly string _apiKey;
-        private readonly HttpClient _httpClient;
+        private static readonly HttpClient _httpClient = new();  // Single shared HttpClient
 
-        public OpenAIClient(AppConfig appConfig, HttpClient? httpClient = null)
+        public OpenAIClient(AppConfig appConfig)
         {
+            _apiKey = Environment.GetEnvironmentVariable(appConfig.Llm.ApiKey, EnvironmentVariableTarget.Machine)
+                     ?? throw new ArgumentException("API key cannot be null or whitespace.", nameof(appConfig.Llm.ApiKey));
 
-
-            _apiKey = Environment.GetEnvironmentVariable(appConfig.Llm.ApiKey, EnvironmentVariableTarget.Machine);
-
-            if (string.IsNullOrWhiteSpace(_apiKey))
-            {
-                throw new ArgumentException("API key cannot be null or whitespace.", nameof(_apiKey));
-            }
-
-            _httpClient = httpClient ?? new HttpClient();
-            _httpClient.BaseAddress = new Uri(appConfig.Llm.Url);
+            _httpClient.BaseAddress ??= new Uri(appConfig.Llm.Url);
             if (!_httpClient.DefaultRequestHeaders.Contains("Authorization"))
             {
                 _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_apiKey}");
@@ -31,21 +24,19 @@ namespace Services
 
         public async Task<string> GetChatCompletionAsync(Prompt prompt)
         {
-            if (string.IsNullOrWhiteSpace(prompt.SystemContent) || string.IsNullOrWhiteSpace(prompt.SystemContent))
-                throw new ArgumentException("Code cannot be null or whitespace.", nameof(prompt));
+            if (string.IsNullOrWhiteSpace(prompt.SystemContent) || string.IsNullOrWhiteSpace(prompt.UserContent))
+                throw new ArgumentException("Prompt content cannot be null or whitespace.");
 
             var request = new OpenAIChatRequest
             {
                 Model = "deepseek-chat",
-                Messages =
-                [
-                    new() { Role = "system",  Content = prompt.SystemContent },
-                    new() { Role = "user",  Content = prompt.UserContent }
+                Messages = [
+                    new() { Role = "system", Content = prompt.SystemContent },
+                new() { Role = "user", Content = prompt.UserContent }
                 ]
             };
 
             var response = await _httpClient.PostAsJsonAsync("v1/chat/completions", request);
-
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
@@ -53,14 +44,12 @@ namespace Services
             }
 
             var responseData = await response.Content.ReadFromJsonAsync<OpenAIChatResponse>();
-
-            if (responseData == null || responseData.Choices == null || responseData.Choices.Count == 0)
+            if (responseData?.Choices == null || responseData.Choices.Count == 0)
             {
                 throw new Exception("No response received from OpenAI API.");
             }
 
-            var improvedCode = responseData.Choices[0].Message.Content.Trim();
-            return improvedCode;
+            return responseData.Choices[0].Message.Content.Trim();
         }
     }
 }

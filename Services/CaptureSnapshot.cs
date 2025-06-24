@@ -18,20 +18,22 @@ namespace Services
         public async Task<string> CaptureArtifactsAsync(string executionFolder, string stage)
         {
             var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            _logger.LogWarning($"⚠️ CaptureDebugArtifacts called with {timestamp}");
             if (string.IsNullOrWhiteSpace(stage))
-            {
                 stage = "UnknownStage";
-            }
 
-            var htmlfile = $"{timestamp}.html";
-            var htmlPath = Path.Combine(executionFolder, htmlfile);
-            var screenshotFile = $"{timestamp}.png";
-            var screenshotPath = Path.Combine(executionFolder, screenshotFile);
+            _logger.LogInformation("Capturing artifacts for stage: {Stage} at {Timestamp}", stage, timestamp);
+
+            var htmlPath = Path.Combine(executionFolder, $"{timestamp}.html");
+            var screenshotPath = Path.Combine(executionFolder, $"{timestamp}.png");
+
+            Directory.CreateDirectory(executionFolder);
+
             await File.WriteAllTextAsync(htmlPath, _driver.PageSource);
+
             var screenshot = ((ITakesScreenshot)_driver).GetScreenshot();
             screenshot.SaveAsFile(screenshotPath);
-            _logger.LogDebug($"📸 Debug capture for '{stage}':\nHTML: {htmlfile}\nScreenshot: {screenshotFile}");
+
+            _logger.LogInformation("Artifacts captured: {HtmlPath}, {ScreenshotPath}", htmlPath, screenshotPath);
             return timestamp;
         }
     }
