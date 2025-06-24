@@ -50,6 +50,7 @@ public class Program
             var commandFactory = host.Services.GetRequiredService<CommandFactory>();
             var commands = commandFactory.CreateCommand();
 
+
             foreach (var command in commands)
             {
                 var jobArgs = host.Services.GetRequiredService<JobCommandArgs>();
