@@ -81,8 +81,8 @@ public class Program
                services.AddSingleton(new JobCommandArgs(args));
                services.AddSingleton<CommandFactory>();
                services.AddTransient<HelpCommand>();
+               services.AddTransient<SearchCommand>();
                services.AddTransient<DetailedCommand>();
-               services.AddTransient<ExportCommand>();
                services.AddTransient<ApplyCommand>();
                services.AddTransient<IJobSearchCoordinator, JobSearchCoordinator>();
                services.AddTransient<IDetailProcessing, DetailProcessing>();
@@ -101,6 +101,7 @@ public class Program
                services.AddSingleton<IDocumentPDF, DocumentPDF>();
                services.AddSingleton<IUtil, Util>();
                services.AddSingleton<IPageTrackingService, PageTrackingService>();
+               services.AddSingleton<IDetailProcessing, DetailProcessing>();
            });
 }
 

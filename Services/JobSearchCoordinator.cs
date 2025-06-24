@@ -1,8 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Models;
+using Newtonsoft.Json;
 using OpenQA.Selenium;
 using Services.Interfaces;
-using System.Text.Json;
 
 namespace Services
 {
@@ -46,25 +47,46 @@ namespace Services
         {
             try
             {
+                if (!string.IsNullOrWhiteSpace(OffersFilePath) && File.Exists(OffersFilePath))
+                {
+                    _offers = await LoadOffersAsync(OffersFilePath);
+                    if (_offers != null && _offers.Any())
+                    {
+                        _logger.LogInformation($"💼 ID:{_executionOptions.TimeStamp} Loaded {_offers.Count} offers fro{OffersFilePath}.");
+                        return _offers;
+                    }
+                }
+
+
                 _logger.LogInformation($"🚀 ID:{_executionOptions.TimeStamp} Starting LinkedIn job search process...");
                 await _loginService.LoginAsync();
                 var searchText = await _searchService.PerformSearchAsync();
                 _offers = await _processService.ProcessAllPagesAsync();
-                await SaveOffersAsync();
-                _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} LinkedIn job search process completed successfully.");
+
+                await SaveOffersAsync(_offers);
+                _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} LinkedIn job search process completed successfully with {_offers?.Count ?? 0} offers found.");
                 return _offers ?? [];
             }
             catch (Exception ex)
             {
                 var timestamp = await _capture.CaptureArtifactsAsync(_executionOptions.ExecutionFolder, "An unexpected error");
-                _logger.LogError(ex, $"❌ ID:{_executionOptions.TimeStamp} An unexpected error occurred. Debug artifacts saved at {timestamp}");
-                throw new ApplicationException("Job search failed.", ex);
+                _logger.LogError(ex, $"❌ ID:{_executionOptions.TimeStamp} An unexpected error occurred during job search. Debug artifacts saved at {timestamp}");
+                throw new ApplicationException("Job search process failed. See inner exception for details.", ex);
             }
         }
 
-        private async Task SaveOffersAsync()
+
+
+        private async Task<List<string>>? LoadOffersAsync(string offersFilePath)
         {
-            if (_offers == null || !_offers.Any())
+            var json = await File.ReadAllTextAsync(offersFilePath);
+            var offers = JsonConvert.DeserializeObject<List<string>>(json) ?? new List<string>();
+            return offers;
+        }
+
+        private async Task SaveOffersAsync(List<string> offers)
+        {
+            if (offers == null || !offers.Any())
             {
                 _logger.LogWarning($"⚠️ ID:{_executionOptions.TimeStamp} No offers to save.");
                 return;
@@ -72,9 +94,9 @@ namespace Services
 
             try
             {
-                var json = JsonSerializer.Serialize(_offers, new JsonSerializerOptions { WriteIndented = true });
+                var json = System.Text.Json.JsonSerializer.Serialize(offers, new JsonSerializerOptions { WriteIndented = true });
                 await File.WriteAllTextAsync(OffersFilePath, json);
-                _logger.LogInformation($"💾 ID:{_executionOptions.TimeStamp} Saved {_offers.Count} offers to: {OffersFilePath}");
+                _logger.LogInformation($"💾 ID:{_executionOptions.TimeStamp} Saved {offers.Count} offers to: {OffersFilePath}");
             }
             catch (Exception ex)
             {

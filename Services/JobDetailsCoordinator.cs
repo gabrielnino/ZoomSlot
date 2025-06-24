@@ -15,12 +15,10 @@ namespace Services
         private readonly ExecutionOptions _executionOptions;
         private readonly ICaptureSnapshot _capture;
         private List<string>? _offers;
-        private List<@string>? _offersDetail;
+        private List<JobOfferDetail>? _offersDetail;
         private readonly IDetailProcessing _jobOfferDetail;
-        private readonly IJobSearch _searchService;
-        private readonly IPageProcessor _processService;
         private readonly IDirectoryCheck _directoryCheck;
-
+        //IDetailProcessing, DetailProcessing
         private string OffersFilePath => Path.Combine(_executionOptions.ExecutionFolder, "offers.json");
 
         public JobDetailsCoordinator(
@@ -30,8 +28,6 @@ namespace Services
             ICaptureSnapshot capture,
             ExecutionOptions executionOptions,
             IDetailProcessing jobOfferDetail,
-            IJobSearch searchService,
-            IPageProcessor processService,
             IDirectoryCheck directoryCheck)
         {
             _driver = driverFactory.Create();
@@ -42,21 +38,16 @@ namespace Services
             _loginService = loginService;
             _capture = capture;
             _jobOfferDetail = jobOfferDetail;
-            _searchService = searchService;
-            _processService = processService;
         }
 
-        public async Task<List<@string>> DetailJobsAsync()
+        public async Task<List<JobOfferDetail>> DetailJobsAsync(List<string> job, string searchText)
         {
             try
             {
-                //_logger.LogInformation($"🚀 ID:{_executionOptions.TimeStamp} Starting LinkedIn job search process...");
-                //await _loginService.LoginAsync();
-                //var searchText = await _searchService.PerformSearchAsync();
-                //_offers = await _processService.ProcessAllPagesAsync();
-                //await SaveOffersAsync();
-                //_offersDetail = await _jobOfferDetail.ProcessOffersAsync(_offers, searchText);
-                //_logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} LinkedIn job search process completed successfully.");
+                _logger.LogInformation($"🚀 ID:{_executionOptions.TimeStamp} Starting LinkedIn job search process...");
+                await _loginService.LoginAsync();
+                _offersDetail = await _jobOfferDetail.ProcessOffersAsync(job, searchText);
+                await SaveOffersAsync();
                 return _offersDetail ?? [];
             }
             catch (Exception ex)

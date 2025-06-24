@@ -33,7 +33,6 @@ namespace Services
             _offersDetail = new List<JobOfferDetail>();
             _capture = capture;
             _executionOptions = executionOptions;
-
             _offersPending = LoadPendingOffers();
         }
 
@@ -45,13 +44,9 @@ namespace Services
                 {
                     _logger.LogInformation("Navigating to job offer URL: {Url}", offer);
                     _driver.Navigate().GoToUrl(offer);
-
                     await _capture.CaptureArtifactsAsync(_executionOptions.ExecutionFolder, "BeforeExtraction");
-
                     var detail = await ExtractDetailAsync(searchText);
                     _offersDetail.Add(detail);
-
-                    // Eliminar URL de pendientes
                     _offersPending.Remove(offer);
                     await SavePendingOffersAsync();
                     await SaveOffersDetailAsync();

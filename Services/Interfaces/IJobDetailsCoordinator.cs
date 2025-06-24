@@ -4,6 +4,6 @@ namespace Services.Interfaces
 {
     public interface IJobDetailsCoordinator
     {
-        Task<List<@string>> DetailJobsAsync();
+        Task<List<JobOfferDetail>> DetailJobsAsync(List<string> job, string searchText);
     }
 }
