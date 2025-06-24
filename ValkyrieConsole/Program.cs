@@ -13,11 +13,27 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
+        var executionOptions = new ExecutionOptions();
+        var folder = executionOptions.ExecutionFolder;
+        if(!Directory.Exists(folder) )
+        {
+            Directory.CreateDirectory(folder);
+        }
+
+        var logPath = Path.Combine(folder, "Logs");
+        if (!Directory.Exists(logPath))
+        {
+            Directory.CreateDirectory(logPath);
+        }
+
+
+        var path = Path.Combine(logPath, "valkyriehire-.log");
+        
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
             .WriteTo.Console()
             .WriteTo.File(
-                path: "Logs/valkyriehire-.log",
+                path: path,
                 rollingInterval: RollingInterval.Day,
                 fileSizeLimitBytes: 5_000_000,
                 retainedFileCountLimit: 3,
@@ -89,5 +105,6 @@ public class Program
                 services.AddSingleton<IOpenAIClient, OpenAIClient>();
                 services.AddSingleton<IDocumentPDF, DocumentPDF>();
                 services.AddSingleton<IUtil, Util>();
+                services.AddSingleton<IPageTrackingService, PageTrackingService>();
             });
 }

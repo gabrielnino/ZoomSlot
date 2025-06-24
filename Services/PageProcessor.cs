@@ -17,13 +17,18 @@ namespace Services
         private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
         private readonly ICaptureSnapshot _capture;
         private readonly IDirectoryCheck _directoryCheck;
+        private readonly IPageTrackingService _trackingService;
+        private readonly IJobSearch _jobSearch;
+
         public PageProcessor(IWebDriverFactory driverFactory,
             AppConfig config,
             ILogger<PageProcessor> logger,
             ExecutionOptions executionOptions,
             ICaptureSnapshot capture,
             ISecurityCheck securityCheck,
-            IDirectoryCheck directoryCheck)
+            IDirectoryCheck directoryCheck,
+            IPageTrackingService trackingService,
+            IJobSearch jobSearch)
         {
             _driver = driverFactory.Create();
             _config = config;
@@ -33,35 +38,105 @@ namespace Services
             _securityCheck = securityCheck;
             _directoryCheck = directoryCheck;
             _directoryCheck.EnsureDirectoryExists(FolderPath);
+            _trackingService = trackingService;
+            _jobSearch = jobSearch;
         }
 
         public async Task<List<string>> ProcessAllPagesAsync()
         {
-            int pageCount = 0;
-            _logger.LogInformation($"📄 ID:{_executionOptions.TimeStamp} Beginning processing of up to {_config.JobSearch.MaxPages} result pages...");
-            var offers = new List<string>();
+            // Create unique search ID based on search text and timestamp
+            var searchId = $"{_config.JobSearch.SearchText}_{_executionOptions.TimeStamp}";
+            var trackingState = await _trackingService.LoadPageStateAsync(searchId);
+
+            // If we already completed this search, return cached results
+            if (trackingState.IsComplete)
+            {
+                _logger.LogInformation($"ℹ️ ID:{_executionOptions.TimeStamp} Returning cached results from previous complete search");
+                return trackingState.CollectedOffers;
+            }
+
+            int pageCount = trackingState.LastProcessedPage;
+            var offers = new List<string>(trackingState.CollectedOffers);
+
+            _logger.LogInformation($"📄 ID:{_executionOptions.TimeStamp} Resuming processing from page {pageCount + 1}...");
+
+            // If we have some progress, try to navigate to last processed page
+            if (pageCount > 0)
+            {
+                await NavigateToSpecificPage(pageCount);
+            }
+
             do
             {
-                await _capture.CaptureArtifactsAsync(FolderPath, "Page");
-                ScrollMove();
-                await Task.Delay(3000);
                 pageCount++;
                 _logger.LogInformation($"📖 ID:{_executionOptions.TimeStamp} Processing results page {pageCount}...");
 
-                var pageOffers = await GetCurrentPageOffersAsync();
-                if (pageOffers == null) continue;
+                await _capture.CaptureArtifactsAsync(FolderPath, $"Page_{pageCount}");
+                ScrollMove();
+                await Task.Delay(3000);
 
-                offers.AddRange(pageOffers);
-                _logger.LogInformation($"✔️ ID:{_executionOptions.TimeStamp} Results page {pageCount} processed. Found {pageOffers.Count()} listings.");
+                var pageOffers = await GetCurrentPageOffersAsync();
+                if (pageOffers != null)
+                {
+                    offers.AddRange(pageOffers);
+                    _logger.LogInformation($"✔️ ID:{_executionOptions.TimeStamp} Page {pageCount} processed. Found {pageOffers.Count()} listings.");
+
+                    // Update tracking state after each successful page
+                    trackingState.LastProcessedPage = pageCount;
+                    trackingState.CollectedOffers = offers;
+                    await _trackingService.SavePageStateAsync(searchId, trackingState);
+                }
 
                 if (pageCount >= _config.JobSearch.MaxPages)
                 {
-                    _logger.LogInformation($"ℹ️ ID:{_executionOptions.TimeStamp} Reached maximum configured page limit of {_config.JobSearch.MaxPages}.");
+                    _logger.LogInformation($"ℹ️ ID:{_executionOptions.TimeStamp} Reached maximum configured page limit");
+                    trackingState.IsComplete = true;
+                    await _trackingService.SavePageStateAsync(searchId, trackingState);
                     break;
                 }
 
             } while (await NavigateToNextPageAsync());
+
             return offers;
+        }
+
+        private async Task NavigateToSpecificPage(int targetPage)
+        {
+            _logger.LogInformation($"↩️ ID:{_executionOptions.TimeStamp} Navigating back to page {targetPage}...");
+
+            try
+            {
+                // Try direct navigation first
+                _driver.Navigate().GoToUrl($"{_driver.Url}&pageNum={targetPage}");
+                await Task.Delay(5000);
+
+                var currentPageElement = _driver.FindElements(By.XPath("//li[contains(@class,'active')]/a"));
+                if (currentPageElement.Any() && currentPageElement.First().Text == targetPage.ToString())
+                {
+                    _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Successfully navigated to page {targetPage}");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, $"⚠️ ID:{_executionOptions.TimeStamp} Direct page navigation failed");
+            }
+
+            // Fallback: restart search and paginate forward
+            _logger.LogWarning($"⚠️ ID:{_executionOptions.TimeStamp} Failed to navigate to specific page. Restarting search...");
+            await _trackingService.ClearPageStateAsync($"{_config.JobSearch.SearchText}_{_executionOptions.TimeStamp}");
+
+            // Re-execute the search
+            await _jobSearch.PerformSearchAsync();
+
+            // Paginate forward to target page
+            for (int i = 1; i < targetPage; i++)
+            {
+                if (!await NavigateToNextPageAsync())
+                {
+                    throw new InvalidOperationException($"Failed to paginate to page {targetPage}");
+                }
+            }
         }
 
         private string? ExtractJobIdUrl(string urlLinkedin, string url)

@@ -5,7 +5,7 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<RunArguments>--apply=LuisNino.txt --urljobboard="https://www.linkedin.com/in/luis-nino-developer/"</RunArguments>
+		<RunArguments>--search --export</RunArguments>
 	</PropertyGroup>
 
 	<ItemGroup>

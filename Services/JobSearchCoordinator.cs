@@ -51,7 +51,6 @@ namespace Services
             {
                 _logger.LogInformation($"🚀 ID:{_executionOptions.TimeStamp} Starting LinkedIn job search process...");
                 await _loginService.LoginAsync();
-
                 var searchText = await _searchService.PerformSearchAsync();
                 _offers = await _processService.ProcessAllPagesAsync();
                 _offersDetail = await _jobOfferDetail.ProcessOffersAsync(_offers, searchText);

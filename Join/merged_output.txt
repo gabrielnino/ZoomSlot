@@ -1,33 +1,104 @@
 
 
-=== FILE: F:\ValkyrieHire\Commands\CommandFactory.cs ===
+=== FILE: F:\ValkyrieHire\Commands\ApplyCommand.cs ===
 
-﻿using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Logging;
+using Services.Interfaces;
 namespace Commands
 {
-public class CommandFactory(IServiceProvider serviceProvider)
+public class ApplyCommand : ICommand
 {
-private readonly IServiceProvider _serviceProvider = serviceProvider;
-public IEnumerable<ICommand> CreateCommand(string[] args)
+private readonly IJobSearchCoordinator _linkedInService;
+private readonly ILogger<ApplyCommand> _logger;
+private readonly IJobStorageService _storageService;
+private readonly IDocumentCoordinator _documentCoordinator;
+public ApplyCommand(
+ILogger<ApplyCommand> logger,
+IJobSearchCoordinator linkedInService,
+IJobStorageService storageService,
+IDocumentCoordinator documentCoordinator)
 {
-if (args.Length == 0 || args.Contains("--help"))
-return [_serviceProvider.GetRequiredService<HelpCommand>()];
-var commands = args
-.Where(arg => arg == "--search" || arg == "--export")
-.Distinct()
-.ToList();
-if (commands.Contains("--search") && commands[0] != "--search")
-{
-commands.Remove("--search");
-commands.Insert(0, "--search");
+_logger = logger;
+_linkedInService = linkedInService;
+_storageService = storageService;
+_documentCoordinator = documentCoordinator;
 }
-return [.. commands.Select<string, ICommand>(arg => arg switch
+public async Task ExecuteAsync(Dictionary<string, string>? arguments = null)
 {
-"--search" => _serviceProvider.GetRequiredService<SearchCommand>(),
-"--export" => _serviceProvider.GetRequiredService<ExportCommand>(),
-_ => throw new ArgumentException($"Invalid command argument: {arg}")
-})];
+_logger.LogInformation("Starting job application process...");
+var jobDetails = await _storageService.LoadJobsAsync();
+_logger.LogInformation("Found {JobCount} job(s) to apply for.", jobDetails.Count());
+if (jobDetails != null && jobDetails.Any())
+{
+foreach (var job in jobDetails)
+{
+_logger.LogInformation("Found job: {JobTitle} at {CompanyName}", job.SearchText, job.CompanyName);
+if (arguments == null || !arguments.TryGetValue("--apply", out string? resumeFilePath))
+{
+_logger.LogError("❌ '--apply' argument is missing.");
+throw new ArgumentException("'--apply' argument is required to specify the resume file path.");
+}
+string urlJobBoard = arguments.GetValueOrDefault("--urljobboard", string.Empty);
+string inputResumeContent;
+try
+{
+_logger.LogInformation("Reading resume file from path: {ResumeFilePath}", resumeFilePath);
+inputResumeContent = await File.ReadAllTextAsync(resumeFilePath);
+_logger.LogInformation("✅ Resume file read successfully.");
+}
+catch (Exception ex)
+{
+_logger.LogError(ex, "❌ Failed to read resume file at: {ResumeFilePath}", resumeFilePath);
+throw new IOException($"Error reading resume file at {resumeFilePath}", ex);
+}
+_logger.LogInformation("Generating application document...");
+await _documentCoordinator.GenerateDocumentAsync(inputResumeContent, urlJobBoard);
+_logger.LogInformation("✅ Application document generated successfully.");
+await _storageService.SaveJobsAsync(jobDetails);
+}
+}
+else
+{
+_logger.LogWarning("⚠️ No job details found to apply for.");
+}
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Commands\CommandFactory.cs ===
+
+﻿using Microsoft.Extensions.DependencyInjection;
+using Services;
+namespace Commands
+{
+public class CommandFactory
+{
+private readonly IServiceProvider _serviceProvider;
+private readonly JobCommandArgs _jobCommandArgs;
+public CommandFactory(IServiceProvider serviceProvider, JobCommandArgs jobCommandArgs)
+{
+_serviceProvider = serviceProvider;
+_jobCommandArgs = jobCommandArgs;
+}
+public IEnumerable<ICommand> CreateCommand()
+{
+var commands = new List<ICommand>();
+switch (_jobCommandArgs.MainCommand.ToLowerInvariant())
+{
+case "--search":
+commands.Add(_serviceProvider.GetRequiredService<SearchCommand>());
+break;
+case "--export":
+commands.Add(_serviceProvider.GetRequiredService<ExportCommand>());
+break;
+case "--apply":
+commands.Add(_serviceProvider.GetRequiredService<ApplyCommand>());
+break;
+default:
+commands.Add(_serviceProvider.GetRequiredService<HelpCommand>());
+break;
+}
+return commands;
 }
 }
 }
@@ -55,7 +126,7 @@ _storageService = storageService;
 _logger = logger;
 _config = config;
 }
-public async Task ExecuteAsync()
+public async Task ExecuteAsync(Dictionary<string, string>? arguments = null)
 {
 try
 {
@@ -87,12 +158,7 @@ throw;
 
 === FILE: F:\ValkyrieHire\Commands\HelpCommand.cs ===
 
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 namespace Commands
 {
 public class
@@ -103,7 +169,7 @@ public HelpCommand(ILogger<HelpCommand> logger = null)
 {
 _logger = logger;
 }
-public Task ExecuteAsync()
+public Task ExecuteAsync(Dictionary<string, string>? Arguments)
 {
 _logger?.LogInformation("Displaying help information");
 Console.WriteLine("Available commands:");
@@ -121,7 +187,7 @@ return Task.CompletedTask;
 {
 public interface ICommand
 {
-Task ExecuteAsync();
+Task ExecuteAsync(Dictionary<string, string>? arguments=null);
 }
 }
 
@@ -142,7 +208,7 @@ _linkedInService = linkedInService;
 _logger = logger;
 _storageService = storageService;
 }
-public async Task ExecuteAsync()
+public async Task ExecuteAsync(Dictionary<string, string>? arguments = null)
 {
 _logger.LogInformation("Starting job search...");
 var jobDetails = await _linkedInService.SearchJobsAsync();
@@ -172,7 +238,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Commands")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b89aba70c005b707f69b2a9dabec4eb6497d59e9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f703bb337646b1b4626aebd0265e53db87c453a6")]
 [assembly: System.Reflection.AssemblyProductAttribute("Commands")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Commands")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
@@ -196,6 +262,7 @@ public class AppConfig
 public LinkedInCredentials LinkedInCredentials { get; set; }
 public JobSearchConfiguration JobSearch { get; set; }
 public Logging Logging { get; set; }
+public LlmProvider Llm { get; set; }
 }
 }
 
@@ -218,6 +285,17 @@ public class LinkedInCredentials
 {
 public string Email { get; set; }
 public string Password { get; set; }
+}
+}
+
+=== FILE: F:\ValkyrieHire\Configuration\LlmProvider.cs ===
+
+﻿namespace Configuration
+{
+public class LlmProvider
+{
+public string Url { get; set; }
+public string ApiKey { get; set; }
 }
 }
 
@@ -245,7 +323,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Configuration")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+860426fa1628f0d9274e7f3eeabed71325d8f894")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+663d35a8c90898fa25aa98dfcfa202afa301c294")]
 [assembly: System.Reflection.AssemblyProductAttribute("Configuration")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Configuration")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
@@ -288,6 +366,91 @@ global using global::System.Net.Http;
 global using global::System.Threading;
 global using global::System.Threading.Tasks;
 
+=== FILE: F:\ValkyrieHire\Models\ContactInformation.cs ===
+
+﻿namespace Models
+{
+public class ContactInformation
+{
+public string Phone { get; set; }
+public string Email { get; set; }
+public string LinkedIn { get; set; }
+}
+}
+
+=== FILE: F:\ValkyrieHire\Models\CoverLetter.cs ===
+
+﻿using System.Text.Json.Serialization;
+namespace Models
+{
+public class CoverLetter
+{
+public string Name { get; set; }
+public string Title { get; set; }
+public string Location { get; set; }
+[JsonPropertyName("Contact Information")]
+public ContactInformation ContactInformation { get; set; }
+[JsonPropertyName("Professional Summary")]
+public string ProfessionalSummary { get; set; }
+[JsonPropertyName("Bullet Points")]
+public List<string> BulletPoints { get; set; }
+[JsonPropertyName("Closing Paragraph")]
+public string ClosingParagraph { get; set; }
+public List<string> TechnicalSkills { get; set; }
+public List<string> SoftSkills { get; set; }
+public List<string> Languages { get; set; }
+public List<ProfessionalExperience> ProfessionalExperience { get; set; }
+[JsonPropertyName("Additional Qualifications")]
+public List<string> AdditionalQualifications { get; set; }
+public Education Education { get; set; }
+}
+}
+
+=== FILE: F:\ValkyrieHire\Models\CoverLetterRequest.cs ===
+
+﻿namespace Models
+{
+public class CoverLetterRequest
+{
+public string UrlJobBoard { get; set; }
+public JobOffer JobOffer { get; set; }
+public Resume Resume { get; set; }
+public CoverLetter CoverLetter { get; set; }
+}
+}
+
+=== FILE: F:\ValkyrieHire\Models\Document.cs ===
+
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+namespace Models
+{
+public class Document
+{
+public Resume Resume { get; set; }
+public JobOffer JobOffer { get; set; }
+public CoverLetter CoverLetter { get; set; }
+}
+}
+
+=== FILE: F:\ValkyrieHire\Models\Education.cs ===
+
+﻿using System.Text.Json.Serialization;
+namespace Models
+{
+public class Education
+{
+public string Institution { get; set; }
+public string Location { get; set; }
+public string Degree { get; set; }
+[JsonPropertyName("Graduation Date")]
+public string GraduationDate { get; set; }
+}
+}
+
 === FILE: F:\ValkyrieHire\Models\ExecutionOptions.cs ===
 
 ﻿namespace Models
@@ -305,12 +468,47 @@ public int MaxParallelism => Environment.ProcessorCount / 2;
 }
 }
 
-=== FILE: F:\ValkyrieHire\Models\JobOfferDetail.cs ===
+=== FILE: F:\ValkyrieHire\Models\JobOffer.cs ===
 
 ﻿namespace Models
 {
+using System.Text.Json.Serialization;
+public class JobOffer
+{
+[JsonPropertyName("Company Name")]
+public string CompanyName { get; set; }
+[JsonPropertyName("Job Offer Title")]
+public string JobOfferTitle { get; set; }
+[JsonPropertyName("Job Offer Summarize")]
+public string JobOfferSummarize { get; set; }
+[JsonPropertyName("Email Contact")]
+public string EmailContact { get; set; }
+public string ContactHiringSection { get; set; }
+[JsonPropertyName("Key Skills Required")]
+public List<string> KeySkillsRequired { get; set; }
+[JsonPropertyName("Essential Qualifications")]
+public List<string> EssentialQualifications { get; set; }
+[JsonPropertyName("Essential Technical Skill Qualifications")]
+public List<string> EssentialTechnicalSkillQualifications { get; set; }
+[JsonPropertyName("Other Technical Skill Qualifications")]
+public List<string> OtherTechnicalSkillQualifications { get; set; }
+[JsonPropertyName("Salary or Budget Offered")]
+public string SalaryOrBudgetOffered { get; set; }
+public string Description { get; set; }
+public string Url { get; set; }
+public IEnumerable<string> RawJobDescription { get; set; }
+}
+}
+
+=== FILE: F:\ValkyrieHire\Models\JobOfferDetail.cs ===
+
+﻿using System.ComponentModel.DataAnnotations;
+namespace Models
+{
 public class JobOfferDetail
 {
+[Key]
+public required string ID { get; set; }
 public required string JobOfferTitle { get; set; }
 public required string CompanyName { get; set; }
 public required string ContactHiringSection { get; set; }
@@ -319,6 +517,129 @@ public required string SalaryOrBudgetOffered { get; set; }
 public required string Link { get; set; }
 public required string Applicants { get; set; }
 public required string SearchText { get; set; }
+}
+}
+
+=== FILE: F:\ValkyrieHire\Models\OpenAIChatChoice.cs ===
+
+﻿namespace Models
+{
+using System.Text.Json.Serialization;
+public class OpenAIChatChoice
+{
+[JsonPropertyName("message")]
+public OpenAIMessage Message { get; set; }
+[JsonPropertyName("finish_reason")]
+public string FinishReason { get; set; }
+[JsonPropertyName("index")]
+public int Index { get; set; }
+}
+}
+
+=== FILE: F:\ValkyrieHire\Models\OpenAIChatRequest.cs ===
+
+﻿namespace Models
+{
+using System.Text.Json.Serialization;
+public class OpenAIChatRequest
+{
+[JsonPropertyName("model")]
+public string Model { get; set; }
+[JsonPropertyName("messages")]
+public List<OpenAIMessage> Messages { get; set; }
+}
+}
+
+=== FILE: F:\ValkyrieHire\Models\OpenAIChatResponse.cs ===
+
+﻿namespace Models
+{
+using System.Text.Json.Serialization;
+public class OpenAIChatResponse
+{
+[JsonPropertyName("choices")]
+public List<OpenAIChatChoice> Choices { get; set; }
+}
+}
+
+=== FILE: F:\ValkyrieHire\Models\OpenAIMessage.cs ===
+
+﻿namespace Models
+{
+using System.Text.Json.Serialization;
+public class OpenAIMessage
+{
+[JsonPropertyName("role")]
+public string Role { get; set; }
+[JsonPropertyName("content")]
+public string Content { get; set; }
+}
+}
+
+=== FILE: F:\ValkyrieHire\Models\ProfessionalExperience.cs ===
+
+﻿using System.Text.Json.Serialization;
+namespace Models
+{
+public class ProfessionalExperience
+{
+public string Role { get; set; }
+public string Company { get; set; }
+public string Location { get; set; }
+public string Duration { get; set; }
+public List<string> Responsibilities { get; set; }
+[JsonPropertyName("Tech Stack")]
+public List<string> TechStack { get; set; }
+}
+}
+
+=== FILE: F:\ValkyrieHire\Models\Prompt.cs ===
+
+﻿namespace Models
+{
+public class Prompt
+{
+public string SystemContent { get; set; }
+public string UserContent { get; set; }
+}
+}
+
+=== FILE: F:\ValkyrieHire\Models\Resume.cs ===
+
+﻿using System.Text.Json.Serialization;
+namespace Models
+{
+public class Resume
+{
+public string Name { get; set; }
+public string Title { get; set; }
+public string Location { get; set; }
+[JsonPropertyName("Contact Information")]
+public ContactInformation ContactInfo { get; set; }
+[JsonPropertyName("Professional Summary")]
+public string ProfessionalSummary { get; set; }
+[JsonPropertyName("Technical Skills")]
+public List<string> TechnicalSkills { get; set; }
+[JsonPropertyName("Soft Skills")]
+public List<string> SoftSkills { get; set; }
+public List<string> Languages { get; set; }
+[JsonPropertyName("Professional Experience")]
+public List<ProfessionalExperience> ProfessionalExperiences { get; set; }
+[JsonPropertyName("Additional Qualifications")]
+public List<string> AdditionalQualifications { get; set; }
+public Education Education { get; set; }
+}
+}
+
+=== FILE: F:\ValkyrieHire\Models\ResumeRequest.cs ===
+
+﻿namespace Models
+{
+public class ResumeRequest
+{
+public string UrlJobBoard { get; set; }
+public JobOffer JobOffer { get; set; }
+public Resume Resume { get; set; }
 }
 }
 
@@ -335,7 +656,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Models")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b89aba70c005b707f69b2a9dabec4eb6497d59e9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+663d35a8c90898fa25aa98dfcfa202afa301c294")]
 [assembly: System.Reflection.AssemblyProductAttribute("Models")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Models")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
@@ -457,9 +778,7 @@ _driverService?.Dispose();
 
 === FILE: F:\ValkyrieHire\Services\DetailProcessing.cs ===
 
-﻿using System.Diagnostics;
-using System.Runtime.InteropServices;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Models;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
@@ -478,22 +797,25 @@ private const string FolderName = "Detail";
 private readonly ISecurityCheck _securityCheck;
 private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
 private readonly IDirectoryCheck _directoryCheck;
+private readonly IUtil _util;
 public DetailProcessing(IWebDriverFactory driverFactory,
 ILogger<DetailProcessing> logger,
 ICaptureSnapshot capture,
 ISecurityCheck securityCheck,
 ExecutionOptions executionOptions,
-IDirectoryCheck directoryCheck)
+IDirectoryCheck directoryCheck,
+IUtil util)
 {
 _offersDetail = [];
 _driver = driverFactory.Create();
 _logger = logger;
-_wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(30));
+_wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(90));
 _capture = capture;
 _securityCheck = securityCheck;
 _executionOptions = executionOptions;
 _directoryCheck = directoryCheck;
 _directoryCheck.EnsureDirectoryExists(FolderPath);
+_util = util;
 }
 public async Task<List<JobOfferDetail>> ProcessOffersAsync(IEnumerable<string> offers, string searchText)
 {
@@ -514,7 +836,7 @@ var xPathJobs = "
 var el = driver.FindElements(By.XPath(xPathJobs)).FirstOrDefault();
 return el != null && el.Displayed;
 });
-if (_securityCheck.IsSecurityChek())
+if (_securityCheck.IsSecurityCheck())
 {
 await _securityCheck.HandleSecurityPage();
 }
@@ -542,6 +864,10 @@ _logger.LogWarning($"⚠️ ID:{_executionOptions.TimeStamp} Retrying ({retryCou
 await Task.Delay(2000 * retryCount);
 }
 }
+if(retryCount != 0)
+{
+await Task.Delay(3000 * retryCount + new Random().Next(1000, 3000));
+}
 }
 }
 return _offersDetail;
@@ -559,15 +885,22 @@ var contactHiringSection = ExtractContactHiring(detail);
 var applicants = ExtractApplicants(detail);
 var descriptionText = ExtractDescription(detail);
 var salaryOrBudgetOffered = ExtractSalary(detail);
+var url = _driver.Url;
+var id = _util.ExtractJobId(url);
+if (id == null)
+{
+throw new ArgumentException($"Invalid url: {url} does not have a valid ID");
+}
 return new JobOfferDetail
 {
+ID = id,
 JobOfferTitle = jobOfferTitle,
 CompanyName = companyName,
 ContactHiringSection = contactHiringSection,
 Applicants = applicants,
 Description = descriptionText,
 SalaryOrBudgetOffered = salaryOrBudgetOffered,
-Link = _driver.Url,
+Link = url,
 SearchText = searchText
 };
 }
@@ -669,13 +1002,310 @@ _logger.LogInformation($"📁 Created execution folder at: {_executionOptions.Ex
 }
 }
 
+=== FILE: F:\ValkyrieHire\Services\DocumentCoordinator.cs ===
+
+﻿using Microsoft.Extensions.Logging;
+using Models;
+using Services.Interfaces;
+namespace Services
+{
+public class DocumentCoordinator : IDocumentCoordinator
+{
+private readonly IJobStorageService _jobStorageService;
+private readonly IDocumentParse _documentParse;
+private readonly IGenerator _generator;
+private readonly IDocumentPDF _documentPDF;
+private readonly ExecutionOptions _executionOptions;
+private readonly IDirectoryCheck _directoryCheck;
+private readonly ILogger<DocumentCoordinator> _logger;
+private const string FolderName = "Document";
+private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
+public DocumentCoordinator(
+IJobStorageService jobStorageService,
+IDocumentParse documentParse,
+IGenerator generator,
+IDocumentPDF documentPDF,
+IDirectoryCheck directoryCheck,
+ExecutionOptions executionOptions,
+ILogger<DocumentCoordinator> logger)
+{
+_jobStorageService = jobStorageService;
+_documentParse = documentParse;
+_generator = generator;
+_documentPDF = documentPDF;
+_directoryCheck = directoryCheck;
+_executionOptions = executionOptions;
+_logger = logger;
+_directoryCheck.EnsureDirectoryExists(FolderPath);
+_logger.LogInformation("📁 Document directory ensured at: {FolderPath}", FolderPath);
+}
+public async Task GenerateDocumentAsync(string inputResume, string urlJobBoard)
+{
+_logger.LogInformation("🚀 Starting document generation process | Input resume: {InputResumeLength} chars | Job board URL: {UrlJobBoard}",
+inputResume.Length, urlJobBoard);
+try
+{
+var listJobOfferDetail = await _jobStorageService.LoadJobsAsync();
+_logger.LogInformation("📊 Loaded {JobCount} job offers from storage", listJobOfferDetail.Count());
+if (!listJobOfferDetail.Any())
+{
+_logger.LogWarning("⚠️ No job offers found in storage - nothing to process");
+return;
+}
+foreach (var jobOfferDetail in listJobOfferDetail)
+{
+string iD = jobOfferDetail.ID;
+string title = jobOfferDetail.JobOfferTitle;
+_logger.LogInformation("🔍 Processing job offer | ID: {JobID} | Title: {JobTitle}", iD, title);
+try
+{
+var jobOffer = await _documentParse.ParseJobOfferAsync(jobOfferDetail.Description);
+jobOffer.Url = jobOfferDetail.Link;
+jobOffer.RawJobDescription = jobOfferDetail.Description.Split(Environment.NewLine);
+jobOffer.Description = jobOfferDetail.Description;
+_logger.LogDebug("📝 Parsed job offer | ID: {JobID}", jobOfferDetail.ID);
+var resume = await _documentParse.ParseResumeAsync(inputResume);
+_logger.LogDebug("📄 Parsed resume | Length: {ResumeLength} chars", inputResume.Length);
+_logger.LogInformation("🛠️ Generating customized documents for job ID: {JobID}", jobOfferDetail.ID);
+var resumeModify = await _generator.CreateResume(jobOffer, resume);
+var coverLetter = await _generator.CreateCoverLetter(jobOffer, resume);
+var documentFolder = Path.Combine(FolderPath, jobOfferDetail.ID);
+_directoryCheck.EnsureDirectoryExists(documentFolder);
+_logger.LogDebug("📂 Created document folder: {DocumentFolder}", documentFolder);
+var coverLetterRequest = new CoverLetterRequest
+{
+UrlJobBoard = urlJobBoard,
+JobOffer = jobOffer,
+Resume = resumeModify,
+CoverLetter = coverLetter
+};
+_documentPDF.GenerateCoverLetterPdf(documentFolder, coverLetterRequest);
+_logger.LogInformation("✅ Generated cover letter | Job ID: {JobID} | Path: {DocumentFolder}",
+jobOfferDetail.ID, documentFolder);
+_documentPDF.GenerateJobOfferPdf(documentFolder, jobOffer);
+_logger.LogInformation("✅ Generated job offer PDF | Job ID: {JobID}", jobOfferDetail.ID);
+var resumeRequest = new ResumeRequest
+{
+UrlJobBoard = urlJobBoard,
+JobOffer = jobOffer,
+Resume = resumeModify
+};
+_documentPDF.GenerateResumePdf(documentFolder, resumeRequest);
+_logger.LogInformation("✅ Generated resume PDF | Job ID: {JobID}", jobOfferDetail.ID);
+}
+catch (Exception ex)
+{
+string id = jobOfferDetail.ID;
+string message = ex.Message;
+_logger.LogError(ex, "❌ Error processing job offer ID: {JobID} | Error: {ErrorMessage}",id, message);
+throw;
+}
+}
+_logger.LogInformation("🎉 Successfully completed document generation for {JobCount} job offers", listJobOfferDetail.Count());
+}
+catch (Exception ex)
+{
+_logger.LogError(ex, "❌ Document generation process failed | Error: {ErrorMessage}", ex.Message);
+throw;
+}
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\DocumentParse.cs ===
+
+﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
+using Models;
+using Services.Interfaces;
+namespace Services
+{
+public class DocumentParse(IOpenAIClient openAIClient, ILogger<DocumentParse> logger) : IDocumentParse
+{
+private readonly IOpenAIClient _openAIClient = openAIClient;
+private readonly ILogger<DocumentParse> _logger = logger;
+private readonly JsonSerializerOptions _options = new() { PropertyNameCaseInsensitive = true };
+public async Task<JobOffer> ParseJobOfferAsync(string jobOfferDescription)
+{
+_logger.LogInformation("📝 Parsing job offer description...");
+var prompt = PrompHelpers.GetParseJobOfferPrompt(jobOfferDescription);
+_logger.LogDebug("Generated job offer prompt: {Prompt}", prompt);
+var jobOfferSummary = await _openAIClient.GetChatCompletionAsync(prompt);
+_logger.LogDebug("Received job offer summary response.");
+jobOfferSummary = StringHelpers.ExtractJsonContent(jobOfferSummary);
+_logger.LogDebug("Extracted JSON content for job offer.");
+JobOffer? jobOffer = JsonSerializer.Deserialize<JobOffer>(jobOfferSummary, _options);
+if (jobOffer == null)
+{
+_logger.LogWarning("⚠️ Failed to deserialize job offer JSON.");
+throw new InvalidOperationException("Unable to parse job offer JSON.");
+}
+_logger.LogInformation("✅ Job offer parsed successfully.");
+return jobOffer;
+}
+public async Task<Resume> ParseResumeAsync(string resumeString)
+{
+_logger.LogInformation("📝 Parsing resume string...");
+var prompt = PrompHelpers.GetParseResumePrompt(resumeString);
+_logger.LogDebug("Generated resume prompt: {Prompt}", prompt);
+var resumeJson = await _openAIClient.GetChatCompletionAsync(prompt);
+_logger.LogDebug("Received resume response.");
+resumeJson = StringHelpers.ExtractJsonContent(resumeJson);
+_logger.LogDebug("Extracted JSON content for resume.");
+Resume? resume = JsonSerializer.Deserialize<Resume>(resumeJson, _options);
+if (resume == null)
+{
+_logger.LogWarning("⚠️ Failed to deserialize resume JSON.");
+throw new InvalidOperationException("Unable to parse resume JSON.");
+}
+_logger.LogInformation("✅ Resume parsed successfully.");
+return resume;
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\DocumentPDF.cs ===
+
+﻿using ApplyEngine.JobOfferApply.Documents.PDF;
+using Microsoft.Extensions.Logging;
+using Models;
+using Services.Interfaces;
+using Services.PDF;
+namespace Services
+{
+public class DocumentPDF : IDocumentPDF
+{
+private readonly ILogger<DocumentPDF> _logger;
+public DocumentPDF(ILogger<DocumentPDF> logger)
+{
+_logger = logger;
+}
+public void GenerateCoverLetterPdf(string outputPath, CoverLetterRequest coverLetterRequest)
+{
+_logger.LogInformation("📝 Generating cover letter PDF at: {OutputPath}", outputPath);
+var jobTitle = StringHelpers.NormalizeCompanyName(coverLetterRequest.JobOffer.JobOfferTitle);
+var companyName = StringHelpers.NormalizeCompanyName(coverLetterRequest.JobOffer.CompanyName);
+var fileNameCoverLetter = $"{companyName}_covertLetter_{jobTitle}.pdf";
+var fileNameJobOfferPath = Path.Combine(outputPath, fileNameCoverLetter);
+CoverLetterPdf.Generate(fileNameJobOfferPath, coverLetterRequest);
+_logger.LogInformation("✅ Cover letter PDF generated successfully at: {OutputPath}", outputPath);
+}
+public void GenerateJobOfferPdf(string outputPath, JobOffer jobOffer)
+{
+_logger.LogInformation("📝 Generating job offer PDF at: {OutputPath}", outputPath);
+var jobTitle = StringHelpers.NormalizeCompanyName(jobOffer.JobOfferTitle);
+var companyName = StringHelpers.NormalizeCompanyName(jobOffer.CompanyName);
+var fileNameCoverLetter = $"{companyName}_JobOffer_{jobTitle}.pdf";
+var fileNameJobOfferPath = Path.Combine(outputPath, fileNameCoverLetter);
+JobOfferPdf.Generate(fileNameJobOfferPath, jobOffer);
+_logger.LogInformation("✅ Job offer PDF generated successfully at: {OutputPath}", outputPath);
+}
+public void GenerateResumePdf(string outputPath, ResumeRequest resumeRequest)
+{
+_logger.LogInformation("📝 Generating resume PDF at: {OutputPath}", outputPath);
+var jobTitle = StringHelpers.NormalizeCompanyName(resumeRequest.JobOffer.JobOfferTitle);
+var companyName = StringHelpers.NormalizeCompanyName(resumeRequest.JobOffer.CompanyName);
+var fileNameCoverLetter = $"{companyName}_resume_{jobTitle}.pdf";
+var fileNameJobOfferPath = Path.Combine(outputPath, fileNameCoverLetter);
+ResumePdf.Generate(fileNameJobOfferPath, resumeRequest);
+_logger.LogInformation("✅ Resume PDF generated successfully at: {OutputPath}", outputPath);
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\Generator.cs ===
+
+﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Models;
+using Newtonsoft.Json;
+using Services.Interfaces;
+namespace Services
+{
+public class Generator : IGenerator
+{
+private readonly IOpenAIClient _openAIClient;
+private readonly ILogger<Generator> _logger;
+private readonly JsonSerializerOptions _options = new() { PropertyNameCaseInsensitive = true };
+public Generator(IOpenAIClient openAIClient, ILogger<Generator> logger)
+{
+_openAIClient = openAIClient;
+_logger = logger;
+}
+public async Task<Resume> CreateResume(JobOffer jobOffer, Resume resume)
+{
+_logger.LogInformation("🚀 Starting resume generation...");
+var stringJobOffer = JsonConvert.SerializeObject(jobOffer, Formatting.Indented);
+var stringResume = JsonConvert.SerializeObject(resume, Formatting.Indented);
+var prompt = PrompHelpers.GenerateResumeJsonPrompt(stringJobOffer, stringResume);
+_logger.LogDebug("Generated resume prompt: {Prompt}", prompt);
+var stringGenerateResume = await _openAIClient.GetChatCompletionAsync(prompt);
+_logger.LogDebug("Received resume JSON response.");
+stringGenerateResume = StringHelpers.ExtractJsonContent(stringGenerateResume);
+_logger.LogDebug("Extracted JSON content for resume.");
+var generateResume = System.Text.Json.JsonSerializer.Deserialize<Resume>(stringGenerateResume);
+if (generateResume == null)
+{
+_logger.LogWarning("⚠️ Failed to deserialize the resume JSON.");
+throw new Exception("Failed to deserialize the resume from OpenAI response.");
+}
+_logger.LogInformation("✅ Resume generated successfully.");
+return generateResume;
+}
+public async Task<CoverLetter> CreateCoverLetter(JobOffer jobOffer, Resume resume)
+{
+_logger.LogInformation("🚀 Starting cover letter generation...");
+var stringJobOffer = JsonConvert.SerializeObject(jobOffer, Formatting.Indented);
+var stringResume = JsonConvert.SerializeObject(resume, Formatting.Indented);
+var prompt = PrompHelpers.GenerateCoverLetterPrompt(stringJobOffer, stringResume);
+_logger.LogDebug("Generated cover letter prompt: {Prompt}", prompt);
+var stringCoverLetter = await _openAIClient.GetChatCompletionAsync(prompt);
+_logger.LogDebug("Received cover letter JSON response.");
+stringCoverLetter = StringHelpers.ExtractJsonContent(stringCoverLetter);
+_logger.LogDebug("Extracted JSON content for cover letter.");
+var coverLetter = System.Text.Json.JsonSerializer.Deserialize<CoverLetter>(stringCoverLetter);
+if (coverLetter == null)
+{
+_logger.LogWarning("⚠️ Failed to deserialize the cover letter JSON.");
+throw new Exception("Failed to deserialize the cover letter from OpenAI response.");
+}
+_logger.LogInformation("✅ Cover letter generated successfully.");
+return coverLetter;
+}
+}
+}
+
 === FILE: F:\ValkyrieHire\Services\JobCommandArgs.cs ===
 
 ﻿namespace Services
 {
-public class JobCommandArgs(string[] args)
+public class JobCommandArgs
 {
-public string MainCommand { get; } = args.FirstOrDefault(arg => arg == "--search" || arg == "--export") ?? "--help";
+private static readonly HashSet<string> ValidCommands = new(StringComparer.OrdinalIgnoreCase)
+{
+"--search",
+"--export",
+"--apply"
+};
+public string MainCommand { get; }
+public Dictionary<string, string> Arguments { get; }
+public JobCommandArgs(string[] args)
+{
+MainCommand = args.FirstOrDefault(IsCommand) ?? args.FirstOrDefault(IsArgument).Split("=").FirstOrDefault();
+Arguments = args
+.Where(IsArgument)
+.Select(arg =>
+{
+var parts = arg.Split('=', 2);
+var key = parts[0];
+var value = parts.Length > 1 ? parts[1] : string.Empty;
+return new KeyValuePair<string, string>(key, value);
+})
+.ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase);
+}
+private static bool IsCommand(string arg) => ValidCommands.Contains(arg);
+private static bool IsArgument(string arg) =>  arg.StartsWith("--") && arg.Contains("=");
 }
 }
 
@@ -722,7 +1352,7 @@ public async Task<string> PerformSearchAsync()
 _logger.LogInformation($"🔍 ID:{_executionOptions.TimeStamp} Navigating to LinkedIn Jobs page...");
 _driver.Navigate().GoToUrl("https://www.linkedin.com/jobs");
 await Task.Delay(3000);
-if (_securityCheck.IsSecurityChek())
+if (_securityCheck.IsSecurityCheck())
 {
 await _securityCheck.HandleSecurityPage();
 throw new InvalidOperationException(
@@ -853,12 +1483,18 @@ namespace Services
 {
 public class JsonJobStorageService : IJobStorageService, IDisposable
 {
-private const string StorageFile = "jobs_data.json";
+private readonly string? StorageFile;
 private readonly ILogger<JsonJobStorageService> _logger;
 private readonly SemaphoreSlim _fileLock = new(1, 1);
-public JsonJobStorageService(ILogger<JsonJobStorageService> logger)
+private readonly ExecutionOptions _executionOptions;
+public JsonJobStorageService(ILogger<JsonJobStorageService> logger, ExecutionOptions executionOptions)
 {
 _logger = logger;
+_executionOptions = executionOptions;
+if(StorageFile == null)
+{
+StorageFile = $"jobs_data_{_executionOptions.TimeStamp}.json";
+}
 EnsureStorageDirectoryExists();
 }
 public async Task SaveJobsAsync(IEnumerable<JobOfferDetail> jobs)
@@ -883,17 +1519,28 @@ _fileLock.Release();
 }
 public async Task<IEnumerable<JobOfferDetail>> LoadJobsAsync()
 {
-if (!File.Exists(StorageFile))
-{
-_logger.LogInformation("⚠️ Storage file not found");
-return Enumerable.Empty<JobOfferDetail>();
-}
-await _fileLock.WaitAsync();
 try
 {
-var json = await File.ReadAllTextAsync(StorageFile);
+var lastFolder = GetLatestJobFolder();
+if (lastFolder == null)
+{
+_logger.LogWarning("⚠️ No matching job folders found");
+return Enumerable.Empty<JobOfferDetail>();
+}
+var filePath = GetJobDataFilePath(lastFolder);
+if (filePath == null || !File.Exists(filePath))
+{
+_logger.LogWarning("⚠️ Job data file not found in '{LastFolder}'", lastFolder);
+return Enumerable.Empty<JobOfferDetail>();
+}
+var json = await File.ReadAllTextAsync(filePath);
+if (string.IsNullOrWhiteSpace(json))
+{
+_logger.LogWarning("⚠️ Job data file '{FilePath}' is empty", filePath);
+return Enumerable.Empty<JobOfferDetail>();
+}
 var jobs = JsonConvert.DeserializeObject<List<JobOfferDetail>>(json) ?? new List<JobOfferDetail>();
-_logger.LogInformation("✅ Loaded {JobCount} job details", jobs.Count);
+_logger.LogInformation("✅ Loaded {JobCount} job details from '{FilePath}'", jobs.Count, filePath);
 return jobs;
 }
 catch (Exception ex)
@@ -901,10 +1548,16 @@ catch (Exception ex)
 _logger.LogError(ex, "❌ Failed to load job details");
 throw;
 }
-finally
-{
-_fileLock.Release();
 }
+private string? GetLatestJobFolder()
+{
+var directoryPath = Directory.GetCurrentDirectory();
+return directoryPath;
+}
+private string? GetJobDataFilePath(string folderPath)
+{
+var filesPath = Directory.GetFiles(folderPath, "jobs_data_*.json", SearchOption.TopDirectoryOnly);
+return filesPath.OrderByDescending(f => f).FirstOrDefault();
 }
 public async Task<int> GetJobCountAsync()
 {
@@ -993,7 +1646,7 @@ _driver.Navigate().GoToUrl("https://www.linkedin.com/login");
 await Task.Delay(3000);
 if (!IsOnLoginPage())
 {
-if (_securityCheck.IsSecurityChek())
+if (_securityCheck.IsSecurityCheck())
 {
 await _securityCheck.HandleSecurityPage();
 throw new InvalidOperationException(
@@ -1019,6 +1672,62 @@ var usernameElements = _driver.FindElements(By.Id("username"));
 var passwordElements = _driver.FindElements(By.Id("password"));
 var urlContainsLogin = _driver.Url.Contains("/login");
 return usernameElements.Any() && passwordElements.Any() && urlContainsLogin;
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\OpenAIClient.cs ===
+
+﻿using System.Net.Http.Json;
+using Configuration;
+using Models;
+using Services.Interfaces;
+namespace Services
+{
+public class OpenAIClient : IOpenAIClient
+{
+private readonly string _apiKey;
+private readonly HttpClient _httpClient;
+public OpenAIClient(AppConfig appConfig, HttpClient? httpClient = null)
+{
+_apiKey = Environment.GetEnvironmentVariable(appConfig.Llm.ApiKey, EnvironmentVariableTarget.Machine);
+if (string.IsNullOrWhiteSpace(_apiKey))
+{
+throw new ArgumentException("API key cannot be null or whitespace.", nameof(_apiKey));
+}
+_httpClient = httpClient ?? new HttpClient();
+_httpClient.BaseAddress = new Uri(appConfig.Llm.Url);
+if (!_httpClient.DefaultRequestHeaders.Contains("Authorization"))
+{
+_httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_apiKey}");
+}
+}
+public async Task<string> GetChatCompletionAsync(Prompt prompt)
+{
+if (string.IsNullOrWhiteSpace(prompt.SystemContent) || string.IsNullOrWhiteSpace(prompt.SystemContent))
+throw new ArgumentException("Code cannot be null or whitespace.", nameof(prompt));
+var request = new OpenAIChatRequest
+{
+Model = "deepseek-chat",
+Messages =
+[
+new() { Role = "system",  Content = prompt.SystemContent },
+new() { Role = "user",  Content = prompt.UserContent }
+]
+};
+var response = await _httpClient.PostAsJsonAsync("v1/chat/completions", request);
+if (!response.IsSuccessStatusCode)
+{
+var errorContent = await response.Content.ReadAsStringAsync();
+throw new Exception($"OpenAI API request failed with status code {response.StatusCode}: {errorContent}");
+}
+var responseData = await response.Content.ReadFromJsonAsync<OpenAIChatResponse>();
+if (responseData == null || responseData.Choices == null || responseData.Choices.Count == 0)
+{
+throw new Exception("No response received from OpenAI API.");
+}
+var improvedCode = responseData.Choices[0].Message.Content.Trim();
+return improvedCode;
 }
 }
 }
@@ -1159,7 +1868,7 @@ return false;
 _logger.LogDebug($"⏭️ ID:{_executionOptions.TimeStamp} Clicking to navigate to next page...");
 nextButton.Click();
 await Task.Delay(3000);
-if (_securityCheck.IsSecurityChek())
+if (_securityCheck.IsSecurityCheck())
 {
 await _securityCheck.HandleSecurityPage();
 throw new InvalidOperationException(
@@ -1223,6 +1932,289 @@ return offers;
 }
 }
 
+=== FILE: F:\ValkyrieHire\Services\PrompHelpers.cs ===
+
+﻿using Models;
+namespace Services
+{
+internal static class PrompHelpers
+{
+public static Prompt GetParseJobOfferPrompt(string jobOfferDescription)
+{
+if (string.IsNullOrWhiteSpace(jobOfferDescription))
+{
+throw new ArgumentNullException(nameof(jobOfferDescription), "Job description cannot be null or empty.");
+}
+const string JsonSchema = @"
+{
+""Company Name"": ""string"",
+""Job Offer Title"": ""string"",
+""Job Offer Summary"": ""string"",
+""Email Contact"": ""string"",
+""Key Skills Required"": [""string""],
+""Essential Qualifications"": [""string""],
+""Essential Technical Skill Qualifications"": [""string""],
+""Other Technical Skill Qualifications"": [""string""],
+""Salary or Budget Offered"": ""string""
+}";
+const string SystemContent = @"
+You are an expert recruiter specializing in the selection and evaluation of software developers,
+focusing on identifying top talent with the required technical skills, qualifications,
+and experience to meet specific job requirements in the software development industry.";
+const string TaskDescription = @"
+Analyze the following job description and extract specific information.
+For the properties ""Essential Technical Skill Qualifications"" and ""Other Technical Skill Qualifications"",
+include only the names of the technical skills without specifying time or additional comments.
+The output should be in a structured JSON format, adhering to the schema below.";
+string userContent = $@"
+{TaskDescription}
+Job Description:
+{jobOfferDescription}
+Output Requirements:
+Present the extracted information in the following JSON schema:
+JSON Schema:
+{JsonSchema}";
+return new Prompt
+{
+SystemContent = SystemContent,
+UserContent = userContent
+};
+}
+public static Prompt GetParseResumePrompt(string resumeText)
+{
+if (string.IsNullOrWhiteSpace(resumeText))
+{
+throw new ArgumentException("Resume text cannot be null or empty.", nameof(resumeText));
+}
+const string JsonSchema = @"
+{
+""Name"": ""string"",
+""Title"": ""string"",
+""Location"": ""string"",
+""Contact Information"": {
+""Phone"": ""string"",
+""Email"": ""string"",
+""LinkedIn"": ""string""
+},
+""Professional Summary"": ""string"",
+""Bullet Points"": [""string""],
+""Technical Skills"": [""string""],
+""Soft Skills"": [""string""],
+""Languages"": [""string""],
+""Professional Experience"": [
+{
+""Role"": ""string"",
+""Company"": ""string"",
+""Location"": ""string"",
+""Duration"": ""string"",
+""Responsibilities"": [""string""],
+""Tech Stack"": [""string""]
+}
+],
+""Additional Qualifications"": [""string""],
+""Education"": {
+""Institution"": ""string"",
+""Location"": ""string"",
+""Degree"": ""string"",
+""Graduation Date"": ""string""
+}
+}";
+const string SystemContent = @"
+You are an expert recruiter specializing in technical talent evaluation.
+Your task is to extract and structure resume information into a standardized JSON format.
+Focus on identifying:
+- Clear technical skills (without proficiency levels)
+- Relevant experience with specific technologies
+- Key achievements and responsibilities
+- Clean educational background";
+const string TaskInstructions = @"
+Analyze the following resume text and extract the requested information.
+Follow these guidelines:
+1. Include only skill names for technical skills (no durations or comments)
+2. Keep descriptions concise and achievement-oriented
+3. Maintain consistent formatting for dates and locations
+4. Output must strictly adhere to the provided JSON schema";
+string userContent = $@"
+Resume Text to Process:
+{resumeText}
+Output Requirements:
+{TaskInstructions}
+Required JSON Structure:
+{JsonSchema}";
+return new Prompt
+{
+SystemContent = SystemContent,
+UserContent = userContent
+};
+}
+public static Prompt GenerateResumeJsonPrompt(string jobOfferString, string resumeString)
+{
+if (string.IsNullOrWhiteSpace(jobOfferString))
+{
+throw new ArgumentNullException(nameof(jobOfferString), "Job description cannot be null or empty.");
+}
+const string JsonSchema = @"
+{
+""Name"": ""string"",
+""Title"": ""string"",
+""Location"": ""string"",
+""Contact Information"": {
+""Phone"": ""string"",
+""Email"": ""string"",
+""LinkedIn"": ""string""
+},
+""Professional Summary"": ""string"",
+""Technical Skills"": [""string""],
+""Soft Skills"": [""string""],
+""Languages"": [""string""],
+""Professional Experience"": [
+{
+""Role"": ""string"",
+""Company"": ""string"",
+""Location"": ""string"",
+""Duration"": ""string"",
+""Responsibilities"": [""string""],
+""Tech Stack"": [""string""]
+}
+],
+""Additional Qualifications"": [""string""],
+""Education"": {
+""Institution"": ""string"",
+""Location"": ""string"",
+""Degree"": ""string"",
+""Graduation Date"": ""string""
+}
+}";
+const string SystemContent = @"
+You are a professional resume assistant specializing in tailoring resumes to highlight relevant technical qualifications.";
+const string TaskDescription = @"
+Your task is to align a given resume with the provided job offer. The input will consist of a JSON-formatted job offer and resume. You must:
+1. Update the Professional Summary to align with the job description and highlight relevant skills, achievements, and experiences. Incorporate key skills and keywords from the job offer into the summary.
+2. Update the Tech Stack in each professional experience to reflect the technologies listed under ""Essential Technical Skill Qualifications"" and ""Other Technical Skill Qualifications.""
+3. Tailor the Responsibilities in each professional experience to align with the job description while retaining the candidate's original achievements and quantifiable impacts.
+4. Update the Role Titles in each professional experience to reflect and align with the job offer’s language, ensuring consistency with the target position (e.g., ""Software Developer – AI Trainer""). Titles should remain truthful to the experience level and responsibilities but should use language and phrasing from the job offer when applicable.
+### Guidelines:
+- **Professional Summary**:
+- Extract key themes, skills, and qualifications from the job offer and integrate them into the summary.
+- Highlight years of experience, key technical skills (e.g., Oracle, SQL, ETL, Agile), and significant achievements.
+- Emphasize alignment with the role's requirements, such as database development, Agile SDLC, and leadership experience.
+- Ensure the summary reflects the candidate's ability to meet the job offer's expectations and contribute value to the company.
+#### Example:
+**Job Offer Keywords**: ""10+ years of database development, Agile SDLC, Oracle, SQL, leadership.""
+#### Before:
+""Innovative Full Stack Developer with over 17 years of experience designing and implementing enterprise-level solutions in .NET Framework, Angular, and Azure.""
+#### After:
+""Experienced Senior Database Developer with over 17 years of expertise in designing and managing enterprise-level databases, specializing in Oracle, SQL, and ETL processes. Proven track record of leading Agile teams to deliver high-impact solutions while optimizing database performance and scalability. Adept at aligning database architecture with modern SDLC methodologies to support critical business operations.""
+- **Tech Stack Updates**:
+- Replace outdated technologies with modern equivalents, ensuring consistency with the timeframe of each role.
+- Example: Replace "".NET Framework"" with "".NET Core"" for roles after 2016, where applicable.
+- Retain or add only technologies mentioned in the job offer (Essential/Other Technical Skills) unless the resume indicates otherwise.
+- Ensure older technologies, such as ""Web Forms,"" are updated to modern equivalents for recent experiences.
+- **Responsibilities Tailoring**:
+- Align the descriptions of responsibilities to reflect keywords and themes in the job offer.
+- Include measurable outcomes (e.g., ""Improved database performance by 30%"" or ""Reduced deployment time by 35%"").
+- Reflect domain-specific skills from the job offer where relevant (e.g., ""ETL development,"" ""Agile,"" or ""Stored procedures"").
+- **Preserve Resume Integrity**:
+- Do not invent achievements; base changes on provided data and job offer context.
+- Ensure descriptions remain true to the candidate's experience while highlighting relevant skills.
+- **Example of Alignment**:
+#### Before:
+**Responsibilities**: ""Developed APIs and optimized queries for better performance.""
+**Tech Stack**: "".NET Framework, SQL Server.""
+#### After:
+**Responsibilities**: ""Developed RESTful APIs for CRM-EMR integration, reducing data inconsistencies by 20%. Optimized SQL Server queries, enhancing database performance by 25%. Aligned database design with Agile development practices.""
+**Tech Stack**: "".NET Core, SQL Server, RESTful APIs, Agile.""
+### Input:
+Provide the job offer and resume in JSON format. Ensure the output is presented as a JSON object matching this schema:
+";
+string userContent = $@"
+{TaskDescription}
+Job Description:
+{jobOfferString}
+Resume:
+{resumeString}
+Output Requirements:
+Present the extracted information in the following JSON schema:
+JSON Schema:
+{JsonSchema}";
+return new Prompt
+{
+SystemContent = SystemContent,
+UserContent = userContent
+};
+}
+public static Prompt GenerateCoverLetterPrompt(string jobOfferString, string resumeString)
+{
+if (string.IsNullOrWhiteSpace(jobOfferString))
+{
+throw new ArgumentNullException(nameof(jobOfferString), "Job description cannot be null or empty.");
+}
+if (string.IsNullOrWhiteSpace(resumeString))
+{
+throw new ArgumentNullException(nameof(resumeString), "Resume cannot be null or empty.");
+}
+const string JsonSchema = @"
+{
+""Name"": ""string"",
+""Title"": ""string"",
+""Location"": ""string"",
+""Contact Information"": {
+""Phone"": ""string"",
+""Email"": ""string"",
+""LinkedIn"": ""string""
+},
+""Professional Summary"": ""string"",
+""Bullet Points"": [""string""],
+""Closing Paragraph"": ""string"",
+""Technical Skills"": [""string""],
+""Soft Skills"": [""string""],
+""Languages"": [""string""],
+""Professional Experience"": [
+{
+""Role"": ""string"",
+""Company"": ""string"",
+""Location"": ""string"",
+""Duration"": ""string"",
+""Responsibilities"": [""string""],
+""Tech Stack"": [""string""]
+}
+],
+""Additional Qualifications"": [""string""],
+""Education"": {
+""Institution"": ""string"",
+""Location"": ""string"",
+""Degree"": ""string"",
+""Graduation Date"": ""string""
+}
+}";
+const string SystemContent = @"
+You are a professional career assistant specializing in crafting compelling and personalized cover letters.
+Your expertise lies in tailoring each cover letter to highlight the most relevant essential technical skills qualifications,
+other essential technical skills qualifications, and accomplishments, ensuring alignment with the job description and industry standards.
+Your goal is to present the candidate as the ideal fit for the role,
+showcasing their value and enthusiasm in a professional and engaging manner.";
+const string TaskDescription = @"
+You will receive two JSON-formatted inputs: a job offer and a resume.
+Your task is to generate a tailored and professional cover letter that aligns with the information provided in both inputs.";
+string userContent = $@"
+{TaskDescription}
+Job Description:
+{jobOfferString}
+Resume:
+{resumeString}
+Output Requirements:
+Present the extracted information in the following JSON schema:
+JSON Schema:
+{JsonSchema}";
+return new Prompt
+{
+SystemContent = SystemContent,
+UserContent = userContent
+};
+}
+}
+}
+
 === FILE: F:\ValkyrieHire\Services\SecurityCheck.cs ===
 
 ﻿using Microsoft.Extensions.Logging;
@@ -1258,12 +2250,54 @@ _executionOptions = executionOptions;
 _directoryCheck = directoryCheck;
 _directoryCheck.EnsureDirectoryExists(FolderPath);
 }
-public bool IsSecurityChek()
+public bool IsSecurityCheck()
+{
+try
 {
 var title = _driver.Title.Contains("Security Verification");
+if (title)
+{
+_logger.LogWarning("⚠️ Title Security Verification detected on the page.");
+return true;
+}
 var captcha = _driver.FindElements(By.Id("captcha-internal")).Any();
+if (captcha)
+{
+_logger.LogWarning("⚠️ CAPTCHA image detected on the page.");
+return true;
+}
 var text = _driver.FindElements(By.XPath("
-return title || captcha || text;
+if (text)
+{
+_logger.LogWarning("⚠️ Text 'Let’s do a quick security check' detected on the page.");
+return true;
+}
+var captchaImages = _driver.FindElements(By.XPath("
+if (captchaImages)
+{
+_logger.LogWarning("⚠️ CAPTCHA image detected on the page.");
+return true;
+}
+var bodyText = _driver.FindElement(By.TagName("body")).Text;
+var indicators = new[] { "are you a human", "please verify", "unusual activity", "security check", "confirm your identity" };
+if (indicators.Any(indicator => bodyText.IndexOf(indicator, StringComparison.OrdinalIgnoreCase) >= 0))
+{
+_logger.LogWarning("⚠️ Security check text detected on the page.");
+return true;
+}
+var loginForm = _driver.FindElements(By.XPath("
+if (loginForm.Any())
+{
+_logger.LogWarning("⚠️ Unexpected LinkedIn login form detected. Session might have expired.");
+return true;
+}
+return false;
+}
+catch (Exception ex)
+{
+_logger.LogError(ex, "⚠️ Error while checking for security verification.");
+return false;
+}
 }
 public async Task TryStartPuzzle()
 {
@@ -1324,6 +2358,220 @@ Console.WriteLine("╚═══════════════════�
 }
 }
 
+=== FILE: F:\ValkyrieHire\Services\StringHelpers.cs ===
+
+﻿namespace Services
+{
+using System.Globalization;
+using System.Text;
+using System.Text.RegularExpressions;
+public static class StringHelpers
+{
+private static readonly HashSet<string> CommonCountries = new(
+[
+"canada", "united states", "brazil", "mexico", "argentina", "united kingdom",
+"france", "germany", "italy", "spain", "australia", "new zealand", "japan",
+"china", "india", "russia", "south africa", "egypt", "nigeria", "kenya",
+"sweden", "norway", "finland", "denmark", "portugal", "netherlands",
+"belgium", "switzerland", "austria", "greece", "turkey", "saudi arabia",
+"uae", "south korea", "vietnam", "thailand", "philippines", "indonesia",
+"malaysia", "singapore", "israel", "pakistan", "bangladesh", "iran",
+"iraq", "syria", "afghanistan", "ukraine", "poland", "czech republic",
+"hungary", "slovakia", "romania", "bulgaria", "serbia", "croatia",
+"bosnia", "slovenia", "albania", "macedonia", "montenegro", "iceland",
+"ireland", "scotland", "wales", "england", "cuba", "jamaica", "haiti",
+"dominican republic", "colombia", "venezuela", "chile", "peru", "bolivia",
+"ecuador", "paraguay", "uruguay", "guyana", "suriname", "belize",
+"guatemala", "honduras", "el salvador", "costa rica", "panama"
+],
+StringComparer.OrdinalIgnoreCase);
+private static readonly HashSet<string> ExcludeWords = new(
+[
+"with",
+"and",
+"&",
+"the",
+"a",
+"an"
+],
+StringComparer.OrdinalIgnoreCase);
+private static readonly HashSet<string> CommonTechKeywords = new(
+[
+"csharp", "dotnet", "angular", "react", "vue", "java", "python",
+"javascript", "typescript", "sql", "nosql", "aws", "azure",
+"devops", "cloud", "engineer", "developer", "architect", "manager",
+"consultant", "data", "scientist", "machine", "learning", "ai",
+"software", "fullstack", "backend", "frontend", "qa", "tester",
+"mobile", "android", "ios"
+],
+StringComparer.OrdinalIgnoreCase);
+private static readonly Dictionary<string, string> ReplacementTerms = new(StringComparer.OrdinalIgnoreCase)
+{
+{ "C#", "CSharp" },
+{ ".NET", "DotNet" },
+{ "++", "PlusPlus" },
+{ "+", "Plus" },
+{"FULLSTACK", "Fullstack" }
+};
+public static string ExtractJsonContent(string input)
+{
+string startMarker = "```json";
+string endMarker = "```";
+if (!input.Contains(startMarker) && !input.Contains(endMarker))
+return input;
+int startIndex = input.IndexOf(startMarker);
+if (startIndex == -1)
+return input.Trim();
+startIndex += startMarker.Length;
+int endIndex = input.IndexOf(endMarker, startIndex);
+if (endIndex == -1)
+endIndex = input.Length;
+string jsonContent = input.Substring(startIndex, endIndex - startIndex).Trim();
+return jsonContent;
+}
+public static string NormalizeCompanyName(string companyName)
+{
+return Normalize(companyName, CommonTechKeywords, ReplacementTerms);
+}
+public static string NormalizeLocationName(string locationName)
+{
+return Normalize(locationName, CommonCountries);
+}
+public static string NormalizeJobKeywords(string jobKeywords)
+{
+return Normalize(jobKeywords, CommonTechKeywords, ReplacementTerms);
+}
+public static string NormalizeJobTitle(string jobTitle)
+{
+return Normalize(jobTitle, CommonTechKeywords, ReplacementTerms, ExcludeWords);
+}
+private static string RemoveDiacritics(string text)
+{
+if (string.IsNullOrWhiteSpace(text))
+return string.Empty;
+var normalizedText = text.Normalize(NormalizationForm.FormD);
+return new string(normalizedText
+.Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+.ToArray());
+}
+private static string Normalize(string textToNormalize, HashSet<string> recognizedTerms, Dictionary<string, string>? replacementTerms = null, HashSet<string>? excludeWords = null)
+{
+if (string.IsNullOrWhiteSpace(textToNormalize))
+return string.Empty;
+var normalizedPattern = @"^([A-Z][a-z0-9]*)(-[A-Z][a-z0-9]*)*$";
+if (Regex.IsMatch(textToNormalize, normalizedPattern))
+return textToNormalize;
+textToNormalize = RemoveDiacritics(textToNormalize);
+textToNormalize = ApplyTermReplacements(textToNormalize, replacementTerms);
+var words = Regex.Split(textToNormalize, @"[^A-Za-z0-9]+")
+.Where(word => !string.IsNullOrEmpty(word) && IsExcludedWord(excludeWords, word))
+.Select(w => NormalizeWord(w, recognizedTerms))
+.ToList();
+var normalizedText = string.Join("-", words);
+return normalizedText.Length > 50 ? normalizedText.Substring(0, 50) : normalizedText;
+}
+private static string ApplyTermReplacements(string textToNormalize, Dictionary<string, string>? replacementTerms)
+{
+if (replacementTerms != null)
+{
+foreach (var term in replacementTerms)
+{
+textToNormalize = Regex.Replace(textToNormalize, Regex.Escape(term.Key), term.Value, RegexOptions.IgnoreCase);
+}
+}
+return textToNormalize;
+}
+private static string NormalizeWord(string word, HashSet<string> recognizedTerms)
+{
+var lowerWord = word.ToLowerInvariant();
+var matchedTerm = recognizedTerms.FirstOrDefault(term => lowerWord.Contains(term));
+if (matchedTerm != null)
+{
+string normalizedTerm = CapitalizeFirstLetter(matchedTerm);
+bool isExactMatch = matchedTerm.Length == word.Length;
+var replacement = isExactMatch ? normalizedTerm : $"-{normalizedTerm}";
+word = word.Replace(matchedTerm, replacement);
+}
+return CapitalizeFirstLetter(word);
+}
+private static bool IsExcludedWord(HashSet<string>? excludeWords, string word)
+{
+return excludeWords is null || !excludeWords.Contains(word);
+}
+private static string CapitalizeFirstLetter(string word) =>
+string.IsNullOrEmpty(word) ? word : char.ToUpper(word[0]) + word[1..].ToLower();
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\Util.cs ===
+
+﻿using System.Text.RegularExpressions;
+using Services.Interfaces;
+namespace Services
+{
+public class Util: IUtil
+{
+public string? ExtractJobId(string url)
+{
+var pattern = @"linkedin\.com/jobs/view/(\d+)";
+var match = Regex.Match(url, pattern);
+if (match.Success && match.Groups.Count > 1)
+{
+return match.Groups[1].Value;
+}
+else
+{
+return null;
+}
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\VerdanaFontResolver.cs ===
+
+﻿using System.Reflection;
+using PdfSharp.Fonts;
+namespace Services
+{
+public class VerdanaFontResolver : IFontResolver
+{
+public static readonly VerdanaFontResolver Instance = new VerdanaFontResolver();
+public string DefaultFontName => "Verdana";
+public byte[] GetFont(string faceName)
+{
+var assembly = Assembly.GetExecutingAssembly();
+switch (faceName)
+{
+case "Verdana#":
+return LoadFontData(assembly, "Services.Fonts.verdana.ttf");
+case "Verdana-Bold#":
+return LoadFontData(assembly, "Services.Fonts.verdanab.ttf");
+default:
+throw new NotImplementedException($"Font face '{faceName}' not implemented.");
+}
+}
+public FontResolverInfo ResolveTypeface(string familyName, bool isBold, bool isItalic)
+{
+if (familyName.Equals("Verdana", StringComparison.OrdinalIgnoreCase))
+{
+if (isBold && isItalic) return new FontResolverInfo("Verdana-Bold#");
+if (isBold) return new FontResolverInfo("Verdana-Bold#");
+if (isItalic) return new FontResolverInfo("Verdana#");
+return new FontResolverInfo("Verdana#");
+}
+return null;
+}
+private byte[] LoadFontData(Assembly assembly, string resourceName)
+{
+using var stream = assembly.GetManifestResourceStream(resourceName);
+if (stream == null) throw new Exception($"Resource '{resourceName}' not found.");
+using var ms = new MemoryStream();
+stream.CopyTo(ms);
+return ms.ToArray();
+}
+}
+}
+
 === FILE: F:\ValkyrieHire\Services\Interfaces\ICaptureSnapshot.cs ===
 
 ﻿namespace Services.Interfaces
@@ -1352,6 +2600,53 @@ Task<List<JobOfferDetail>> ProcessOffersAsync(IEnumerable<string> offers, string
 public interface IDirectoryCheck
 {
 void EnsureDirectoryExists(string path);
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\Interfaces\IDocumentCoordinator.cs ===
+
+﻿namespace Services.Interfaces
+{
+public interface IDocumentCoordinator
+{
+Task GenerateDocumentAsync(string inputResume, string urlJobBoard);
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\Interfaces\IDocumentParse.cs ===
+
+﻿using Models;
+namespace Services.Interfaces
+{
+public interface IDocumentParse
+{
+Task<JobOffer> ParseJobOfferAsync(string jobOfferDescription);
+Task<Resume> ParseResumeAsync(string resumeString);
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\Interfaces\IDocumentPDF.cs ===
+
+﻿using Models;
+namespace Services.Interfaces
+{
+public interface IDocumentPDF
+{
+void GenerateCoverLetterPdf(string outputPath, CoverLetterRequest coverLetterRequest);
+void GenerateJobOfferPdf(string outputPath, JobOffer jobOffer);
+void GenerateResumePdf(string outputPath, ResumeRequest resumeRequest);
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\Interfaces\IGenerator.cs ===
+
+﻿using Models;
+namespace Services.Interfaces
+{
+public interface IGenerator
+{
+Task<Resume> CreateResume(JobOffer jobOffer, Resume resume);
+Task<CoverLetter> CreateCoverLetter(JobOffer jobOffer, Resume resume);
 }
 }
 
@@ -1400,6 +2695,17 @@ Task LoginAsync();
 }
 }
 
+=== FILE: F:\ValkyrieHire\Services\Interfaces\IOpenAIClient.cs ===
+
+﻿using Models;
+namespace Services.Interfaces
+{
+public interface IOpenAIClient
+{
+Task<string> GetChatCompletionAsync(Prompt prompt);
+}
+}
+
 === FILE: F:\ValkyrieHire\Services\Interfaces\IPageProcessor.cs ===
 
 ﻿namespace Services.Interfaces
@@ -1416,10 +2722,20 @@ Task<List<string>> ProcessAllPagesAsync();
 {
 public interface ISecurityCheck
 {
-bool IsSecurityChek();
+bool IsSecurityCheck();
 Task TryStartPuzzle();
 Task HandleSecurityPage();
 Task HandleUnexpectedPage();
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\Interfaces\IUtil.cs ===
+
+﻿namespace Services.Interfaces
+{
+public interface IUtil
+{
+string? ExtractJobId(string url);
 }
 }
 
@@ -1450,7 +2766,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Services")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b89aba70c005b707f69b2a9dabec4eb6497d59e9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f703bb337646b1b4626aebd0265e53db87c453a6")]
 [assembly: System.Reflection.AssemblyProductAttribute("Services")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Services")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
@@ -1464,6 +2780,530 @@ global using global::System.Linq;
 global using global::System.Net.Http;
 global using global::System.Threading;
 global using global::System.Threading.Tasks;
+
+=== FILE: F:\ValkyrieHire\Services\PDF\CoverLetterPdf.cs ===
+
+﻿namespace ApplyEngine.JobOfferApply.Documents.PDF
+{
+using Models;
+using PdfSharp.Drawing;
+using PdfSharp.Pdf;
+using Services.PDF.Addional;
+public static class CoverLetterPdf
+{
+public static void Generate(string outputPath, CoverLetterRequest coverLetterRequest)
+{
+const string familyName = "Verdana";
+var document = new PdfDocument();
+PdfPage page;
+XGraphics gfx;
+double margin, interline, yPosition;
+XFont normalFont, subTitleFont;
+string qualifications;
+PdfHeaderBuilder.GetHeader(coverLetterRequest.JobOffer, coverLetterRequest.Resume, familyName, document, out page, out gfx, out margin, out interline, out yPosition, out normalFont, out subTitleFont, coverLetterRequest.UrlJobBoard);
+var contentLines = TextHelper.SplitText(coverLetterRequest.CoverLetter.ProfessionalSummary, 90);
+yPosition += 40;
+var saidHello = "Dear Hiring Manager,";
+gfx.DrawString(saidHello, normalFont, XBrushes.Black, margin, yPosition);
+yPosition += interline;
+foreach (var line in contentLines.Where(x => x != string.Empty).ToList())
+{
+gfx.DrawString(line, normalFont, XBrushes.Black, margin, yPosition);
+yPosition += interline;
+}
+yPosition += 10;
+foreach (var bullet in coverLetterRequest.CoverLetter.BulletPoints)
+{
+var lines = TextHelper.SplitText(bullet, 85);
+var first = lines.First();
+gfx.DrawString($"• {first}", normalFont, XBrushes.Black, new XRect(margin + 20, yPosition, page.Width - 2 * margin, page.Width), XStringFormats.TopLeft);
+yPosition += 10;
+foreach (var line in lines.Skip(1))
+{
+gfx.DrawString(line, normalFont, XBrushes.Black, new XRect(margin + 20, yPosition, page.Width - 2 * margin, page.Width), XStringFormats.TopLeft);
+yPosition += 10;
+}
+yPosition += 10;
+}
+yPosition += 40;
+var footerLines = TextHelper.SplitText(coverLetterRequest.CoverLetter.ClosingParagraph, 90);
+foreach (var line in footerLines)
+{
+gfx.DrawString(line, normalFont, XBrushes.Black, margin, yPosition);
+yPosition += interline;
+}
+yPosition += interline;
+yPosition += interline;
+gfx.DrawString(coverLetterRequest.Resume.Name, normalFont, XBrushes.Black, margin, yPosition);
+yPosition += interline;
+gfx.DrawString(coverLetterRequest.JobOffer.JobOfferTitle, normalFont, XBrushes.Black, margin, yPosition);
+string date = DateTime.Now.ToString("MMMM d, yyyy");
+yPosition += interline;
+gfx.DrawString(date, normalFont, XBrushes.Black, margin, yPosition);
+document.Save(outputPath);
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\PDF\JobOfferPDF.cs ===
+
+﻿using Models;
+using PdfSharp.Drawing;
+using PdfSharp.Pdf;
+namespace Services.PDF
+{
+public static class JobOfferPdf
+{
+public static void Generate(string outputPath, JobOffer jobOffer)
+{
+const string familyName = "Verdana";
+const int maxLinesPerPage = 36;
+const double margin = 50;
+const double interline = 20;
+var document = new PdfDocument();
+var normalFont = new XFont(familyName, 10, XFontStyleEx.Regular);
+var subTitleFont = new XFont(familyName, 12, XFontStyleEx.Bold);
+var essentialQualifications = jobOffer.EssentialTechnicalSkillQualifications.Take(6).ToList();
+var additionalQualificationsNeeded = 6 - essentialQualifications.Count;
+if (additionalQualificationsNeeded > 0)
+{
+essentialQualifications.AddRange(
+jobOffer.OtherTechnicalSkillQualifications.Take(additionalQualificationsNeeded)
+);
+}
+document.Info.Title = jobOffer.JobOfferTitle;
+var lines = jobOffer.RawJobDescription
+.Where(x => !string.IsNullOrWhiteSpace(x))
+.ToList();
+PdfPage page = null;
+XGraphics gfx = null;
+double yPosition = 0;
+int currentLineCount = 0;
+void StartNewPage()
+{
+page = document.AddPage();
+gfx = XGraphics.FromPdfPage(page);
+yPosition = margin;
+currentLineCount = 0;
+}
+StartNewPage();
+gfx.DrawString(jobOffer.JobOfferTitle, subTitleFont, XBrushes.Black, margin, yPosition);
+yPosition += interline;
+currentLineCount++;
+foreach (var line in lines)
+{
+if (currentLineCount >= maxLinesPerPage)
+{
+StartNewPage();
+}
+gfx.DrawString(line, normalFont, XBrushes.Black, margin, yPosition);
+yPosition += interline;
+currentLineCount++;
+}
+document.Save(outputPath);
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\PDF\ResumePdf.cs ===
+
+﻿namespace Services.PDF
+{
+using Models;
+using PdfSharp.Drawing;
+using PdfSharp.Pdf;
+using Services.PDF.Addional;
+public static class ResumePdf
+{
+public static void Generate(string outputPath, ResumeRequest resumeRequest)
+{
+const string familyName = "Verdana";
+var document = new PdfDocument();
+PdfPage page, page2;
+XGraphics gfx, gfx2;
+double margin, interline, yPosition, yPosition2;
+XFont normalFont, subTitleFont;
+string qualifications = string.Join(" | ", resumeRequest.JobOffer.EssentialQualifications);
+PdfHeaderBuilder.GetHeader(resumeRequest.JobOffer, resumeRequest.Resume, familyName, document, out page, out gfx, out margin, out interline, out yPosition, out normalFont, out subTitleFont, resumeRequest.UrlJobBoard);
+double interlineParagraph = 10;
+var lines = TextHelper.SplitText(resumeRequest.Resume.ProfessionalSummary, 100);
+ProfessionalSummary.AddProfessionalSummary(gfx, normalFont, lines, margin, ref yPosition, page, interlineParagraph);
+var sectionTitleFont = new XFont(familyName, 14, XFontStyleEx.Bold);
+gfx.DrawString("Technical Skills", sectionTitleFont, XBrushes.Black, margin, yPosition);
+yPosition += 5;
+var limitQualifications = 10;
+var essentialQualifications = resumeRequest.JobOffer.EssentialTechnicalSkillQualifications.Take(limitQualifications).ToList();
+var qualificationsCount = essentialQualifications.Count();
+if (essentialQualifications.Any() && qualificationsCount<limitQualifications)
+{
+var essentialOtherQualifications = resumeRequest.JobOffer.OtherTechnicalSkillQualifications.Take(limitQualifications-qualificationsCount);
+essentialQualifications.AddRange(essentialOtherQualifications);
+}
+string[] value = [.. essentialQualifications];
+var qualificationsResume = string.Join(" | ", value);
+var languages = string.Join(", ", qualificationsResume) + " - Languages: " + string.Join(" , ", resumeRequest.Resume.Languages);
+var languagesList = TextHelper.SplitText(languages, 87);
+TechnicalSkills.AddTechnicalSkills(gfx, normalFont, languagesList, margin, ref yPosition, page, interlineParagraph);
+yPosition += 15;
+var boldFont = new XFont(familyName, 10, XFontStyleEx.Bold);
+gfx.DrawString("Professional Experience", sectionTitleFont, XBrushes.Black, margin, yPosition);
+yPosition += 10;
+var experieces = resumeRequest.Resume.ProfessionalExperiences;
+var page1Experieces = experieces.Take(2);
+foreach (var experience in page1Experieces)
+{
+string titleText = experience.Role.Length>37 ? experience.Role[..37] : experience.Role;
+Experience.AddExperience(gfx, titleText, experience.Company, experience.Location, experience.Duration, experience.Responsibilities.ToArray(), margin, ref yPosition, page.Width, experience.TechStack.ToArray(), ref page);
+}
+PdfHeaderBuilder.AddPage(document, out page2, out gfx2);
+var page2Experieces = experieces.Skip(2);
+yPosition2 = margin;
+foreach (var experience in page2Experieces)
+{
+Experience.AddExperience(gfx2, experience.Role, experience.Company, experience.Location, experience.Duration, experience.Responsibilities.ToArray(), margin, ref yPosition2, page2.Width, experience.TechStack.ToArray(), ref page2);
+}
+yPosition2 += 10;
+gfx2.DrawString("ADDITIONAL QUALIFICATIONS", sectionTitleFont, XBrushes.Black, margin, yPosition2);
+AddionalQualitions.AddAddionalQualitions(gfx2, resumeRequest.Resume.AdditionalQualifications.ToArray(), margin, ref yPosition2, page2.Width);
+yPosition2 += 10;
+gfx2.DrawString("EDUCATION", sectionTitleFont, XBrushes.Black, margin, yPosition2);
+yPosition2 += 15;
+gfx2.DrawString(resumeRequest.Resume.Education.Institution + " - " + resumeRequest.Resume.Education.Location, normalFont, XBrushes.Black, margin, yPosition2);
+yPosition2 += 10;
+gfx2.DrawString(resumeRequest.Resume.Education.Degree + ", " + resumeRequest.Resume.Education.GraduationDate, normalFont, XBrushes.Black, margin, yPosition2);
+document.Save(outputPath);
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\PDF\Addional\AddionalQualition.cs ===
+
+﻿namespace Services.PDF.Addional
+{
+using PdfSharp.Drawing;
+public static class AddionalQualitions
+{
+public static void AddAddionalQualitions(XGraphics gfx, string[] bullets, double margin, ref double yPosition, double pageWidth)
+{
+XFont boldFont = new XFont("Verdana", 10, XFontStyleEx.Bold);
+XFont normalFont = new XFont("Verdana", 10, XFontStyleEx.Regular);
+yPosition += 10;
+foreach (var bullet in bullets)
+{
+var buletLines = TextHelper.SplitText(bullet, 70);
+var bulletfirts = buletLines.First();
+var buletLinesLast = buletLines.Skip(1);
+gfx.DrawString($"• {bullet}", normalFont, XBrushes.Black, new XRect(margin + 20, yPosition, pageWidth - 2 * margin, pageWidth), XStringFormats.TopLeft);
+yPosition += 10;
+foreach (var bulletLine in buletLinesLast)
+{
+gfx.DrawString($"{bulletLine}", normalFont, XBrushes.Black, new XRect(margin + 20, yPosition, pageWidth - 2 * margin, pageWidth), XStringFormats.TopLeft);
+yPosition += 10;
+}
+}
+yPosition += 20;
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\PDF\Addional\Experience.cs ===
+
+﻿namespace Services.PDF.Addional
+{
+using PdfSharp.Drawing;
+using PdfSharp.Pdf;
+using System;
+internal static class Experience
+{
+public static void AddExperience(XGraphics gfx, string title, string company, string location, string dates, string[] bullets, double margin, ref double yPosition, double pageWidth, string[] techStack, ref PdfPage page)
+{
+var urlCompanies = new Dictionary<string, string>
+{
+{ "Snowflake", "https://www.snowflake.com/en/" },
+{ "MAS Global", "https://masglobalconsulting.com/" },
+{ "Software One", "https://www.softwareone.com/en-ca" },
+{ "LeaderSearch", "https://www.elempleo.com/co/ofertas-empleo/" },
+{ "Focus Communications INC", "https://focusd.ca/" },
+{ "Just Go To Canada", "https://justgotocanada.com/en/" },
+{ "CALIDDA - Gas Natural del Perú", "https://www.calidda.com.pe/" },
+{ "VENTURA SOLUCIONES SAC", "https://venturasoluciones.com.pe/" },
+{ "GOOGLE USA", "https://www.google.com/" },
+{ "CRP MEDIOS Y ENTRETENIMIENTO SAC", "https://www.linkedin.com/company/corporaci-n-radial-del-per-/about/" },
+{ "SAN MIGUEL INDUSTRIAS PET S.A", "https://www.linkedin.com/company/smipet/?originalSubdomain=pe" },
+{ "INNIVEC", "https://innivec.com/" },
+{ "INVERHAY", "http://www.lugano.com.co/" },
+{ "MR BRANDING", "https://mrbranding.co/" },
+{ "NAPA AUTOPRO", "https://www.napaautopro.com/en/" },
+{ "The Salvation Army", "https://salvationarmy.ca/" },
+{ "Car Dealer Hyundai", "https://hyundai.pe/" },
+{ "Credit Bank of Peru", "https://www.viabcp.com/" },
+{ "Car Dealer Kia", "https://www.kia.com/pe/main.html" },
+{ "Car Dealer KIA", "https://www.kia.com/pe/main.html" },
+{ "Bank of Nova Scotia", "https://www.scotiabank.com/ca/en" },
+{ "Mercado Mexicano Canada", "https://www.mercadomexicano.ca/" },
+{ "Scotiabank Perú", "https://www.scotiabank.com.pe/Personas/Default" },
+{ "Scotiabank Peru", "https://www.scotiabank.com.pe/Personas/Default" },
+{ "Scotiabank Perú – Perú", "https://www.scotiabank.com.pe/Personas/Default" },
+{ "Soprole", "https://www.soprole.cl/"},
+{ "Tecnyca", "https://tecnyca.net/"},
+{ "Stratus Building Solutions", "https://www.stratusclean.com/" },
+{ "Auphan Software corp", "https://www.auphansoftware.com/" },
+{ "Global Hits", "https://globalhitss.com/" },
+{ "IQ Outsourcing", "https://www.iqoutsourcing.com/" },
+{ "Novoclick SAS", "https://www.novoclick.net/"},
+{ "Tec Online SAS", "https://www.linkedin.com/in/leonardorive/"},
+{ "Doka", "https://www.doka.com/ca/index"},
+{ "Lean Solutions Group", "https://www.leangroup.com/"},
+{ "Lean Solutions Group - Colombia", "https://www.leangroup.com/"},
+{ "SYKES", "https://foundever.com/"},
+{ "SYKES - Colombia", "https://foundever.com/"},
+{ "Grupo Cobra", "https://www.grupocobra.com/en/" },
+{ "Grupo Cobra - Colombia", "https://www.grupocobra.com/en/" }
+};
+XFont boldFont = new XFont("Verdana", 10, XFontStyleEx.Bold);
+XFont normalFont = new XFont("Verdana", 10, XFontStyleEx.Regular);
+double xPosition = margin;
+double currentYPosition = yPosition;
+string titleText = title;
+gfx.DrawString(titleText, boldFont, XBrushes.Black, new XPoint(xPosition, currentYPosition), XStringFormats.TopLeft);
+double titleWidth = gfx.MeasureString(titleText, boldFont).Width;
+xPosition += titleWidth;
+string separator = " | ";
+gfx.DrawString(separator, boldFont, XBrushes.Black, new XPoint(xPosition, currentYPosition), XStringFormats.TopLeft);
+double separatorWidth = gfx.MeasureString(separator, boldFont).Width;
+xPosition += separatorWidth;
+string companyText = company;
+gfx.DrawString(companyText, boldFont, XBrushes.Blue, new XPoint(xPosition, currentYPosition), XStringFormats.TopLeft);
+var siteCompany = string.Empty;
+try
+{
+siteCompany = urlCompanies[companyText] is null ? string.Empty : urlCompanies[companyText];
+}
+catch (Exception ex)
+{
+var i = ex;
+}
+var xrectCompany = new XRect(xPosition, currentYPosition, xPosition + 100, currentYPosition);
+var rectCompany = gfx.Transformer.WorldToDefaultPage(xrectCompany);
+var pdfrectCompany = new PdfRectangle(rectCompany);
+page.AddWebLink(pdfrectCompany, siteCompany);
+double companyWidth = gfx.MeasureString(companyText, boldFont).Width;
+xPosition += companyWidth;
+gfx.DrawString(separator, boldFont, XBrushes.Black, new XPoint(xPosition, currentYPosition), XStringFormats.TopLeft);
+xPosition += separatorWidth;
+string locationText = location;
+gfx.DrawString(locationText, boldFont, XBrushes.Black, new XPoint(xPosition, currentYPosition), XStringFormats.TopLeft);
+yPosition += 20;
+gfx.DrawString(dates, normalFont, XBrushes.Black, margin, yPosition);
+yPosition += 5;
+foreach (var bullet in bullets)
+{
+var buletLines = TextHelper.SplitText(bullet, 90);
+var bulletfirts = buletLines.First();
+var buletLinesLast = buletLines.Skip(1);
+gfx.DrawString($"• {bulletfirts}", normalFont, XBrushes.Black, new XRect(margin + 20, yPosition, pageWidth - 2 * margin, pageWidth), XStringFormats.TopLeft);
+yPosition += 10;
+foreach (var bulletLine in buletLinesLast)
+{
+gfx.DrawString($"{bulletLine}", normalFont, XBrushes.Black, new XRect(margin + 20, yPosition, pageWidth - 2 * margin, pageWidth), XStringFormats.TopLeft);
+yPosition += 10;
+}
+}
+yPosition += 15;
+var techStackString = "Tech Stack: " + string.Join(" | ", techStack);
+var techStackList = TextHelper.SplitText(techStackString, 90);
+foreach (var tech in techStackList)
+{
+gfx.DrawString(tech, normalFont, XBrushes.Black, margin, yPosition);
+yPosition += 10;
+}
+yPosition += 10;
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\PDF\Addional\PdfHeaderBuilder.cs ===
+
+﻿namespace Services.PDF.Addional
+{
+using System.Reflection;
+using Models;
+using PdfSharp.Drawing;
+using PdfSharp.Fonts;
+using PdfSharp.Pdf;
+internal static class PdfHeaderBuilder
+{
+public static void GetHeader(JobOffer jobOffer, Resume resume, string familyName, PdfDocument document, out PdfPage page, out XGraphics gfx, out double margin, out double interline, out double yPosition, out XFont normalFont, out XFont subTitleFont, string siteUri)
+{
+var limitQualifications = 10;
+var essentialQualifications = jobOffer.EssentialTechnicalSkillQualifications.Take(limitQualifications).ToList();
+var qualificationsCount = essentialQualifications.Count();
+if (essentialQualifications.Any() && qualificationsCount < limitQualifications)
+{
+var essentialOtherQualifications = jobOffer.OtherTechnicalSkillQualifications.Take(limitQualifications - qualificationsCount);
+essentialQualifications.AddRange(essentialOtherQualifications);
+}
+string[] value = essentialQualifications.ToArray();
+var qualifications = string.Join(" | ", value);
+document.Info.Title = resume.Name;
+AddPage(document, out page, out gfx);
+margin = 50;
+interline = 20;
+yPosition = margin;
+XFont titleFont;
+VerdanaFontResolver verdanaFontResolver = new VerdanaFontResolver();
+GlobalFontSettings.FontResolver = verdanaFontResolver;
+titleFont = new XFont(familyName, 18, XFontStyleEx.Bold);
+gfx.DrawString(resume.Name, titleFont, XBrushes.Black, margin, yPosition);
+yPosition += interline;
+var emojiFont = new XFont(familyName, 12, XFontStyleEx.Regular);
+var xrect = new XRect(margin + 270, yPosition - 15, 390, 20);
+var rect = gfx.Transformer.WorldToDefaultPage(xrect);
+var pdfrect = new PdfRectangle(rect);
+page.AddWebLink(pdfrect, siteUri);
+normalFont = new XFont(familyName, 10, XFontStyleEx.Regular);
+{
+var assembly = Assembly.GetExecutingAssembly();
+XImage linkedinImage = LoadEmbeddedImage(assembly, "Services.PDF.Addional.Images.linkedin-icon.png");
+XImage emailImage = LoadEmbeddedImage(assembly, "Services.PDF.Addional.Images.email-icon.png");
+XImage phoneImage = LoadEmbeddedImage(assembly, "Services.PDF.Addional.Images.phone-icon.png");
+double imageWidth = 12;
+double imageHeight = 12;
+gfx.DrawImage(linkedinImage, margin + 400, yPosition - imageHeight + 2, imageWidth, imageHeight);
+gfx.DrawString("LinkedIn", normalFont, XBrushes.Blue, margin + 340, yPosition);
+var siteUriEmail = $"mailto:{resume.ContactInfo.Email}";
+var xrectEmail = new XRect(margin + 120, yPosition - 15, 140, 20);
+var rectEmail = gfx.Transformer.WorldToDefaultPage(xrectEmail);
+var pdfrectEmail = new PdfRectangle(rectEmail);
+page.AddWebLink(pdfrectEmail, siteUriEmail);
+gfx.DrawImage(emailImage, margin + 150, yPosition - imageHeight + 2, imageWidth, imageHeight);
+gfx.DrawString(resume.ContactInfo.Email, normalFont, XBrushes.Blue, margin + 170, yPosition);
+gfx.DrawImage(phoneImage, margin, yPosition - imageHeight + 2, imageWidth, imageHeight);
+gfx.DrawString($"{resume.ContactInfo.Phone}", emojiFont, XBrushes.Black, margin + 20, yPosition);
+yPosition += interline;
+subTitleFont = new XFont(familyName, 12, XFontStyleEx.Regular);
+var titleJobOffer = jobOffer.JobOfferTitle;
+var skills = qualifications.Count() > 0 ? " | " + qualifications : string.Empty;
+var qualificationsList = TextHelper.SplitText(jobOffer.JobOfferTitle + skills, 72);
+foreach (var qualification in qualificationsList)
+{
+gfx.DrawString(qualification, subTitleFont, XBrushes.Black, margin, yPosition);
+yPosition += interline;
+}
+}
+}
+public static void AddPage(PdfDocument document, out PdfPage page, out XGraphics gfx)
+{
+page = document.AddPage();
+gfx = XGraphics.FromPdfPage(page);
+}
+private static XImage LoadEmbeddedImage(Assembly assembly, string resourceName)
+{
+using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+{
+if (stream == null)
+{
+throw new FileNotFoundException($"Embedded resource '{resourceName}' not found.");
+}
+return XImage.FromStream(stream);
+}
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\PDF\Addional\ProfessionalSummary.cs ===
+
+﻿namespace Services.PDF.Addional
+{
+using PdfSharp.Drawing;
+using PdfSharp.Pdf;
+internal static class ProfessionalSummary
+{
+public static void AddProfessionalSummary(XGraphics gfx, XFont normalFont, List<string> lines, double margin, ref double yPosition, PdfPage pdfPage, double interlineParagraph)
+{
+foreach (var line in lines)
+{
+gfx.DrawString(line, normalFont, XBrushes.Black, new XRect(margin, yPosition, pdfPage.Width - 2 * margin, pdfPage.Height), XStringFormats.TopLeft);
+yPosition += interlineParagraph;
+}
+yPosition += 30;
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\PDF\Addional\TechnicalSkills.cs ===
+
+﻿using PdfSharp.Drawing;
+using PdfSharp.Pdf;
+namespace Services.PDF.Addional
+{
+internal static class TechnicalSkills
+{
+public static void AddTechnicalSkills(XGraphics gfx, XFont normalFont, List<string> lines, double margin, ref double yPosition, PdfPage pdfPage, double interlineParagraph)
+{
+foreach (var line in lines)
+{
+gfx.DrawString(line, normalFont, XBrushes.Black, new XRect(margin, yPosition, pdfPage.Width - 2 * margin, pdfPage.Height), XStringFormats.TopLeft);
+yPosition += interlineParagraph;
+}
+yPosition += 20;
+}
+}
+}
+
+=== FILE: F:\ValkyrieHire\Services\PDF\Addional\TextHelper.cs ===
+
+﻿namespace Services.PDF.Addional
+{
+using System.Text;
+public static class TextHelper
+{
+public static List<string> SplitText(string text, int maxLineLength)
+{
+List<string> lines = [];
+string[] paragraphs = text.Split('\n');
+foreach (string paragraph in paragraphs)
+{
+string[] words = paragraph.Split(' ');
+StringBuilder currentLine = new StringBuilder();
+foreach (string word in words.Select(x => x.Replace("\t", "    ")))
+{
+if (word.Length >= maxLineLength)
+{
+if (currentLine.Length > 0)
+{
+string line = currentLine.ToString().TrimEnd();
+lines.Add(line);
+currentLine.Clear();
+}
+lines.Add(word);
+continue;
+}
+if (currentLine.Length + word.Length + (currentLine.Length > 0 ? 1 : 0) > maxLineLength)
+{
+string line = currentLine.ToString().TrimEnd();
+lines.Add(line);
+currentLine.Clear();
+}
+if (currentLine.Length > 0)
+currentLine.Append(" ");
+currentLine.Append(word);
+}
+if (currentLine.Length > 0)
+{
+string line = currentLine.ToString().TrimEnd();
+lines.Add(line);
+currentLine.Clear();
+}
+if (paragraph != paragraphs[paragraphs.Length - 1])
+{
+lines.Add("");
+}
+}
+return lines;
+}
+}
+}
 
 === FILE: F:\ValkyrieHire\Tests.Services\DetailProcessingTests.cs ===
 
@@ -1529,13 +3369,15 @@ var mockChildElement = new Mock<IWebElement>();
 var childElements = new ReadOnlyCollection<IWebElement>(new List<IWebElement> { mockChildElement.Object });
 var mockParentElement = new Mock<IWebElement>();
 var mockNavigation = new Mock<INavigation>();
+var mockUtil =  new Mock<IUtil>();
+mockUtil.Setup(e => e.ExtractJobId(It.IsAny<string>())).Returns("12345");
 mockParentElement.Setup(e => e.Displayed).Returns(true);
 mockParentElement.Setup(e => e.FindElements(It.IsAny<By>())).Returns(childElements);
 var parentElements = new ReadOnlyCollection<IWebElement>(new List<IWebElement> { mockParentElement.Object });
 mockFactory.Setup(f => f.Create()).Returns(driver);
 mockCapture.Setup(c => c.CaptureArtifactsAsync(It.IsAny<string>(), It.IsAny<string>()))
 .ReturnsAsync("dummyTimestamp");
-mockSecurity.Setup(s => s.IsSecurityChek()).Returns(false);
+mockSecurity.Setup(s => s.IsSecurityCheck()).Returns(false);
 var executionOptions = new ExecutionOptions();
 var detailProcessing = new DetailProcessing(
 mockFactory.Object,
@@ -1543,58 +3385,13 @@ mockLogger.Object,
 mockCapture.Object,
 mockSecurity.Object,
 executionOptions,
-mockDirCheck.Object
+mockDirCheck.Object,
+mockUtil.Object
 );
 var offers = new List<string> { url };
 var result = await detailProcessing.ProcessOffersAsync(offers, "search text");
 Assert.IsNotNull(result, "Result should not be null");
 Assert.AreEqual(1, result.Count, "Should have processed one job offer");
-mockCapture.Verify(c => c.CaptureArtifactsAsync(It.IsAny<string>(), It.IsAny<string>()), Times.AtLeastOnce);
-mockLogger.Verify(l => l.Log(
-It.IsAny<Microsoft.Extensions.Logging.LogLevel>(),
-It.IsAny<EventId>(),
-It.IsAny<It.IsAnyType>(),
-It.IsAny<Exception>(),
-(Func<It.IsAnyType, Exception, string>)It.IsAny<object>()),
-Times.AtLeastOnce);
-}
-[TestMethod]
-public async Task ProcessOffersAsync_ShouldProcessOffersAndReturnDetails()
-{
-var mockDriver = new Mock<IWebDriver>();
-var mockLogger = new Mock<ILogger<DetailProcessing>>();
-var mockCapture = new Mock<ICaptureSnapshot>();
-var mockSecurity = new Mock<ISecurityCheck>();
-var mockDirCheck = new Mock<IDirectoryCheck>();
-var mockFactory = new Mock<IWebDriverFactory>();
-var mockChildElement = new Mock<IWebElement>();
-var childElements = new ReadOnlyCollection<IWebElement>(new List<IWebElement> { mockChildElement.Object });
-var mockParentElement = new Mock<IWebElement>();
-var mockNavigation = new Mock<INavigation>();
-mockParentElement.Setup(e => e.Displayed).Returns(true);
-mockParentElement.Setup(e => e.FindElements(It.IsAny<By>())).Returns(childElements);
-var parentElements = new ReadOnlyCollection<IWebElement>(new List<IWebElement> { mockParentElement.Object });
-mockDriver.Setup(d => d.Navigate()).Returns(mockNavigation.Object);
-mockDriver.Setup(d => d.FindElements(It.IsAny<By>())).Returns(parentElements);
-mockDriver.Setup(d => d.Url).Returns("https://www.linkedin.com/job");
-mockFactory.Setup(f => f.Create()).Returns(mockDriver.Object);
-mockCapture.Setup(c => c.CaptureArtifactsAsync(It.IsAny<string>(), It.IsAny<string>()))
-.ReturnsAsync("dummyTimestamp");
-mockSecurity.Setup(s => s.IsSecurityChek()).Returns(false);
-var executionOptions = new ExecutionOptions();
-var detailProcessing = new DetailProcessing(
-mockFactory.Object,
-mockLogger.Object,
-mockCapture.Object,
-mockSecurity.Object,
-executionOptions,
-mockDirCheck.Object
-);
-var offers = new List<string> { "https://www.linkedin.com/jobs/view/123456" };
-var result = await detailProcessing.ProcessOffersAsync(offers, "Search text");
-Assert.IsNotNull(result, "Result should not be null");
-Assert.AreEqual(1, result.Count, "Should have processed one job offer");
-mockDriver.Verify(d => d.Navigate().GoToUrl(offers[0]), Times.Once);
 mockCapture.Verify(c => c.CaptureArtifactsAsync(It.IsAny<string>(), It.IsAny<string>()), Times.AtLeastOnce);
 mockLogger.Verify(l => l.Log(
 It.IsAny<Microsoft.Extensions.Logging.LogLevel>(),
@@ -1612,6 +3409,49 @@ Times.AtLeastOnce);
 
 ﻿[assembly: Parallelize(Scope = ExecutionScope.MethodLevel)]
 
+=== FILE: F:\ValkyrieHire\Tests.Services\UtilTests.cs ===
+
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using OpenQA.Selenium.Chrome;
+using Services;
+namespace Tests.Services
+{
+[TestClass]
+public class UtilTests
+{
+[TestInitialize]
+public void Setup()
+{
+}
+[TestCleanup]
+public void Teardown()
+{
+}
+[TestMethod]
+[DataRow("https://www.linkedin.com/jobs/view/4066112398/")]
+[DataRow("https://www.linkedin.com/jobs/view/4236262543/")]
+[DataRow("https://www.linkedin.com/jobs/view/4205250174/")]
+[DataRow("https://www.linkedin.com/jobs/view/4219985001/")]
+[DataRow("https://www.linkedin.com/jobs/view/4250559505/")]
+[DataRow("https://www.linkedin.com/jobs/view/4224847408/")]
+[DataRow("https://www.linkedin.com/jobs/view/4229315740/")]
+[DataRow("https://www.linkedin.com/jobs/view/4242930313/")]
+[DataRow("https://www.linkedin.com/jobs/view/4127166956/")]
+public async Task ExtractJobIdURL_ShouldReturnValidId(string url)
+{
+var util = new Util();
+var id = util.ExtractJobId(url);
+Assert.IsNotNull(id, "The job ID should not be null.");
+Assert.IsTrue(long.TryParse(id, out _), "The job ID should be numeric.");
+await Task.CompletedTask;
+}
+}
+}
+
 === FILE: F:\ValkyrieHire\Tests.Services\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ===
 
 using System;
@@ -1625,7 +3465,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Tests.Services")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b89aba70c005b707f69b2a9dabec4eb6497d59e9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f703bb337646b1b4626aebd0265e53db87c453a6")]
 [assembly: System.Reflection.AssemblyProductAttribute("Tests.Services")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Tests.Services")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
@@ -1655,10 +3495,8 @@ using Services;
 using Services.Interfaces;
 public class Program
 {
-private static JobCommandArgs? commandArgs;
 public static async Task Main(string[] args)
 {
-commandArgs = new JobCommandArgs(args);
 Log.Logger = new LoggerConfiguration()
 .MinimumLevel.Debug()
 .WriteTo.Console()
@@ -1675,10 +3513,11 @@ try
 Log.Information("ValkyrieHire application starting");
 var host = CreateHostBuilder(args).Build();
 var commandFactory = host.Services.GetRequiredService<CommandFactory>();
-var commands = commandFactory.CreateCommand(args);
+var commands = commandFactory.CreateCommand();
 foreach (var command in commands)
 {
-await command.ExecuteAsync();
+var jobArgs = host.Services.GetRequiredService<JobCommandArgs>();
+await command.ExecuteAsync(jobArgs.Arguments);
 }
 Log.Information("ValkyrieHire application completed successfully");
 }
@@ -1692,9 +3531,8 @@ finally
 Log.CloseAndFlush();
 }
 }
-private static IHostBuilder CreateHostBuilder(string[] args)
-{
-return Host.CreateDefaultBuilder(args)
+private static IHostBuilder CreateHostBuilder(string[] args) =>
+Host.CreateDefaultBuilder(args)
 .UseSerilog()
 .ConfigureAppConfiguration((hostingContext, config) =>
 {
@@ -1702,18 +3540,19 @@ config.SetBasePath(Directory.GetCurrentDirectory());
 config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 config.AddEnvironmentVariables();
 })
-.ConfigureServices(static (hostingContext, services) =>
+.ConfigureServices((hostingContext, services) =>
 {
 var config = hostingContext.Configuration.Get<AppConfig>();
 services.AddSingleton(config);
-var execution = new ExecutionOptions();
-services.AddSingleton<ExecutionOptions>(execution);
-services.AddSingleton(commandArgs);
+services.AddSingleton(new ExecutionOptions());
+services.AddSingleton(new JobCommandArgs(args));
+services.AddSingleton<CommandFactory>();
 services.AddTransient<HelpCommand>();
 services.AddTransient<SearchCommand>();
-services.AddSingleton<CommandFactory>();
+services.AddTransient<ExportCommand>();
+services.AddTransient<ApplyCommand>();
 services.AddTransient<IJobSearchCoordinator, JobSearchCoordinator>();
-services.AddTransient<IDetailProcessing, Services.DetailProcessing>();
+services.AddTransient<IDetailProcessing, DetailProcessing>();
 services.AddTransient<ILoginService, LoginService>();
 services.AddTransient<ISecurityCheck, SecurityCheck>();
 services.AddTransient<ICaptureSnapshot, CaptureSnapshot>();
@@ -1722,9 +3561,13 @@ services.AddTransient<IJobSearch, JobSearch>();
 services.AddTransient<IPageProcessor, PageProcessor>();
 services.AddSingleton<IDirectoryCheck, DirectoryCheck>();
 services.AddSingleton<IJobStorageService, JsonJobStorageService>();
-services.AddTransient<ExportCommand>();
+services.AddSingleton<IDocumentParse, DocumentParse>();
+services.AddSingleton<IGenerator, Generator>();
+services.AddSingleton<IDocumentCoordinator, DocumentCoordinator>();
+services.AddSingleton<IOpenAIClient, OpenAIClient>();
+services.AddSingleton<IDocumentPDF, DocumentPDF>();
+services.AddSingleton<IUtil, Util>();
 });
-}
 }
 
 === FILE: F:\ValkyrieHire\ValkyrieConsole\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs ===
@@ -1740,7 +3583,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ValkyrieConsole")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b89aba70c005b707f69b2a9dabec4eb6497d59e9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f703bb337646b1b4626aebd0265e53db87c453a6")]
 [assembly: System.Reflection.AssemblyProductAttribute("ValkyrieConsole")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ValkyrieConsole")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
