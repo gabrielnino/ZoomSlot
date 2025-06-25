@@ -52,7 +52,8 @@ namespace Services
             {
                 if (!string.IsNullOrWhiteSpace(OffersFilePath) && File.Exists(OffersFilePath))
                 {
-                    _offers = await _jobStorageService.LoadOffersAsync(OffersFilePath);
+                    var offers = await _jobStorageService.LoadOffersAsync(OffersFilePath);
+                    _offers = offers?.ToList() ?? null;
                     if (_offers != null && _offers.Any())
                     {
                         _logger.LogInformation($"💼 ID:{_executionOptions.TimeStamp} Loaded {_offers.Count} offers fro{OffersFilePath}.");
@@ -63,7 +64,7 @@ namespace Services
                 await _loginService.LoginAsync();
                 var searchText = await _searchService.PerformSearchAsync();
                 _offers = await _processService.ProcessAllPagesAsync();
-                await _jobStorageService.SaveOffersAsync(_offers, OffersFilePath);
+                await _jobStorageService.SaveOffersAsync(OffersFilePath, _offers);
                 _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} LinkedIn job search process completed successfully with {_offers?.Count ?? 0} offers found.");
                 return _offers ?? [];
             }

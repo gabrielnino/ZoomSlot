@@ -25,7 +25,8 @@ namespace Commands
         public async Task ExecuteAsync(Dictionary<string, string>? arguments = null)
         {
             _logger.LogInformation("Starting job application process...");
-            var jobDetails = await _storageService.LoadJobsDetailAsync();
+            var filePath = _storageService.StorageFile;
+            var jobDetails = await _storageService.LoadJobsDetailAsync(filePath);
             _logger.LogInformation("Found {JobCount} job(s) to apply for.", jobDetails.Count());
             if (jobDetails != null && jobDetails.Any())
             {
@@ -54,7 +55,7 @@ namespace Commands
                     _logger.LogInformation("Generating application document...");
                     await _documentCoordinator.GenerateDocumentAsync(inputResumeContent, urlJobBoard);
                     _logger.LogInformation("✅ Application document generated successfully.");
-                    await _storageService.SaveJobOfferDetailAsync(jobDetails);
+                    await _storageService.SaveJobOfferDetailAsync(_storageService.StorageFile, jobDetails);
                 }
             }
             else

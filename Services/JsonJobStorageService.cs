@@ -8,7 +8,9 @@ namespace Services
 {
     public class JsonJobStorageService : IJobStorageService, IDisposable
     {
-        private readonly string? StorageFile;
+        public readonly string? _storageFile;
+
+        public string StorageFile { get { return _storageFile; } }
         private readonly ILogger<JsonJobStorageService> _logger;
         private readonly SemaphoreSlim _fileLock = new(1, 1);
         private readonly ExecutionOptions _executionOptions;
@@ -17,23 +19,23 @@ namespace Services
         {
             _logger = logger;
             _executionOptions = executionOptions;
-            if(StorageFile == null)
+            if(_storageFile == null)
             {
-                StorageFile = $"jobs_data_{_executionOptions.TimeStamp}.json";
+                _storageFile = $"jobs_data_{_executionOptions.TimeStamp}.json";
             }
             EnsureStorageDirectoryExists();
         }
 
-        public async Task SaveJobOfferDetailAsync(IEnumerable<JobOfferDetail> jobs)
+        public async Task SaveJobOfferDetailAsync(string offersDetailFilePath, IEnumerable<JobOfferDetail> offersDetail)
         {
-            if (jobs == null) throw new ArgumentNullException(nameof(jobs));
+            if (offersDetail == null) throw new ArgumentNullException(nameof(offersDetail));
 
             await _fileLock.WaitAsync();
             try
             {
-                var json = JsonConvert.SerializeObject(jobs, Formatting.Indented);
-                await File.WriteAllTextAsync(StorageFile, json);
-                _logger.LogInformation("✅ Saved {JobCount} job details to storage", jobs.Count());
+                var json = JsonConvert.SerializeObject(offersDetail, Formatting.Indented);
+                await File.WriteAllTextAsync(offersDetailFilePath, json);
+                _logger.LogInformation("✅ Saved {JobCount} job details to storage", offersDetail.Count());
             }
             catch (Exception ex)
             {
@@ -46,86 +48,24 @@ namespace Services
             }
         }
 
-        public async Task SaveJobsAsync(IEnumerable<string> jobs)
-        {
-            if (jobs == null) throw new ArgumentNullException(nameof(jobs));
-
-            await _fileLock.WaitAsync();
-            try
-            {
-                var json = JsonConvert.SerializeObject(jobs, Formatting.Indented);
-                await File.WriteAllTextAsync(StorageFile, json);
-                _logger.LogInformation("✅ Saved {JobCount} job details to storage", jobs.Count());
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "❌ Failed to save job details");
-                throw;
-            }
-            finally
-            {
-                _fileLock.Release();
-            }
-        }
-
-
-        public async Task<IEnumerable<string>> LoadJobsAsync()
+        public async Task<IEnumerable<JobOfferDetail>> LoadJobsDetailAsync(string offersFilePath)
         {
             try
             {
-                var lastFolder = GetLatestJobFolder();
-                if (lastFolder == null)
-                {
-                    _logger.LogWarning("⚠️ No matching job folders found");
-                    return [];
-                }
-                var filePath = GetJobDataFilePath(lastFolder);
-                if (filePath == null || !File.Exists(filePath))
-                {
-                    _logger.LogWarning("⚠️ Job data file not found in '{LastFolder}'", lastFolder);
-                    return [];
-                }
-                var json = await File.ReadAllTextAsync(filePath);
-                if (string.IsNullOrWhiteSpace(json))
-                {
-                    _logger.LogWarning("⚠️ Job data file '{FilePath}' is empty", filePath);
-                    return [];
-                }
-                var jobs = JsonConvert.DeserializeObject<List<string>>(json) ?? new List<string>();
-                _logger.LogInformation("✅ Loaded {JobCount} job details from '{FilePath}'", jobs.Count, filePath);
-                return jobs;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "❌ Failed to load job details");
-                throw;
-            }
-        }
 
-        public async Task<IEnumerable<JobOfferDetail>> LoadJobsDetailAsync()
-        {
-            try
-            {
-                var lastFolder = GetLatestJobFolder();
-                if (lastFolder == null)
+                if (offersFilePath == null || !File.Exists(offersFilePath))
                 {
-                    _logger.LogWarning("⚠️ No matching job folders found");
+                    _logger.LogWarning("⚠️ Job data file not found in '{LastFolder}'", offersFilePath);
                     return Enumerable.Empty<JobOfferDetail>();
                 }
-                var filePath = GetJobDataFilePath(lastFolder);
-                if (filePath == null || !File.Exists(filePath))
-                {
-                    _logger.LogWarning("⚠️ Job data file not found in '{LastFolder}'", lastFolder);
-                    return Enumerable.Empty<JobOfferDetail>();
-                }
-                var json = await File.ReadAllTextAsync(filePath);
+                var json = await File.ReadAllTextAsync(offersFilePath);
                 if (string.IsNullOrWhiteSpace(json))
                 {
-                    _logger.LogWarning("⚠️ Job data file '{FilePath}' is empty", filePath);
+                    _logger.LogWarning("⚠️ Job data file '{FilePath}' is empty", offersFilePath);
                     return Enumerable.Empty<JobOfferDetail>();
                 }
                 var jobs = JsonConvert.DeserializeObject<List<JobOfferDetail>>(json) ?? new List<JobOfferDetail>();
-                _logger.LogInformation("✅ Loaded {JobCount} job details from '{FilePath}'", jobs.Count, filePath);
+                _logger.LogInformation("✅ Loaded {JobCount} job details from '{FilePath}'", jobs.Count, offersFilePath);
                 return jobs;
             }
             catch (Exception ex)
@@ -135,83 +75,21 @@ namespace Services
             }
         }
 
-        private string? GetLatestJobFolder()
-        {
-            var directoryPath = Directory.GetCurrentDirectory();
-            return directoryPath;
-        }
-
-        private string? GetJobDataFilePath(string folderPath)
-        {
-            var filesPath = Directory.GetFiles(folderPath, "jobs_data_*.json", SearchOption.TopDirectoryOnly);
-            return filesPath.OrderByDescending(f => f).FirstOrDefault();
-        }
-
-
-        public async Task<int> GetJobCountAsync()
-        {
-            var jobs = await LoadJobsAsync();
-            return jobs.Count();
-        }
-
-        public async Task ClearStorageAsync()
-        {
-            await _fileLock.WaitAsync();
-            try
-            {
-                if (File.Exists(StorageFile))
-                {
-                    File.Delete(StorageFile);
-                    _logger.LogInformation("✅ Cleared job storage");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "❌ Failed to clear storage");
-                throw;
-            }
-            finally
-            {
-                _fileLock.Release();
-            }
-        }
-
-        public async Task<List<string>>? LoadOffersAsync(string offersFilePath)
+        public async Task<IEnumerable<string>>? LoadOffersAsync(string offersFilePath)
         {
             var json = await File.ReadAllTextAsync(offersFilePath);
             var offers = JsonConvert.DeserializeObject<List<string>>(json) ?? [];
             return offers;
         }
 
-        public async Task SaveOffersAsync(List<string> offers, string offersFilePath)
-        {
-            if (offers == null || !offers.Any())
-            {
-                _logger.LogWarning($"⚠️ ID:{_executionOptions.TimeStamp} No offers to save.");
-                return;
-            }
-
-            try
-            {
-                var options = new JsonSerializerOptions { WriteIndented = true };
-                var json = System.Text.Json.JsonSerializer.Serialize(offers, options);
-                await File.WriteAllTextAsync(offersFilePath, json);
-                _logger.LogInformation($"💾 ID:{_executionOptions.TimeStamp} Saved {offers.Count} offers to: {offersFilePath}");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"❌ ID:{_executionOptions.TimeStamp} Failed to save offers to file.");
-            }
-        }
-
-        public async Task SavePendingOffersAsync(string offersFilePath, List<string> offersPending)
+        public async Task SaveOffersAsync(string offersFilePath, IEnumerable<string> offersPending)
         {
             try
             {
                 var options = new JsonSerializerOptions() { WriteIndented = true };
                 var json = System.Text.Json.JsonSerializer.Serialize(offersPending, options);
                 await File.WriteAllTextAsync(offersFilePath, json);
-                _logger.LogInformation("Updated offers.json with {Count} pending URLs", offersPending.Count);
+                _logger.LogInformation("Updated offers.json with {Count} pending URLs", offersPending.Count());
             }
             catch (Exception ex)
             {
@@ -219,20 +97,6 @@ namespace Services
             }
         }
 
-        public async Task SaveOffersDetailAsync(List<JobOfferDetail> offersDetail, string offersDetailFilePath)
-        {
-            try
-            {
-                var options = new JsonSerializerOptions() { WriteIndented = true };
-                var json = System.Text.Json.JsonSerializer.Serialize(offersDetail, options);
-                await File.WriteAllTextAsync(offersDetailFilePath, json);
-                _logger.LogInformation("Saved offers_detail.json with {Count} processed offers", offersDetail.Count);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to save offers detail to file");
-            }
-        }
         public void Dispose()
         {
             _fileLock.Dispose();
@@ -241,11 +105,13 @@ namespace Services
 
         private void EnsureStorageDirectoryExists()
         {
-            var directory = Path.GetDirectoryName(StorageFile);
+            var directory = Path.GetDirectoryName(_storageFile);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
         }
+
+
     }
 }

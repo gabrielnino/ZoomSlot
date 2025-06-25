@@ -44,7 +44,8 @@ namespace Services
 
             try
             {
-                var listJobOfferDetail = await _jobStorageService.LoadJobsDetailAsync();
+                var filePath = _jobStorageService.StorageFile;
+                var listJobOfferDetail = await _jobStorageService.LoadJobsDetailAsync(filePath);
                 _logger.LogInformation("📊 Loaded {JobCount} job offers from storage", listJobOfferDetail.Count());
 
                 if (!listJobOfferDetail.Any())
@@ -110,7 +111,7 @@ namespace Services
                     {
                         string id = jobOfferDetail.ID;
                         string message = ex.Message;
-                        _logger.LogError(ex, "❌ Error processing job offer ID: {JobID} | Error: {ErrorMessage}",id, message);
+                        _logger.LogError(ex, "❌ Error processing job offer ID: {JobID} | Error: {ErrorMessage}", id, message);
                         throw; // Re-throw to maintain original behavior
                     }
                 }

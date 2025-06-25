@@ -31,7 +31,7 @@ namespace Commands
             _logger.LogInformation("Starting job search...");
             var job = await _linkedInService.SearchJobsAsync();
             var jobDetails = await _detailProcessing.ProcessOffersAsync(job, _config.JobSearch.SearchText);
-            await _storageService.SaveJobOfferDetailAsync(jobDetails);
+            await _storageService.SaveJobOfferDetailAsync(_storageService.StorageFile, jobDetails);
         }
     }
 

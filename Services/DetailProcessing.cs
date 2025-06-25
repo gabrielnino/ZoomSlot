@@ -58,8 +58,8 @@ namespace Services
                     var detail = await ExtractDetailAsync(searchText);
                     _offersDetail.Add(detail);
                     _offersPending.Remove(offer);
-                    await _jobStorageService.SavePendingOffersAsync(OffersFilePath, _offersPending);
-                    await _jobStorageService.SaveOffersDetailAsync(_offersDetail, OffersDetailFilePath);
+                    await _jobStorageService.SaveOffersAsync(OffersFilePath, _offersPending);
+                    await _jobStorageService.SaveJobOfferDetailAsync(OffersDetailFilePath, _offersDetail);
                     _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Successfully processed and saved job offer: {offer}");
                 }
                 catch (WebDriverException ex)
