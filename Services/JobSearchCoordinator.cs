@@ -19,6 +19,7 @@ namespace Services
         private readonly IJobSearch _searchService;
         private readonly IPageProcessor _processService;
         private readonly IDirectoryCheck _directoryCheck;
+        private readonly IJobStorageService _jobStorageService;
 
         private string OffersFilePath => Path.Combine(_executionOptions.ExecutionFolder, "offers.json");
 
@@ -30,7 +31,8 @@ namespace Services
             ExecutionOptions executionOptions,
             IJobSearch searchService,
             IPageProcessor processService,
-            IDirectoryCheck directoryCheck)
+            IDirectoryCheck directoryCheck,
+            IJobStorageService jobStorageService)
         {
             _driver = driverFactory.Create();
             _logger = logger;
@@ -41,6 +43,7 @@ namespace Services
             _capture = capture;
             _searchService = searchService;
             _processService = processService;
+            _jobStorageService = jobStorageService;
         }
 
         public async Task<List<string>> SearchJobsAsync()
@@ -49,7 +52,7 @@ namespace Services
             {
                 if (!string.IsNullOrWhiteSpace(OffersFilePath) && File.Exists(OffersFilePath))
                 {
-                    _offers = await LoadOffersAsync(OffersFilePath);
+                    _offers = await _jobStorageService.LoadOffersAsync(OffersFilePath);
                     if (_offers != null && _offers.Any())
                     {
                         _logger.LogInformation($"💼 ID:{_executionOptions.TimeStamp} Loaded {_offers.Count} offers fro{OffersFilePath}.");
@@ -60,7 +63,7 @@ namespace Services
                 await _loginService.LoginAsync();
                 var searchText = await _searchService.PerformSearchAsync();
                 _offers = await _processService.ProcessAllPagesAsync();
-                await SaveOffersAsync(_offers);
+                await _jobStorageService.SaveOffersAsync(_offers, OffersFilePath);
                 _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} LinkedIn job search process completed successfully with {_offers?.Count ?? 0} offers found.");
                 return _offers ?? [];
             }
@@ -73,33 +76,6 @@ namespace Services
         }
 
 
-
-        private async Task<List<string>>? LoadOffersAsync(string offersFilePath)
-        {
-            var json = await File.ReadAllTextAsync(offersFilePath);
-            var offers = JsonConvert.DeserializeObject<List<string>>(json) ?? new List<string>();
-            return offers;
-        }
-
-        private async Task SaveOffersAsync(List<string> offers)
-        {
-            if (offers == null || !offers.Any())
-            {
-                _logger.LogWarning($"⚠️ ID:{_executionOptions.TimeStamp} No offers to save.");
-                return;
-            }
-
-            try
-            {
-                var json = System.Text.Json.JsonSerializer.Serialize(offers, new JsonSerializerOptions { WriteIndented = true });
-                await File.WriteAllTextAsync(OffersFilePath, json);
-                _logger.LogInformation($"💾 ID:{_executionOptions.TimeStamp} Saved {offers.Count} offers to: {OffersFilePath}");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"❌ ID:{_executionOptions.TimeStamp} Failed to save offers to file.");
-            }
-        }
 
         public void Dispose()
         {

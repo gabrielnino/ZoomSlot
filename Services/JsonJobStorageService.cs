@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Models;
 using Newtonsoft.Json;
 using Services.Interfaces;
@@ -172,6 +173,34 @@ namespace Services
             finally
             {
                 _fileLock.Release();
+            }
+        }
+
+        public async Task<List<string>>? LoadOffersAsync(string offersFilePath)
+        {
+            var json = await File.ReadAllTextAsync(offersFilePath);
+            var offers = JsonConvert.DeserializeObject<List<string>>(json) ?? [];
+            return offers;
+        }
+
+        public async Task SaveOffersAsync(List<string> offers, string offersFilePath)
+        {
+            if (offers == null || !offers.Any())
+            {
+                _logger.LogWarning($"⚠️ ID:{_executionOptions.TimeStamp} No offers to save.");
+                return;
+            }
+
+            try
+            {
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                var json = System.Text.Json.JsonSerializer.Serialize(offers, options);
+                await File.WriteAllTextAsync(offersFilePath, json);
+                _logger.LogInformation($"💾 ID:{_executionOptions.TimeStamp} Saved {offers.Count} offers to: {offersFilePath}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"❌ ID:{_executionOptions.TimeStamp} Failed to save offers to file.");
             }
         }
 
