@@ -11,7 +11,6 @@ namespace Services
     {
         private readonly ILogger<DetailProcessing> _logger;
         private readonly IWebDriver _driver;
-        private readonly WebDriverWait _wait;
         private readonly List<JobOfferDetail> _offersDetail;
         private readonly ICaptureSnapshot _capture;
         private readonly ExecutionOptions _executionOptions;
@@ -30,11 +29,10 @@ namespace Services
         {
             _driver = driverFactory.Create();
             _logger = logger;
-            _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(90));
             _offersDetail = [];
             _capture = capture;
             _executionOptions = executionOptions;
-            _offersPending = LoadPendingOffers();
+            _offersPending = LoadPendingOffers(OffersFilePath);
             _loginService = loginService;
         }
 
@@ -43,45 +41,45 @@ namespace Services
             if (_offersPending != null && _offersPending.Any())
             {
                 offers = _offersPending;
-               _logger.LogInformation($"💼 ID:{_executionOptions.TimeStamp} Loaded {offers.Count()}.");
+                _logger.LogInformation($"📂 ID:{_executionOptions.TimeStamp} Resuming processing from existing offers.json with {offers.Count()} pending offers.");
             }
-
-            await _loginService.LoginAsync(); // Ensure login before processing offers
-            foreach (var offer in offers)
+            _logger.LogInformation($"🔐 ID:{_executionOptions.TimeStamp} Logging into LinkedIn...");
+            await _loginService.LoginAsync();
+            foreach (var offer in offers.ToList())
             {
                 try
                 {
-                    _logger.LogInformation("Navigating to job offer URL: {Url}", offer);
+                    _logger.LogInformation($"🌐 ID:{_executionOptions.TimeStamp} Navigating to job offer URL: {offer}");
                     _driver.Navigate().GoToUrl(offer);
                     await _capture.CaptureArtifactsAsync(_executionOptions.ExecutionFolder, "BeforeExtraction");
                     var detail = await ExtractDetailAsync(searchText);
                     _offersDetail.Add(detail);
                     _offersPending.Remove(offer);
-                    await SavePendingOffersAsync();
-                    await SaveOffersDetailAsync();
-                    _logger.LogInformation("Successfully processed job offer: {Url}", offer);
+                    await SavePendingOffersAsync(OffersFilePath);
+                    await SaveOffersDetailAsync(_offersDetail);
+                    _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Successfully processed and saved job offer: {offer}");
                 }
                 catch (WebDriverException ex)
                 {
-                    _logger.LogError(ex, "WebDriver error on URL: {Url}", offer);
+                    _logger.LogError(ex, $"❌ ID:{_executionOptions.TimeStamp} WebDriver error occurred while processing offer: {offer}");
                     await _capture.CaptureArtifactsAsync(_executionOptions.ExecutionFolder, "WebDriverError");
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "General error on URL: {Url}", offer);
+                    _logger.LogError(ex, $"❌ ID:{_executionOptions.TimeStamp} Unexpected error occurred while processing offer: {offer}");
                     await _capture.CaptureArtifactsAsync(_executionOptions.ExecutionFolder, "GeneralError");
                 }
             }
-
+            _logger.LogInformation($"📦 ID:{_executionOptions.TimeStamp} Finished processing. Total offers processed: {_offersDetail.Count}, remaining: {_offersPending.Count}");
             return _offersDetail;
         }
+
 
         private async Task<JobOfferDetail> ExtractDetailAsync(string searchText)
         {
             var titleElement = _driver.FindElement(By.CssSelector("h1.t-24.t-bold.inline"));
             var companyElement = _driver.FindElement(By.CssSelector(".job-details-jobs-unified-top-card__company-name a"));
             var descriptionElement = _driver.FindElement(By.CssSelector("article.jobs-description__container"));
-
             return new JobOfferDetail
             {
                 ID = Guid.NewGuid().ToString(),
@@ -96,16 +94,16 @@ namespace Services
             };
         }
 
-        private List<string> LoadPendingOffers()
+        private List<string> LoadPendingOffers(string offersFilePath)
         {
             try
             {
-                if (File.Exists(OffersFilePath))
+                if (File.Exists(offersFilePath))
                 {
-                    var json = File.ReadAllText(OffersFilePath);
+                    var json = File.ReadAllText(offersFilePath);
                     var urls = JsonSerializer.Deserialize<List<string>>(json);
-                    _logger.LogInformation("Loaded {Count} pending offers from {Path}", urls?.Count ?? 0, OffersFilePath);
-                    return urls ?? new List<string>();
+                    _logger.LogInformation("Loaded {Count} pending offers from {Path}", urls?.Count ?? 0, offersFilePath);
+                    return urls ?? [];
                 }
             }
             catch (Exception ex)
@@ -113,15 +111,16 @@ namespace Services
                 _logger.LogError(ex, "Failed to load pending offers from file");
             }
 
-            return new List<string>();
+            return [];
         }
 
-        private async Task SavePendingOffersAsync()
+        private async Task SavePendingOffersAsync(string offersFilePath)
         {
             try
             {
-                var json = JsonSerializer.Serialize(_offersPending, new JsonSerializerOptions { WriteIndented = true });
-                await File.WriteAllTextAsync(OffersFilePath, json);
+                var options = new JsonSerializerOptions() { WriteIndented = true };
+                var json = JsonSerializer.Serialize(_offersPending, options);
+                await File.WriteAllTextAsync(offersFilePath, json);
                 _logger.LogInformation("Updated offers.json with {Count} pending URLs", _offersPending.Count);
             }
             catch (Exception ex)
@@ -130,13 +129,14 @@ namespace Services
             }
         }
 
-        private async Task SaveOffersDetailAsync()
+        private async Task SaveOffersDetailAsync(List<JobOfferDetail> offersDetail)
         {
             try
             {
-                var json = JsonSerializer.Serialize(_offersDetail, new JsonSerializerOptions { WriteIndented = true });
+                var options = new JsonSerializerOptions () { WriteIndented = true };
+                var json = JsonSerializer.Serialize(offersDetail, options);
                 await File.WriteAllTextAsync(OffersDetailFilePath, json);
-                _logger.LogInformation("Saved offers_detail.json with {Count} processed offers", _offersDetail.Count);
+                _logger.LogInformation("Saved offers_detail.json with {Count} processed offers", offersDetail.Count);
             }
             catch (Exception ex)
             {
