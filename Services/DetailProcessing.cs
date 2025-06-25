@@ -15,6 +15,7 @@ namespace Services
         private readonly ICaptureSnapshot _capture;
         private readonly ExecutionOptions _executionOptions;
         private readonly ILoginService _loginService;
+        private readonly IJobStorageService _jobStorageService;
         private string OffersFilePath => Path.Combine(_executionOptions.ExecutionFolder, "offers.json");
         private string OffersDetailFilePath => Path.Combine(_executionOptions.ExecutionFolder, "offers_detail.json");
 
@@ -25,7 +26,8 @@ namespace Services
             ILogger<DetailProcessing> logger,
             ICaptureSnapshot capture,
             ExecutionOptions executionOptions,
-            ILoginService loginService)
+            ILoginService loginService,
+            IJobStorageService jobStorageService)
         {
             _driver = driverFactory.Create();
             _logger = logger;
@@ -34,6 +36,7 @@ namespace Services
             _executionOptions = executionOptions;
             _offersPending = LoadPendingOffers(OffersFilePath);
             _loginService = loginService;
+            _jobStorageService = jobStorageService;
         }
 
         public async Task<List<JobOfferDetail>> ProcessOffersAsync(IEnumerable<string> offers, string searchText)
@@ -55,8 +58,8 @@ namespace Services
                     var detail = await ExtractDetailAsync(searchText);
                     _offersDetail.Add(detail);
                     _offersPending.Remove(offer);
-                    await SavePendingOffersAsync(OffersFilePath);
-                    await SaveOffersDetailAsync(_offersDetail);
+                    await _jobStorageService.SavePendingOffersAsync(OffersFilePath, _offersPending);
+                    await _jobStorageService.SaveOffersDetailAsync(_offersDetail, OffersDetailFilePath);
                     _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Successfully processed and saved job offer: {offer}");
                 }
                 catch (WebDriverException ex)
@@ -94,7 +97,7 @@ namespace Services
             };
         }
 
-        private List<string> LoadPendingOffers(string offersFilePath)
+        public List<string> LoadPendingOffers(string offersFilePath)
         {
             try
             {
@@ -112,36 +115,6 @@ namespace Services
             }
 
             return [];
-        }
-
-        private async Task SavePendingOffersAsync(string offersFilePath)
-        {
-            try
-            {
-                var options = new JsonSerializerOptions() { WriteIndented = true };
-                var json = JsonSerializer.Serialize(_offersPending, options);
-                await File.WriteAllTextAsync(offersFilePath, json);
-                _logger.LogInformation("Updated offers.json with {Count} pending URLs", _offersPending.Count);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to save pending offers to file");
-            }
-        }
-
-        private async Task SaveOffersDetailAsync(List<JobOfferDetail> offersDetail)
-        {
-            try
-            {
-                var options = new JsonSerializerOptions () { WriteIndented = true };
-                var json = JsonSerializer.Serialize(offersDetail, options);
-                await File.WriteAllTextAsync(OffersDetailFilePath, json);
-                _logger.LogInformation("Saved offers_detail.json with {Count} processed offers", offersDetail.Count);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to save offers detail to file");
-            }
         }
     }
 }

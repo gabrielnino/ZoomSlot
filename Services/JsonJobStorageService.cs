@@ -204,6 +204,35 @@ namespace Services
             }
         }
 
+        public async Task SavePendingOffersAsync(string offersFilePath, List<string> offersPending)
+        {
+            try
+            {
+                var options = new JsonSerializerOptions() { WriteIndented = true };
+                var json = System.Text.Json.JsonSerializer.Serialize(offersPending, options);
+                await File.WriteAllTextAsync(offersFilePath, json);
+                _logger.LogInformation("Updated offers.json with {Count} pending URLs", offersPending.Count);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to save pending offers to file");
+            }
+        }
+
+        public async Task SaveOffersDetailAsync(List<JobOfferDetail> offersDetail, string offersDetailFilePath)
+        {
+            try
+            {
+                var options = new JsonSerializerOptions() { WriteIndented = true };
+                var json = System.Text.Json.JsonSerializer.Serialize(offersDetail, options);
+                await File.WriteAllTextAsync(offersDetailFilePath, json);
+                _logger.LogInformation("Saved offers_detail.json with {Count} processed offers", offersDetail.Count);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to save offers detail to file");
+            }
+        }
         public void Dispose()
         {
             _fileLock.Dispose();

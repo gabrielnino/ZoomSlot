@@ -74,6 +74,7 @@
                 var mockNavigation = new Mock<INavigation>();
                 var mockUtil =  new Mock<IUtil>();
                 var mockLogin = new Mock<ILoginService>();
+                var mockJobStorage = new Mock<IJobStorageService>();
                 mockUtil.Setup(e => e.ExtractJobId(It.IsAny<string>())).Returns("12345");
                 mockParentElement.Setup(e => e.Displayed).Returns(true);
                 mockParentElement.Setup(e => e.FindElements(It.IsAny<By>())).Returns(childElements);
@@ -88,7 +89,8 @@
                     mockLogger.Object,
                     mockCapture.Object,
                     executionOptions,
-                    mockLogin.Object
+                    mockLogin.Object,
+                    mockJobStorage.Object
                 );
                 var offers = new List<string> { url };
 
