@@ -22,6 +22,7 @@ namespace Services
         private readonly ISecurityCheck _securityCheck;
         private readonly IUtil _util;
         private const string FolderName = "Detail";
+        
         private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
         private string OffersFilePath => Path.Combine(_executionOptions.ExecutionFolder, "offers.json");
         private string OffersDetailFilePath => Path.Combine(_executionOptions.ExecutionFolder, "offers_detail.json");
@@ -43,6 +44,7 @@ namespace Services
             _capture = capture;
             _executionOptions = executionOptions;
             _offersPending = LoadPendingOffers(OffersFilePath);
+            _offersDetail = LoadJobsDetailAsync(OffersDetailFilePath);
             _loginService = loginService;
             _jobStorageService = jobStorageService;
             _securityCheck = securityCheck;
@@ -66,11 +68,11 @@ namespace Services
             {
                 using (_driver = _driverFactory.Create())
                 {
-                    _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(90));
+                    _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(120));
                     var batch = offerList.Skip(i).Take(batchSize);
                     await Process(offers, searchText);
+                    await Task.Delay(delays[random.Next(delays.Length)]);
                 }
-                await Task.Delay(delays[random.Next(delays.Length)]);
             }
 
             return _offersDetail;
@@ -93,9 +95,12 @@ namespace Services
                     {
                         _driver.Navigate().GoToUrl(offer);
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        throw ex;
+                        var delays = new[] { 3000, 5000, 7000, 10000, 20000 };
+                        var random = new Random();
+                        await Task.Delay(delays[random.Next(delays.Length)]);
+                        _driver.Navigate().GoToUrl(offer);
                     }
                     _wait.Until(driver =>
                     {
@@ -154,6 +159,25 @@ namespace Services
             return [];
         }
 
+        public List<JobOfferDetail> LoadJobsDetailAsync(string offersFilePath)
+        {
+            try
+            {
+                if (File.Exists(offersFilePath))
+                {
+                    var json = File.ReadAllText(offersFilePath);
+                    var jobOfferDetail = JsonSerializer.Deserialize<List<JobOfferDetail>>(json);
+                    _logger.LogInformation("Loaded {Count} pending offers from {Path}", jobOfferDetail?.Count ?? 0, offersFilePath);
+                    return jobOfferDetail ?? [];
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load pending offers from file");
+            }
+
+            return [];
+        }
 
         public async Task<JobOfferDetail> ExtractDetailAsync(string searchText)
         {
@@ -190,7 +214,8 @@ namespace Services
 
         private IWebElement ExtractHeader()
         {
-            var header = _driver.FindElements(By.XPath("//div[contains(@class, 't-14') and contains(@class, 'artdeco-card')]")).FirstOrDefault();
+            string xpathToFind = "//div[contains(@class, 't-14') and contains(@class, 'artdeco-card')]";
+            var header = _driver.FindElements(By.XPath(xpathToFind)).FirstOrDefault();
             if (header == null)
             {
                 var message = $"❌ ID:{_executionOptions.TimeStamp} Header not found. Current URL: {_driver.Url}";
@@ -219,7 +244,8 @@ namespace Services
         {
             try
             {
-                var seeMoreButton = detail.FindElements(By.XPath(".//button[contains(@class, 'jobs-description__footer-button') and contains(., 'See more')]")).FirstOrDefault();
+                string xpathToFind = ".//button[contains(@class, 'jobs-description__footer-button') and contains(., 'See more')]";
+                var seeMoreButton = detail.FindElements(By.XPath(xpathToFind)).FirstOrDefault();
                 if (seeMoreButton != null)
                 {
                     seeMoreButton.Click();
@@ -234,7 +260,8 @@ namespace Services
 
         private string ExtractApplicants()
         {
-            var applicants = _wait.Until(driver => driver.FindElements(By.XPath("//div[contains(@class, 'job-details-jobs-unified-top-card__primary-description-container')]")));
+            string xpathToFind = "//div[contains(@class, 'job-details-jobs-unified-top-card__primary-description-container')]";
+            var applicants = _wait.Until(driver => driver.FindElements(By.XPath(xpathToFind)));
             return applicants.FirstOrDefault()?.Text?.Trim() ?? string.Empty;
         }
         private static string ExtractSalary(IWebElement detail)
@@ -246,15 +273,11 @@ namespace Services
         }
         private static string ExtractDescription(IWebElement detail)
         {
-
-            // Description
             return detail.FindElements(By.CssSelector("article.jobs-description__container")).FirstOrDefault()?.Text?.Trim() ?? string.Empty;
         }
 
         private static string ExtractContactHiring(IWebElement detail)
         {
-
-            // Hiring team
             return detail.FindElements(By.CssSelector("div.job-details-module .jobs-poster__name strong")).FirstOrDefault()?.Text?.Trim() ?? string.Empty;
         }
 

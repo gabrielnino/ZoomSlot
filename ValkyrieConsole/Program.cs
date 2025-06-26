@@ -51,7 +51,7 @@ public class Program
                     throw new AggregateException($"Failed to execute {command.GetType().Name} after attempts", ex);
                 }
             }
-            Log.Information("All commands processed successfully"); ;
+            Log.Information("All commands processed successfully");
         }
         catch (Exception ex)
         {

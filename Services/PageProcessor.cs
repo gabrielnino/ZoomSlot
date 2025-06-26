@@ -77,7 +77,7 @@ namespace Services
             }
 
             // Process pages starting from where we left off
-            for (int currentPage = startPage; currentPage <= _config.JobSearch.MaxPages; currentPage++)
+            for (int currentPage = startPage; currentPage < _config.JobSearch.MaxPages; currentPage++)
             {
                 _logger.LogInformation($"📖 ID:{_executionOptions.TimeStamp} Processing page {currentPage}...");
 
