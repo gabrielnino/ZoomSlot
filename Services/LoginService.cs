@@ -43,27 +43,19 @@ namespace Services
             _driver.Navigate().GoToUrl(url);
             await _capture.CaptureArtifactsAsync(FolderPath, $"Go to url{url}");
             await Task.Delay(3000);
-
             if (!IsOnLoginPage())
             {
                 if (_securityCheck.IsSecurityCheck())
                 {
-                    await _securityCheck.HandleSecurityPage();
-                    throw new InvalidOperationException(
-                        "LinkedIn requires manual security verification. Please login manually in browser first.");
+                    await _securityCheck.TryStartPuzzle();
                 }
-                await _securityCheck.HandleUnexpectedPage();
-                throw new InvalidOperationException(
-                    $"Failed to load LinkedIn login page. Current URL: {_driver.Url}");
             }
-
             var emailInput = _driver.FindElement(By.Id("username"));
             emailInput.SendKeys(_config.LinkedInCredentials.Email);
             await Task.Delay(3000);
             await _capture.CaptureArtifactsAsync(FolderPath, "Entered email");
             var passwordInput = _driver.FindElement(By.Id("password"));
             passwordInput.SendKeys(_config.LinkedInCredentials.Password + Keys.Enter);
-            //await Task.Delay(3000);
             await _capture.CaptureArtifactsAsync(FolderPath, "Entered password");
             _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Successfully authenticated with LinkedIn");
         }

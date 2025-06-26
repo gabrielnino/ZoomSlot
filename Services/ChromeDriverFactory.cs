@@ -43,6 +43,9 @@ namespace Services
             {
                 _logger.LogInformation("Creating new ChromeDriver instance");
                 _driver = new ChromeDriver(_driverService, options);
+                _driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+                _driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(120);
+                _driver.Manage().Timeouts().AsynchronousJavaScript = TimeSpan.FromSeconds(10);
                 return _driver;
             }
             catch (Exception ex)

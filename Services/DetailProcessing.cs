@@ -80,6 +80,10 @@ namespace Services
         {
             _logger.LogInformation($"🔐 ID:{_executionOptions.TimeStamp} Logging into LinkedIn...");
             await _loginService.LoginAsync();
+            if (_securityCheck.IsSecurityCheck())
+            {
+                await _securityCheck.TryStartPuzzle();
+            }
             foreach (var offer in offers.ToList())
             {
                 try
