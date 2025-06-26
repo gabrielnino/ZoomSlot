@@ -6,6 +6,7 @@
         {
             "--search",
             "--export",
+            "--job",
             "--apply"
         };
 

@@ -8,6 +8,7 @@ namespace Services.Interfaces
         Task<IEnumerable<JobOfferDetail>> LoadJobsDetailAsync(string offersFilePath);
         Task SaveOffersAsync(string offersFilePath, IEnumerable<string> offersPending);
         Task SaveJobOfferDetailAsync(string offersDetailFilePath, IEnumerable<JobOfferDetail> offersDetail);
+        Task SaveJobOfferAsync(string offersDetailFilePath, IEnumerable<JobOffer> offers);
         string StorageFile { get; }
     }
 }

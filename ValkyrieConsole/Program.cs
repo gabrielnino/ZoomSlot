@@ -83,6 +83,7 @@ public class Program
                services.AddTransient<HelpCommand>();
                services.AddTransient<SearchCommand>();
                services.AddTransient<ApplyCommand>();
+               services.AddTransient<JobsCommand>();
                services.AddTransient<IJobSearchCoordinator, JobSearchCoordinator>();
                services.AddTransient<IDetailProcessing, DetailProcessing>();
                services.AddTransient<ILoginService, LoginService>();
@@ -101,6 +102,10 @@ public class Program
                services.AddSingleton<IUtil, Util>();
                services.AddSingleton<IPageTrackingService, PageTrackingService>();
                services.AddSingleton<IDetailProcessing, DetailProcessing>();
+               services.AddSingleton<IJobDocumentCoordinator, JobDocumentCoordinator>();
+              
+
+               
            });
 }
 

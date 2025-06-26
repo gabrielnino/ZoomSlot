@@ -26,6 +26,9 @@ namespace Commands
                 case "--apply":
                     commands.Add(_serviceProvider.GetRequiredService<ApplyCommand>());
                     break;
+                case "--job":
+                    commands.Add(_serviceProvider.GetRequiredService<JobsCommand>());
+                    break;
                 default:
                     commands.Add(_serviceProvider.GetRequiredService<HelpCommand>());
                     break;
