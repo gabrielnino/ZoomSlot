@@ -19,7 +19,7 @@ namespace Services
         {
             _logger = logger;
             _executionOptions = executionOptions;
-            if(_storageFile == null)
+            if (_storageFile == null)
             {
                 _storageFile = $"jobs_data_{_executionOptions.TimeStamp}.json";
             }

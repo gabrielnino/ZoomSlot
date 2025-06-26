@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Models;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using Services.Interfaces;
 
@@ -97,34 +98,15 @@ namespace Services
         {
             try
             {
-                _logger.LogDebug($"🔎 ID:{_executionOptions.TimeStamp} Searching for 'Start Puzzle' button...");
-                await _capture.CaptureArtifactsAsync(_executionOptions.ExecutionFolder, "Error in Detailed Job Offer");
-                var startPuzzleButton = _wait.Until(driver =>
-                {
-                    var xpathText = "//button[contains(text(), 'Start Puzzle')]";
-                    var button = driver.FindElements(By.XPath(xpathText))
-                                                   .FirstOrDefault();
-                    return (button != null && button.Displayed && button.Enabled) ? button : null;
-                });
-
-                await _capture.CaptureArtifactsAsync(FolderPath, "Error in Detailed Job Offer");
-
-                if (startPuzzleButton == null)
-                {
-                    _logger.LogWarning($"⚠️ ID:{_executionOptions.TimeStamp} 'Start Puzzle' button not found on security check page.");
-                }
-
-                if (!startPuzzleButton.Displayed || !startPuzzleButton.Enabled)
-                {
-                    _logger.LogWarning($"⚠️ ID:{_executionOptions.TimeStamp} 'Start Puzzle' button is not interactable.");
-                }
-
-                _logger.LogInformation($"🧩 ID:{_executionOptions.TimeStamp} Clicking 'Start Puzzle' button...");
-                startPuzzleButton.Click();
+                _logger.LogInformation("🧩 Attempting to click on 'Start Puzzle' button...");
+                Console.WriteLine("🛑 Pausado. Por favor, resuelve el captcha y presiona ENTER para continuar...");
+                Console.ReadLine();
+                var timestampEnd = await _capture.CaptureArtifactsAsync(FolderPath, "Start_Puzzle_Clicked");
+                _logger.LogInformation($"📸 Captured screenshot after clicking 'Start Puzzle' at {timestampEnd}.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"❌ ID:{_executionOptions.TimeStamp} Failed to click 'Start Puzzle' button.");
+                _logger.LogError(ex, $"❌ ID:{_executionOptions.TimeStamp} Failed to simulate click on 'Start Puzzle' button.");
             }
         }
 

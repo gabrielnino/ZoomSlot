@@ -22,17 +22,12 @@ namespace Services
                 stage = "UnknownStage";
 
             _logger.LogInformation("Capturing artifacts for stage: {Stage} at {Timestamp}", stage, timestamp);
-
             var htmlPath = Path.Combine(executionFolder, $"{timestamp}.html");
             var screenshotPath = Path.Combine(executionFolder, $"{timestamp}.png");
-
             Directory.CreateDirectory(executionFolder);
-
             await File.WriteAllTextAsync(htmlPath, _driver.PageSource);
-
             var screenshot = ((ITakesScreenshot)_driver).GetScreenshot();
             screenshot.SaveAsFile(screenshotPath);
-
             _logger.LogInformation("Artifacts captured: {HtmlPath}, {ScreenshotPath}", htmlPath, screenshotPath);
             return timestamp;
         }

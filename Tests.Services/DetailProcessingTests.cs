@@ -90,7 +90,9 @@
                     mockCapture.Object,
                     executionOptions,
                     mockLogin.Object,
-                    mockJobStorage.Object
+                    mockJobStorage.Object,
+                    mockSecurity.Object,
+                    mockUtil.Object
                 );
                 var offers = new List<string> { url };
 

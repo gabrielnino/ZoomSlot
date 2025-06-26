@@ -46,9 +46,7 @@ namespace Services
             // Check for security verification or unexpected pages before proceeding
             if (_securityCheck.IsSecurityCheck())
             {
-                await _securityCheck.HandleSecurityPage();
-                throw new InvalidOperationException(
-                    "❌ LinkedIn requires manual security verification. Please complete verification in the browser before proceeding.");
+                await _securityCheck.TryStartPuzzle();
             }
 
             var searchInput = _driver.FindElements(By.XPath("//input[contains(@class, 'jobs-search-box__text-input')]"))

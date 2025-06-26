@@ -39,7 +39,9 @@ namespace Services
         public async Task LoginAsync()
         {
             _logger.LogInformation($"🔐 ID:{_executionOptions.TimeStamp} Attempting to login to LinkedIn...");
-            _driver.Navigate().GoToUrl("https://www.linkedin.com/login");
+            var url = "https://www.linkedin.com/login";
+            _driver.Navigate().GoToUrl(url);
+            await _capture.CaptureArtifactsAsync(FolderPath, $"Go to url{url}");
             await Task.Delay(3000);
 
             if (!IsOnLoginPage())
@@ -61,7 +63,7 @@ namespace Services
             await _capture.CaptureArtifactsAsync(FolderPath, "Entered email");
             var passwordInput = _driver.FindElement(By.Id("password"));
             passwordInput.SendKeys(_config.LinkedInCredentials.Password + Keys.Enter);
-            await Task.Delay(3000);
+            //await Task.Delay(3000);
             await _capture.CaptureArtifactsAsync(FolderPath, "Entered password");
             _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Successfully authenticated with LinkedIn");
         }

@@ -20,7 +20,7 @@ namespace Services
         private readonly IPageProcessor _processService;
         private readonly IDirectoryCheck _directoryCheck;
         private readonly IJobStorageService _jobStorageService;
-
+        private readonly ISecurityCheck _securityCheck;
         private string OffersFilePath => Path.Combine(_executionOptions.ExecutionFolder, "offers.json");
 
         public JobSearchCoordinator(
@@ -32,7 +32,8 @@ namespace Services
             IJobSearch searchService,
             IPageProcessor processService,
             IDirectoryCheck directoryCheck,
-            IJobStorageService jobStorageService)
+            IJobStorageService jobStorageService,
+            ISecurityCheck securityCheck)
         {
             _driver = driverFactory.Create();
             _logger = logger;
@@ -44,6 +45,7 @@ namespace Services
             _searchService = searchService;
             _processService = processService;
             _jobStorageService = jobStorageService;
+            _securityCheck = securityCheck;
         }
 
         public async Task<List<string>> SearchJobsAsync()
@@ -62,6 +64,10 @@ namespace Services
                 }
                 _logger.LogInformation($"🚀 ID:{_executionOptions.TimeStamp} Starting LinkedIn job search process...");
                 await _loginService.LoginAsync();
+                if(_securityCheck.IsSecurityCheck())
+                {
+                    await _securityCheck.TryStartPuzzle();
+                }
                 var searchText = await _searchService.PerformSearchAsync();
                 _offers = await _processService.ProcessAllPagesAsync();
                 await _jobStorageService.SaveOffersAsync(OffersFilePath, _offers);
