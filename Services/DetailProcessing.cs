@@ -97,9 +97,10 @@ namespace Services
                     }
                     catch
                     {
-                        var delays = new[] { 3000, 5000, 7000, 10000, 20000 };
+                        var delays = new[] { 30, 5, 7, 100, 20 };
                         var random = new Random();
-                        await Task.Delay(delays[random.Next(delays.Length)]);
+                        var minutes = delays[random.Next(delays.Length)];
+                        await Task.Delay(TimeSpan.FromMinutes(120));
                         _driver.Navigate().GoToUrl(offer);
                     }
                     _wait.Until(driver =>

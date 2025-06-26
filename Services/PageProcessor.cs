@@ -65,16 +65,16 @@ namespace Services
             var offers = new List<string>(trackingState.CollectedOffers);
 
             // Only perform new search if we're not resuming
-            if (startPage == 1)
-            {
-                _logger.LogInformation($"🔍 ID:{_executionOptions.TimeStamp} Starting new search");
-                await _jobSearch.PerformSearchAsync();
-            }
-            else
-            {
-                _logger.LogInformation($"↩️ ID:{_executionOptions.TimeStamp} Resuming from page {startPage}");
-                await NavigateToSpecificPage(startPage - 1); // Navigate to last successfully processed page
-            }
+            //if (startPage == 1)
+            //{
+            //    _logger.LogInformation($"🔍 ID:{_executionOptions.TimeStamp} Starting new search");
+            //    await _jobSearch.PerformSearchAsync();
+            //}
+            //else
+            //{
+            //    _logger.LogInformation($"↩️ ID:{_executionOptions.TimeStamp} Resuming from page {startPage}");
+            //    await NavigateToSpecificPage(startPage - 1); // Navigate to last successfully processed page
+            //}
 
             // Process pages starting from where we left off
             for (int currentPage = startPage; currentPage < _config.JobSearch.MaxPages; currentPage++)
@@ -237,7 +237,10 @@ namespace Services
         {
             try
             {
-                var nextButton = _driver.FindElements(By.XPath("//div[contains(@class, 'semantic-search-results-list__pagination')]"))
+                //  "//div[contains(@class, 'semantic-search-results-list__pagination')]"
+
+                string xpath = "//button[@aria-label='View next page' and .//span[text()='Next']]";
+                var nextButton = _driver.FindElements(By.XPath(xpath))
                                         .FirstOrDefault(b => b.Enabled);
 
                 if (nextButton == null)

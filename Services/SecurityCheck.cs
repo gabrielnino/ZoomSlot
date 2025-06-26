@@ -26,6 +26,7 @@ namespace Services
             _capture = capture;
             _executionOptions = executionOptions;
             _directoryCheck = directoryCheck;
+            _driver = driverFactory.Create();
             _directoryCheck.EnsureDirectoryExists(FolderPath);
         }
 

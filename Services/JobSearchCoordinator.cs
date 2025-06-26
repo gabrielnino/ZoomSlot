@@ -1,7 +1,5 @@
-﻿using System.Text.Json;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Models;
-using Newtonsoft.Json;
 using OpenQA.Selenium;
 using Services.Interfaces;
 

@@ -58,14 +58,6 @@ namespace Services
         public ChromeOptions GetDefaultOptions()
         {
             var options = new ChromeOptions();
-            //options.AddArguments(
-            //    "--headless",
-            //    "--disable-gpu",
-            //    "--no-sandbox",
-            //    "--disable-dev-shm-usage",
-            //    "--window-size=1920,1080",
-            //    "--log-level=3"
-            //);
             options.AddArguments("--start-maximized");
             options.AddExcludedArgument("enable-automation");
             options.AddAdditionalOption("useAutomationExtension", false);

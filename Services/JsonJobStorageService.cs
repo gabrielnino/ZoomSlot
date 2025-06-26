@@ -9,8 +9,7 @@ namespace Services
     public class JsonJobStorageService : IJobStorageService, IDisposable
     {
         public readonly string? _storageFile;
-
-        public string StorageFile { get { return _storageFile; } }
+        public string StorageFile => _storageFile;
         private readonly ILogger<JsonJobStorageService> _logger;
         private readonly SemaphoreSlim _fileLock = new(1, 1);
         private readonly ExecutionOptions _executionOptions;
