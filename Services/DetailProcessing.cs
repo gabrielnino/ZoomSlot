@@ -54,27 +54,43 @@ namespace Services
 
         public async Task<List<JobOfferDetail>> ProcessOffersAsync(IEnumerable<string> offers, string searchText)
         {
-            if (_offersPending != null && _offersPending.Any())
+            try
             {
-                offers = _offersPending;
-                _logger.LogInformation($"📂 ID:{_executionOptions.TimeStamp} Resuming processing from existing offers.json with {offers.Count()} pending offers.");
-            }
-            var offerList = offers.ToList();
-            int totalOffers = offerList.Count;
-            const int batchSize = 20;
-            var delays = new[] { 3000, 5000, 7000, 10000, 20000 };
-            var random = new Random();
-            for (int i = 0; i < totalOffers; i += batchSize)
-            {
-                using (_driver = _driverFactory.Create())
+                if (_offersPending != null && _offersPending.Any())
                 {
-                    _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(120));
-                    var batch = offerList.Skip(i).Take(batchSize);
-                    await Process(offers, searchText);
-                    await Task.Delay(delays[random.Next(delays.Length)]);
+                    offers = _offersPending;
+                    _logger.LogInformation($"📂 ID:{_executionOptions.TimeStamp} Resuming processing from existing offers.json with {offers.Count()} pending offers.");
                 }
+                var offerList = offers.ToList();
+                int totalOffers = offerList.Count;
+                if (totalOffers == 0)
+                {
+                    _logger.LogWarning("ID:{TimeStamp} - No offers provided to process.", _executionOptions.TimeStamp);
+                    return [];
+                }
+                const int batchSize = 20;
+                var delays = new[] { 30, 50, 70, 100, 200 };
+                var random = new Random();
+                for (int i = 0; i < totalOffers; i += batchSize)
+                {
+                    using (_driver = _driverFactory.Create())
+                    {
+                        _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(120));
+                        var batch = offerList.Skip(i).Take(batchSize);
+                        _logger.LogInformation($"🌐 ID:{_executionOptions.TimeStamp} Navigating and extracting details from current batch...");
+                        await Process(offers, searchText);
+                        var delay = delays[random.Next(delays.Length)];
+                        _logger.LogInformation($"⏳ ID:{_executionOptions.TimeStamp} Waiting for {delay}ms before next batch...");
+                        await Task.Delay(TimeSpan.FromSeconds(delay));
+                    }
+                }
+                _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Completed processing of all job offers. Total offers processed: {_offersDetail.Count}");
             }
-
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"❌ ID:{_executionOptions.TimeStamp} Unexpected error occurred while processing offer: {offers}");
+                await _capture.CaptureArtifactsAsync(_executionOptions.ExecutionFolder, "GeneralError");
+            }
             return _offersDetail;
         }
 
@@ -84,6 +100,7 @@ namespace Services
             await _loginService.LoginAsync();
             if (_securityCheck.IsSecurityCheck())
             {
+                _logger.LogWarning($"🛡️ ID:{_executionOptions.TimeStamp} Security check detected. Attempting to solve puzzle...");
                 await _securityCheck.TryStartPuzzle();
             }
             foreach (var offer in offers.ToList())
@@ -100,9 +117,12 @@ namespace Services
                         var delays = new[] { 30, 5, 7, 100, 20 };
                         var random = new Random();
                         var minutes = delays[random.Next(delays.Length)];
-                        await Task.Delay(TimeSpan.FromMinutes(120));
+                        var delay = TimeSpan.FromMinutes(minutes);
+                        _logger.LogWarning($"⚠️ ID:{_executionOptions.TimeStamp} Initial navigation failed. Retrying after {minutes} minutes...");
+                        await Task.Delay(delay);
                         _driver.Navigate().GoToUrl(offer);
                     }
+                    _logger.LogInformation($"🔍 ID:{_executionOptions.TimeStamp} Waiting for job details section to load...");
                     _wait.Until(driver =>
                     {
                         var xPathJobs = "//div[contains(@class, 'jobs-box--with-cta-large')]";
@@ -112,6 +132,7 @@ namespace Services
                     await _capture.CaptureArtifactsAsync(_executionOptions.ExecutionFolder, "Detailed Job offer");
                     if (_securityCheck.IsSecurityCheck())
                     {
+                        _logger.LogWarning($"🛡️ ID:{_executionOptions.TimeStamp} Security check triggered again. Retrying puzzle...");
                         await _securityCheck.TryStartPuzzle();
                     }
                     var offersDetail = await ExtractDetailAsync(searchText);
@@ -180,7 +201,7 @@ namespace Services
             return [];
         }
 
-        public async Task<JobOfferDetail> ExtractDetailAsync(string searchText)
+        private async Task<JobOfferDetail> ExtractDetailAsync(string searchText)
         {
             _logger.LogDebug($"🔍 ID:{_executionOptions.TimeStamp} Extracting job details from current page...");
             await _capture.CaptureArtifactsAsync(FolderPath, "ExtractDescription_Start");

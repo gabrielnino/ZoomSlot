@@ -8,11 +8,10 @@
         }
 
         public string ExecutionFolder => Path.Combine(Directory.GetCurrentDirectory(), $"{FolderName}_{TimeStamp}");
+        public string CompletedFolder => Path.Combine(Directory.GetCurrentDirectory(), $"{CompletedFolderName}_{TimeStamp}");
         public static string FolderName => "Execution";
+        public static string CompletedFolderName => "Completed";
         public string TimeStamp { get; }
-
-        public int MaxParallelism => Math.Max(1, Environment.ProcessorCount / 2);
-
         private string? ActiveTimeStamp
         {
             get
