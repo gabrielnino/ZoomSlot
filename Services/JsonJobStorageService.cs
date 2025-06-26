@@ -48,6 +48,46 @@ namespace Services
             }
         }
 
+        public List<string> LoadPendingOffers(string offersFilePath)
+        {
+            try
+            {
+                if (File.Exists(offersFilePath))
+                {
+                    var json = File.ReadAllText(offersFilePath);
+                    var urls = JsonSerializer.Deserialize<List<string>>(json);
+                    _logger.LogInformation("Loaded {Count} pending offers from {Path}", urls?.Count ?? 0, offersFilePath);
+                    return urls ?? [];
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load pending offers from file");
+            }
+
+            return [];
+        }
+
+        //public List<JobOfferDetail> LoadJobsDetailAsync(string offersFilePath)
+        //{
+        //    try
+        //    {
+        //        if (File.Exists(offersFilePath))
+        //        {
+        //            var json = File.ReadAllText(offersFilePath);
+        //            var jobOfferDetail = JsonSerializer.Deserialize<List<JobOfferDetail>>(json);
+        //            _logger.LogInformation("Loaded {Count} pending offers from {Path}", jobOfferDetail?.Count ?? 0, offersFilePath);
+        //            return jobOfferDetail ?? [];
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Failed to load pending offers from file");
+        //    }
+
+        //    return [];
+        //}
+
         public async Task<IEnumerable<JobOfferDetail>> LoadJobsDetailAsync(string offersFilePath)
         {
             try

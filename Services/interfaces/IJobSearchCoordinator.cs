@@ -1,6 +1,4 @@
-﻿using Models;
-
-namespace Services.Interfaces
+﻿namespace Services.Interfaces
 {
     public interface IJobSearchCoordinator
     {
