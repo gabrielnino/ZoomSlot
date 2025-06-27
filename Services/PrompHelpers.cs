@@ -5,54 +5,96 @@ namespace Services
     internal static class PrompHelpers
     {
 
-        public static Prompt GetParseJobOfferPrompt(string jobOfferDescription)
+        public static Prompt GetParseJobOfferPrompt(string jobPostingText)
         {
-            if (string.IsNullOrWhiteSpace(jobOfferDescription))
-            {
-                throw new ArgumentNullException(nameof(jobOfferDescription), "Job description cannot be null or empty.");
-            }
-
-            const string JsonSchema = @"
-            {
-              ""Company Name"": ""string"",
-              ""Job Offer Title"": ""string"",
-              ""Job Offer Summary"": ""string"",
-              ""Email Contact"": ""string"",
-              ""Key Skills Required"": [""string""],
-              ""Essential Qualifications"": [""string""],
-              ""Essential Technical Skill Qualifications"": [""string""],
-              ""Other Technical Skill Qualifications"": [""string""],
-              ""Salary or Budget Offered"": ""string""
+            const string JsonSchemaJobOffer = @"{
+            'Company Name': string,
+            'Job Offer Title': string,
+            'Job Offer Summarize': string (1-2 sentence summary),
+            'Email Contact': string (default 'Not data' if not found),
+            'ContactHiringSection': string (default 'Not data' if not found),
+            'Key Skills Required': array of strings,
+            'Essential Qualifications': array or null,
+            'Essential Technical Skill Qualifications': array or null,
+            'Other Technical Skill Qualifications': array,
+            'Salary or Budget Offered': string,
+            'Description': string (3-5 sentence job description)
             }";
 
-            const string SystemContent = @"
-            You are an expert recruiter specializing in the selection and evaluation of software developers, 
-            focusing on identifying top talent with the required technical skills, qualifications, 
-            and experience to meet specific job requirements in the software development industry.";
+            var promptBuilder = new AIPromptBuilder
+            {
+                Role = "Information Extraction Specialist",
+                Task = $"Extract specific information from this job posting and format it as JSON with the following structure:\n{JsonSchemaJobOffer}",
+                Context = "The text is a job posting that needs to be parsed into structured data",
+                Format = "JSON format only, no additional commentary",
+                Tone = "professional",
+                Style = "concise"
+            };
 
-            const string TaskDescription = @"
-            Analyze the following job description and extract specific information. 
-            For the properties ""Essential Technical Skill Qualifications"" and ""Other Technical Skill Qualifications"", 
-            include only the names of the technical skills without specifying time or additional comments. 
-            The output should be in a structured JSON format, adhering to the schema below.";
+            // Add specific instructions for each field
+            promptBuilder.AddConstraint("Company Name should be extracted from the first mention of the company (use names of companies common)");
+            promptBuilder.AddConstraint("Job Offer Title should be extracted from the 'Job Description' section");
+            promptBuilder.AddConstraint("For skills, focus on the technical skills mentioned in the Qualifications section");
+            promptBuilder.AddConstraint("Categorize skills into 'Key Skills Required' (required) and 'Other Technical Skill Qualifications' (nice-to-have)");
+            promptBuilder.AddConstraint("Description should be 3-5 sentences summarizing the role, responsibilities, and requirements");
+            promptBuilder.AddConstraint("If salary information exists, include it exactly as written");
+            promptBuilder.AddConstraint("For missing fields, use 'Not data' as the value");
 
-            string userContent = $@"
-            {TaskDescription}
-
-            Job Description:
-            {jobOfferDescription}
-
-            Output Requirements:
-            Present the extracted information in the following JSON schema:
-
-            JSON Schema:
-            {JsonSchema}";
             return new Prompt
             {
-                SystemContent = SystemContent,
-                UserContent = userContent
+                SystemContent = promptBuilder.BuildPrompt(),
+                UserContent = jobPostingText
             };
         }
+
+        //public static Prompt GetParseJobOfferPrompt(string jobOfferDescription)
+        //{
+        //    if (string.IsNullOrWhiteSpace(jobOfferDescription))
+        //    {
+        //        throw new ArgumentNullException(nameof(jobOfferDescription), "Job description cannot be null or empty.");
+        //    }
+
+        //    const string JsonSchema = @"
+        //    {
+        //      ""Company Name"": ""string"",
+        //      ""Job Offer Title"": ""string"",
+        //      ""Job Offer Summary"": ""string"",
+        //      ""Email Contact"": ""string"",
+        //      ""Key Skills Required"": [""string""],
+        //      ""Essential Qualifications"": [""string""],
+        //      ""Essential Technical Skill Qualifications"": [""string""],
+        //      ""Other Technical Skill Qualifications"": [""string""],
+        //      ""Salary or Budget Offered"": ""string""
+        //    }";
+
+        //    const string SystemContent = @"
+        //    You are an expert recruiter specializing in the selection and evaluation of software developers, 
+        //    focusing on identifying top talent with the required technical skills, qualifications, 
+        //    and experience to meet specific job requirements in the software development industry.";
+
+        //    const string TaskDescription = @"
+        //    Analyze the following job description and extract specific information. 
+        //    For the properties ""Essential Technical Skill Qualifications"" and ""Other Technical Skill Qualifications"", 
+        //    include only the names of the technical skills without specifying time or additional comments. 
+        //    The output should be in a structured JSON format, adhering to the schema below.";
+
+        //    string userContent = $@"
+        //    {TaskDescription}
+
+        //    Job Description:
+        //    {jobOfferDescription}
+
+        //    Output Requirements:
+        //    Present the extracted information in the following JSON schema:
+
+        //    JSON Schema:
+        //    {JsonSchema}";
+        //    return new Prompt
+        //    {
+        //        SystemContent = SystemContent,
+        //        UserContent = userContent
+        //    };
+        //}
 
         public static Prompt GetParseResumePrompt(string resumeText)
         {

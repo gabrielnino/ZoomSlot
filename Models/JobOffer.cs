@@ -4,6 +4,7 @@
 
     public class JobOffer
     {
+        public string Id { get; set; }
 
         [JsonPropertyName("Company Name")]
         public string CompanyName { get; set; }
