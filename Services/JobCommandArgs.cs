@@ -7,7 +7,8 @@
             "--search",
             "--export",
             "--job",
-            "--apply"
+            "--apply",
+            "--prompt"
         };
 
         public string MainCommand { get; }

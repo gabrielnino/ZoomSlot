@@ -1,0 +1,32 @@
+Luis Nino
+Full Stack Developer | .NET Core | Angular | SQL | Azure | Vancouver, Canada | +1 672-338-2258 |1046 E 64th Avenue, Vancouver| gabrielnino@gmail.com | LinkedIn Profile
+_______________________________________________________________________________________________________________________________________________________________________
+Innovative Full Stack Developer with over 17 years of experience designing and implementing enterprise-level solutions in .NET Framework, Angular, and Azure. Adept at building scalable microservices, optimizing APIs, and delivering highly available systems with a focus on healthcare, ERP, and CRM applications. Proven ability to improve application performance by up to 40% and lead Agile teams to deliver impactful solutions. Passionate about using technology to enhance user experience and operational efficiency.
+Technical Skills: .NET Core, C#, Angular, SQL Server, Entity Framework, Azure DevOps, REST APIs, MVC, CI/CD, SOLR, Web Forms, ASPX.NET. Soft Skills: Agile Leadership, Problem-Solving, Analytical Thinking, Team Collaboration, Stakeholder Communication. Languages: Spanish (Native), English (Professional Proficiency).
+Senior Software Developer | Snowflake | Vancouver, Canada | November 2021 – Present.
+●	Designed and implemented APIs for seamless CRM-EMR integrations, reducing data issues by 20%.
+●	Improved application performance, cutting response times by 25% through database optimization.
+●	Automated CI/CD pipelines, reducing deployment time by 35%.
+●	Collaborated with Agile teams to deliver applications supporting 500K+ daily users.
+Tech Stack: .NET Core, C#, Angular, SQL Server, Azure DevOps.
+Senior Software Developer | MAS Global | Medellin, Colombia | July 2021 – November 2021.
+●	Developed features for ERP applications, improving data processing by 30%.
+●	Spearheaded cloud migration projects, reducing infrastructure costs by 25%.
+●	Optimized API performance for large-scale healthcare systems.
+Tech Stack: .NET Core, Angular, SQL Server, Entity Framework, Azure, Web Forms.
+Senior Software Developer | Software One | Bogota, Colombia | November 2013 – July 2021. 
+●	Led a team of 5 developers to successfully deliver high-impact projects under tight deadlines.
+●	Modernized legacy financial systems, resulting in a 40% performance improvement.
+●	Designed a real-time customer feedback platform, increasing user engagement by 20%.
+Tech Stack: .NET Core, Angular, C#, MVC, Web Forms, SQL Server, Azure
+Senior Software Developer | LeaderSearch | Bogota, Colombia | August 2011 – December 2013.
+●	Resolved long-standing critical payment system issues, reducing errors by 90%.
+●	Enhanced search performance by integrating SOLR, resulting in 30% faster query responses.
+Tech Stack: C#, Angular, SQL Server, Web Forms, ASPX.NET
+ADDITIONAL QUALIFICATIONS
+●	Extensive experience with Microsoft Azure tools and services.
+●	Strong analytical and troubleshooting skills for complex enterprise applications.
+●	Proficient in rapidly prototyping new features and solutions.
+EDUCATION
+Universidad Distrital Francisco José De Caldas – Bogotá, Cundinamarca
+Bachelor of Science in Systems Engineering, July 2009.

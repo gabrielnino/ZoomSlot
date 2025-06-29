@@ -1,37 +1,42 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Models;
 
 public class AIPromptBuilder
 {
-    // Core prompt components
-    public string Role { get; set; } = "assistant";
-    public string Task { get; set; }
-    public string Context { get; set; }
-    public string Format { get; set; }
-    public List<string> Examples { get; private set; } = [];
-    public List<string> Constraints { get; private set; } = [];
-    public Dictionary<string, string> AdditionalParameters { get; private set; } = [];
-
-    // Tone and style
+    public static string StepTag
+    {
+        get { return "###ResultPreviousStep##"; }
+    }
+    public required string Role { get; set; } = "assistant";
+    public required string Task { get; set; }
+    public required string Context { get; set; }
+    public required string Format { get; set; }
     public string Tone { get; set; } = "professional";
     public string Style { get; set; } = "concise";
-
-    // Response characteristics
     public int? MaxLength { get; set; }
     public bool IncludeSources { get; set; }
     public bool StepByStep { get; set; }
-
-    // For conversation history
-    public List<ChatMessage> ConversationHistory { get; private set; } = [];
-
+    public int? Step
+    {
+        get
+        {
+            return Parent == null ? 1 : Parent.Step + 1; ;
+        }
+    }
+    public List<string> Examples { get; } = [];
+    public List<string> Constraints { get; } = [];
+    public Dictionary<string, string> AdditionalParameters { get; } = [];
+    public List<ChatMessage> ConversationHistory { get; } = [];
     public class ChatMessage
     {
         [JsonPropertyName("role")]
-        public string Role { get; set; }
+        public string Role { get; }
 
         [JsonPropertyName("content")]
-        public string Content { get; set; }
+        public string Content { get; }
 
         public ChatMessage(string role, string content)
         {
@@ -39,180 +44,147 @@ public class AIPromptBuilder
             Content = content;
         }
     }
+    public AIPromptBuilder? Parent { get; private set; }
 
-    /// <summary>
-    /// Builds the complete prompt as a single content string
-    /// </summary>
+    public void SetParent(AIPromptBuilder parent)
+    {
+        Parent = parent;
+    }
+    private AIPromptBuilder? _nextTask;
+    public AIPromptBuilder? NextTask
+    {
+        get => _nextTask;
+        set
+        {
+            _nextTask = value;
+            _nextTask?.SetParent(this);
+        }
+    }
+    public void AddExample(string example) => Examples.Add(example);
+    public void AddConstraint(string constraint) => Constraints.Add(constraint);
+    public void AddParameter(string key, string value) => AdditionalParameters[key] = value;
+    public void AddToConversationHistory(string role, string content) => ConversationHistory.Add(new ChatMessage(role, content));
+    public void ClearConversationHistory() => ConversationHistory.Clear();
     public string BuildPrompt()
     {
-        var prompt = new StringBuilder();
-
-        if (!string.IsNullOrWhiteSpace(Role))
+        var sb = new StringBuilder();
+        AppendLineIfNotNull(sb, "Role", Role);
+        AppendLineIfNotNull(sb, "Task", Task);
+        AppendLineIfNotNull(sb, "Context", Context);
+        AppendLineIfNotNull(sb, "Response Format", Format);
+        AppendList(sb, "Examples", Examples);
+        AppendList(sb, "Constraints", Constraints);
+        sb.AppendLine($"Tone: {Tone}");
+        sb.AppendLine($"Style: {Style}");
+        if (MaxLength.HasValue)
         {
-            prompt.AppendLine($"Role: {Role}");
+            sb.AppendLine($"Maximum length: {MaxLength} words");
         }
-
-        if (!string.IsNullOrWhiteSpace(Task))
+        if (IncludeSources)
         {
-            prompt.AppendLine($"Task: {Task}");
+            sb.AppendLine("Include relevant sources or references.");
         }
-
-        if (!string.IsNullOrWhiteSpace(Context))
+        if (StepByStep)
         {
-            prompt.AppendLine($"Context: {Context}");
+            sb.AppendLine("Provide step-by-step response.");
         }
-
-        if (!string.IsNullOrWhiteSpace(Format))
+        if (AdditionalParameters.Count > 0)
         {
-            prompt.AppendLine($"Response Format: {Format}");
-        }
-
-        if (Examples.Count > 0)
-        {
-            prompt.AppendLine("Examples:");
-            foreach (var example in Examples)
+            sb.AppendLine("Additional Parameters:");
+            foreach (var (key, value) in AdditionalParameters)
             {
-                prompt.AppendLine($"- {example}");
+                sb.AppendLine($"{key}: {value}");
             }
         }
+        return sb.ToString();
+    }
+    public Prompt BuildPromptObject(string? result = null)
+    {
+        var systemBuilder = new StringBuilder();
+        AppendLineIfNotNull(systemBuilder, "Task", Task);
+        AppendLineIfNotNull(systemBuilder, "Context", Context);
+        AppendList(systemBuilder, "Constraints", Constraints);
 
-        if (Constraints.Count > 0)
-        {
-            prompt.AppendLine("Constraints:");
-            foreach (var constraint in Constraints)
-            {
-                prompt.AppendLine($"- {constraint}");
-            }
-        }
-
-        prompt.AppendLine($"Tone: {Tone}");
-        prompt.AppendLine($"Style: {Style}");
+        var userBuilder = new StringBuilder();
+        AppendLineIfNotNull(userBuilder, "Role", Role);
+        AppendLineIfNotNull(userBuilder, "Response Format", Format);
+        AppendList(userBuilder, "Examples", Examples);
+        userBuilder.AppendLine($"Tone: {Tone}");
+        userBuilder.AppendLine($"Style: {Style}");
 
         if (MaxLength.HasValue)
         {
-            prompt.AppendLine($"Maximum length: {MaxLength} words");
+            userBuilder.AppendLine($"Maximum length: {MaxLength} words");
         }
-
         if (IncludeSources)
         {
-            prompt.AppendLine("Include relevant sources or references.");
+            userBuilder.AppendLine("Include relevant sources or references.");
         }
-
         if (StepByStep)
         {
-            prompt.AppendLine("Provide step-by-step response.");
+            userBuilder.AppendLine("Provide step-by-step response.");
         }
-
         if (AdditionalParameters.Count > 0)
         {
-            prompt.AppendLine("Additional Parameters:");
-            foreach (var param in AdditionalParameters)
+            userBuilder.AppendLine("Additional Parameters:");
+            foreach (var (key, value) in AdditionalParameters)
             {
-                prompt.AppendLine($"{param.Key}: {param.Value}");
+                userBuilder.AppendLine($"{key}: {value}");
             }
         }
 
-        return prompt.ToString();
+        return new Prompt
+        {
+            SystemContent = systemBuilder.ToString().Trim().Replace(AIPromptBuilder.StepTag, result ?? string.Empty),
+            UserContent = userBuilder.ToString().Trim(),
+        };
     }
-
-    /// <summary>
-    /// Gets the messages formatted for API request with role/content structure
-    /// </summary>
     public List<ChatMessage> GetApiMessages()
     {
         var messages = new List<ChatMessage>();
-
-        // Add system message with instructions
-        var systemMessage = new StringBuilder();
-        if (!string.IsNullOrWhiteSpace(Task)) systemMessage.AppendLine($"Task: {Task}");
-        if (!string.IsNullOrWhiteSpace(Context)) systemMessage.AppendLine($"Context: {Context}");
-        if (Constraints.Count > 0)
+        var systemBuilder = new StringBuilder();
+        AppendLineIfNotNull(systemBuilder, "Task", Task);
+        AppendLineIfNotNull(systemBuilder, "Context", Context);
+        AppendList(systemBuilder, "Constraints", Constraints);
+        if (systemBuilder.Length > 0)
         {
-            systemMessage.AppendLine("Constraints:");
-            foreach (var constraint in Constraints)
-            {
-                systemMessage.AppendLine($"- {constraint}");
-            }
+            messages.Add(new ChatMessage("system", systemBuilder.ToString()));
         }
-        if (systemMessage.Length > 0)
-        {
-            messages.Add(new ChatMessage("system", systemMessage.ToString()));
-        }
-
-        // Add examples as separate messages
         if (Examples.Count > 0)
         {
-            var examplesMessage = new StringBuilder("Examples:\n");
-            foreach (var example in Examples)
-            {
-                examplesMessage.AppendLine($"- {example}");
-            }
-            messages.Add(new ChatMessage("user", examplesMessage.ToString()));
+            var examplesText = string.Join(Environment.NewLine, Examples.Select(e => $"- {e}"));
+            messages.Add(new ChatMessage("user", $"Examples:\n{examplesText}"));
         }
-
-        // Add the main prompt content
         messages.Add(new ChatMessage("user", BuildPrompt()));
-
-        // Add conversation history
-        if (ConversationHistory.Count > 0)
-        {
-            messages.AddRange(ConversationHistory);
-        }
-
+        messages.AddRange(ConversationHistory);
         return messages;
     }
 
-    /// <summary>
-    /// Gets the API request payload as JSON
-    /// </summary>
     public string GetApiRequestJson(bool includeSystemMessage = true)
     {
-        var messages = GetApiMessages();
         var options = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             WriteIndented = true
         };
-        return JsonSerializer.Serialize(new { messages }, options);
+        return JsonSerializer.Serialize(new { messages = GetApiMessages() }, options);
     }
 
-    /// <summary>
-    /// Adds an example to the prompt
-    /// </summary>
-    public void AddExample(string example)
+    private static void AppendLineIfNotNull(StringBuilder sb, string label, string value)
     {
-        Examples.Add(example);
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            sb.AppendLine($"{label}: {value}");
+        }
     }
 
-    /// <summary>
-    /// Adds a constraint to the prompt
-    /// </summary>
-    public void AddConstraint(string constraint)
+    private static void AppendList(StringBuilder sb, string title, List<string> items)
     {
-        Constraints.Add(constraint);
-    }
-
-    /// <summary>
-    /// Adds a parameter to the prompt
-    /// </summary>
-    public void AddParameter(string key, string value)
-    {
-        AdditionalParameters[key] = value;
-    }
-
-    /// <summary>
-    /// Adds a message to the conversation history
-    /// </summary>
-    public void AddToConversationHistory(string role, string content)
-    {
-        ConversationHistory.Add(new ChatMessage(role, content));
-    }
-
-    /// <summary>
-    /// Clears the conversation history
-    /// </summary>
-    public void ClearConversationHistory()
-    {
-        ConversationHistory.Clear();
+        if (items?.Count > 0)
+        {
+            sb.AppendLine($"{title}:");
+            foreach (var item in items)
+                sb.AppendLine($"- {item}");
+        }
     }
 }
