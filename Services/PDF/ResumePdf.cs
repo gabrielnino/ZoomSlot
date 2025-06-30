@@ -32,15 +32,15 @@
                 essentialQualifications.AddRange(essentialOtherQualifications);
             }
 
-            string[] value = [.. essentialQualifications];
-            var qualificationsResume = string.Join(" | ", value);
-            var languages = string.Join(", ", qualificationsResume) + " - Languages: " + string.Join(" , ", resumeRequest.Resume.Languages);
-            var languagesList = TextHelper.SplitText(languages, 87);
-            TechnicalSkills.AddTechnicalSkills(gfx, normalFont, languagesList, margin, ref yPosition, page, interlineParagraph);
-            yPosition += 15;
-            var boldFont = new XFont(familyName, 10, XFontStyleEx.Bold);
-            gfx.DrawString("Professional Experience", sectionTitleFont, XBrushes.Black, margin, yPosition);
-            yPosition += 10;
+            //string[] value = [.. essentialQualifications];
+            //var qualificationsResume = string.Join(" | ", value);
+            //var languages = string.Join(", ", qualificationsResume) + " - Languages: " + string.Join(" , ", resumeRequest.Resume.Languages);
+            //var languagesList = TextHelper.SplitText(languages, 87);
+            //TechnicalSkills.AddTechnicalSkills(gfx, normalFont, languagesList, margin, ref yPosition, page, interlineParagraph);
+            //yPosition += 15;
+            //var boldFont = new XFont(familyName, 10, XFontStyleEx.Bold);
+            //gfx.DrawString("Professional Experience", sectionTitleFont, XBrushes.Black, margin, yPosition);
+            //yPosition += 10;
             var experieces = resumeRequest.Resume.ProfessionalExperiences;
             var page1Experieces = experieces.Take(2);
             foreach (var experience in page1Experieces)

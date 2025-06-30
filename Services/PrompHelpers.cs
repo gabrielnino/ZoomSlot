@@ -9,22 +9,90 @@ namespace Services
         public static Prompt GetParseJobOfferPrompt(string jobPostingText)
         {
             const string JsonSchemaJobOffer = @"{
-                'CompanyName': 'string (required)',
-                'JobOfferTitle': 'string (required)',
-                'JobOfferSummarize': 'string (1-2 sentence summary, required)',
-                'EmailContact': 'string (default: \""Not provided\"")',
-                'ContactHiringSection': 'string (default: \""Not provided\"")',
-                'KeySkillsRequired': [
-                {
-                'Name': 'string (skill name, e.g., \""C#\"", \""SQL\"")',
-                'RelevancePercentage': 'integer (0-100, required) | Description: Weight of this skill in the job offer. Example: 80 for C# (critical), 20 for SQL (secondary). Sum across skills need not equal 100.'
+              'CompanyName': 'Corpay',
+              'JobOfferTitle': 'Senior Full .NET Stack Developer',
+              'JobOfferSummarize': 'Corpay is seeking a Senior Full .NET Stack Developer...',
+              'EmailContact': 'Not provided',
+              'ContactHiringSection': 'Not provided',
+  
+              'KeySkillsRequired': [
+                { 
+                  'Name': 'C#', 
+                  'RelevancePercentage': 30 | Description: Weight of this skill in the job offer. Example: 30 for C# (core skill), 10 for SQL Server (supporting skill). Sum must equal 100 across all entries in this array.
+                },
+                { 
+                  'Name': '.NET', 
+                  'RelevancePercentage': 25 | Description: Criticality of .NET framework expertise. Higher values indicate mandatory requirements.
+                },
+                { 
+                  'Name': 'JavaScript', 
+                  'RelevancePercentage': 15 | Description: Importance of JavaScript proficiency for full-stack development.
+                },
+                { 
+                  'Name': 'ASP.NET', 
+                  'RelevancePercentage': 10 | Description: Weight for ASP.NET-specific experience.
+                },
+                { 
+                  'Name': 'React', 
+                  'RelevancePercentage': 10 | Description: Frontend framework priority level.
+                },
+                { 
+                  'Name': 'SQL Server', 
+                  'RelevancePercentage': 10 | Description: Database skill relevance.
                 }
-                ],
-                'EssentialQualifications': 'array[string] or null',
-                'EssentialTechnicalSkillQualifications': 'array[string] or null',
-                'OtherTechnicalSkillQualifications': 'array[string]',
-                'SalaryOrBudgetOffered': 'string (e.g., \""$100,000\"", \""Negotiable\"")',
-                'Description': 'string (3-5 sentence job description, required)'
+              ],
+
+              'EssentialQualifications': [
+                { 
+                  'Name': '8+ years of experience using C#, Javascript and debugging techniques', 
+                  'RelevancePercentage': 50 | Description: Highest weight for hands-on experience. Sum must equal 100 within this category.
+                },
+                { 
+                  'Name': 'B.S./M.S. in Computer Science or equivalent experience', 
+                  'RelevancePercentage': 30 | Description: Education/formal credential importance.
+                },
+                { 
+                  'Name': 'Experience with .NET Full Framework (4.0–4.8) and .NET (2.2–7.0)', 
+                  'RelevancePercentage': 20 | Description: Specific version knowledge priority.
+                }
+              ],
+
+              'EssentialTechnicalSkillQualifications': [
+                { 
+                  'Name': 'Expert in HTML/CSS/JavaScript and web protocols', 
+                  'RelevancePercentage': 30 | Description: Core web tech weight. Example: 30 for must-have, 10 for nice-to-have.
+                },
+                { 
+                  'Name': 'Experience with React/Redux/KnockoutJS', 
+                  'RelevancePercentage': 25 | Description: Frontend framework criticality.
+                },
+                { 
+                  'Name': 'SQL Server/MongoDB proficiency', 
+                  'RelevancePercentage': 20 | Description: Database skill priority.
+                },
+                { 
+                  'Name': 'Knowledge of OOP, modular design, and CI/CD', 
+                  'RelevancePercentage': 15 | Description: Design/process methodology importance.
+                },
+                { 
+                  'Name': 'Scrum/Agile experience', 
+                  'RelevancePercentage': 10 | Description: Methodology familiarity weight.
+                }
+              ],
+
+              'OtherTechnicalSkillQualifications': [
+                { 
+                  'Name': 'Strong communication skills', 
+                  'RelevancePercentage': 70 | Description: Soft skill dominance (higher = more critical).
+                },
+                { 
+                  'Name': 'Self-motivated and independent', 
+                  'RelevancePercentage': 30 | Description: Secondary soft skill weight.
+                }
+              ],
+
+              'SalaryOrBudgetOffered': '$110,000 -$125,000 CAD annually',
+              'Description': 'The Senior Full .NET Stack Developer will provide technical direction...'
             }";
 
             var promptBuilder = new AIPromptBuilder

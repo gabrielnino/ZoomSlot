@@ -19,8 +19,8 @@
                 essentialQualifications.AddRange(essentialOtherQualifications);
             }
 
-            string[] value = essentialQualifications.ToArray();
-            var qualifications = string.Join(" | ", value);
+            //string[] value = essentialQualifications.ToArray();
+            //var qualifications = string.Join(" | ", value);
             document.Info.Title = resume.Name;
             AddPage(document, out page, out gfx);
             margin = 50;
@@ -78,13 +78,13 @@
                 subTitleFont = new XFont(familyName, 12, XFontStyleEx.Regular);
 
                 var titleJobOffer = jobOffer.JobOfferTitle;
-                var skills = qualifications.Count() > 0 ? " | " + qualifications : string.Empty;
-                var qualificationsList = TextHelper.SplitText(jobOffer.JobOfferTitle + skills, 72);
-                foreach (var qualification in qualificationsList)
-                {
-                    gfx.DrawString(qualification, subTitleFont, XBrushes.Black, margin, yPosition);
-                    yPosition += interline;
-                }
+                //var skills = qualifications.Count() > 0 ? " | " + qualifications : string.Empty;
+                //var qualificationsList = TextHelper.SplitText(jobOffer.JobOfferTitle + skills, 72);
+                //foreach (var qualification in qualificationsList)
+                //{
+                //    gfx.DrawString(qualification, subTitleFont, XBrushes.Black, margin, yPosition);
+                //    yPosition += interline;
+                //}
             }
         }
 
