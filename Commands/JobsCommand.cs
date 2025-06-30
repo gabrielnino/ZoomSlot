@@ -25,6 +25,7 @@ namespace Commands
             var offers = await _jobDocumentCoordinator.GenerateJobsDocumentAsync();
             _logger.LogInformation("✅ Application document generated successfully.");
             await _storageService.SaveJobOfferAsync(_storageService.StorageFile, offers);
+            _logger.LogInformation("✅ Application document finished successfully.");
         }
 
     }

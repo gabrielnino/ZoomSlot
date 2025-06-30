@@ -5,7 +5,7 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<RunArguments>--resume=LuisNino.txt</RunArguments>
+		<RunArguments>--job</RunArguments>
 	</PropertyGroup>
 
 	<ItemGroup>
