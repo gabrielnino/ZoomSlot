@@ -29,6 +29,9 @@ namespace Commands
                 case "--job":
                     commands.Add(_serviceProvider.GetRequiredService<JobsCommand>());
                     break;
+                case "--resume":
+                    commands.Add(_serviceProvider.GetRequiredService<ResumeCommand>());
+                    break;
                 case "--prompt":
                     commands.Add(_serviceProvider.GetRequiredService<PromtCommand>());
                     break;

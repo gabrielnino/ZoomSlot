@@ -1,32 +1,57 @@
 Luis Nino
-Full Stack Developer | .NET Core | Angular | SQL | Azure | Vancouver, Canada | +1 672-338-2258 |1046 E 64th Avenue, Vancouver| gabrielnino@gmail.com | LinkedIn Profile
-_______________________________________________________________________________________________________________________________________________________________________
-Innovative Full Stack Developer with over 17 years of experience designing and implementing enterprise-level solutions in .NET Framework, Angular, and Azure. Adept at building scalable microservices, optimizing APIs, and delivering highly available systems with a focus on healthcare, ERP, and CRM applications. Proven ability to improve application performance by up to 40% and lead Agile teams to deliver impactful solutions. Passionate about using technology to enhance user experience and operational efficiency.
-Technical Skills: .NET Core, C#, Angular, SQL Server, Entity Framework, Azure DevOps, REST APIs, MVC, CI/CD, SOLR, Web Forms, ASPX.NET. Soft Skills: Agile Leadership, Problem-Solving, Analytical Thinking, Team Collaboration, Stakeholder Communication. Languages: Spanish (Native), English (Professional Proficiency).
-Senior Software Developer | Snowflake | Vancouver, Canada | November 2021 – Present.
-●	Designed and implemented APIs for seamless CRM-EMR integrations, reducing data issues by 20%.
-●	Improved application performance, cutting response times by 25% through database optimization.
-●	Automated CI/CD pipelines, reducing deployment time by 35%.
-●	Collaborated with Agile teams to deliver applications supporting 500K+ daily users.
-Tech Stack: .NET Core, C#, Angular, SQL Server, Azure DevOps.
-Senior Software Developer | MAS Global | Medellin, Colombia | July 2021 – November 2021.
-●	Developed features for ERP applications, improving data processing by 30%.
-●	Spearheaded cloud migration projects, reducing infrastructure costs by 25%.
-●	Optimized API performance for large-scale healthcare systems.
-Tech Stack: .NET Core, Angular, SQL Server, Entity Framework, Azure, Web Forms.
-Senior Software Developer | Software One | Bogota, Colombia | November 2013 – July 2021. 
-●	Led a team of 5 developers to successfully deliver high-impact projects under tight deadlines.
-●	Modernized legacy financial systems, resulting in a 40% performance improvement.
-●	Designed a real-time customer feedback platform, increasing user engagement by 20%.
-Tech Stack: .NET Core, Angular, C#, MVC, Web Forms, SQL Server, Azure
-Senior Software Developer | LeaderSearch | Bogota, Colombia | August 2011 – December 2013.
-●	Resolved long-standing critical payment system issues, reducing errors by 90%.
-●	Enhanced search performance by integrating SOLR, resulting in 30% faster query responses.
-Tech Stack: C#, Angular, SQL Server, Web Forms, ASPX.NET
-ADDITIONAL QUALIFICATIONS
-●	Extensive experience with Microsoft Azure tools and services.
-●	Strong analytical and troubleshooting skills for complex enterprise applications.
-●	Proficient in rapidly prototyping new features and solutions.
-EDUCATION
-Universidad Distrital Francisco José De Caldas – Bogotá, Cundinamarca
-Bachelor of Science in Systems Engineering, July 2009.
+Senior Software Developer | Vancouver, GMT-7 | gabrielnino@gmail.com | +1 672 33822 58 | www.linkedin.com/in/luis-nino-developer
+Professional Summary
+Senior Software Developer with 18+ years designing .NET solutions and data migrations to the cloud. I have led automated tools deployed to 300 clients, saving 6 months of manual effort per pipeline and streamlining legacy processes in PySpark, Scala, and C#. Seeking to leverage my expertise in scalable architectures, Business Intelligence, and Data Engineering within a global team.
+Professional Experience
+Snowflake — Senior Software Developer
+Nov 2021 – Present
+Developed application in C#/.NET and Python to automatically convert PySpark and Scala code to Snowpark/optimized Scala, migrating 70% without intervention, deployed to 300 clients over three years and saving each up to 6 months of manual migration effort per pipeline.
+Architected and built a C#/.NET & Python application that automatically converts PySpark and Scala code to optimized Snowpark Scala, migrating 70% of pipelines without manual intervention and deploying to 300 clients.
+Led Agile (Scrum) ceremonies—sprint planning, daily stand-ups, reviews and retrospectives—ensuring on-time delivery of new features and rapid iteration based on stakeholder feedback.
+Designed and maintained Azure DevOps pipelines for CI/CD, automating build, test, and deployment stages; reduced manual deployment effort by 40% and accelerated release cycles by 30%.
+Partnered with data science teams to migrate machine-learning pipelines (built in PySpark) to Snowpark, validating compatibility with TensorFlow and PyTorch frameworks.
+Prototyped AI-assisted code-analysis features using Azure Machine Learning and OpenAI APIs, exploring LLM-driven suggestions for conversion optimizations.
+
+MAS Global — Senior Software Developer
+Jul 2021 – Nov 2021
+Designed and developed a SAFe-aligned prototype budgeting application with .NET Core, Angular, SQL Server/Entity Framework, and Azure; validated against 100 manual quotes, improving pricing accuracy by 40%.
+Collaborated in a cross-functional SAFe team—participating in PI planning, backlog refinement, and sprint demos—to align business goals with technical deliverables.
+Implemented end-to-end CI/CD workflows in Azure Pipelines, integrating automated unit and integration tests to ensure code quality and rapid rollbacks.
+Software One — Senior Software Developer
+Nov 2013 – Jul 2021
+Managed and resolved 300+ support tickets with a 3-day average resolution time; cleared 90% of backlog and maintained a 100% first-time fix rate.
+Worked in an Agile Scrum environment, partnering with QA and product teams to prioritize incidents and implement preventative monitoring.
+Introduced logging and alerting solutions (Application Insights, Log Analytics) that reduced recurring issues by 25%.
+El Tiempo Casa Editorial — Senior Software Development Engineer
+Jul 2011 – Dec 2013
+Developed and optimized job-search features using C#, ASP.NET WebForms, SOLR, Entity Framework, and WCF; increased job applications from 300 M to 400 M annually (33% growth).
+Tuned SOLR relevance and indexing strategies, collaborating with UX and analytics teams to refine search results and boost user satisfaction.
+Participated in two-week Scrum sprints, delivering new features and performance improvements on schedule.
+Software One — Senior Software Development Engineer
+Nov 2009 – Jul 2011
+Enhanced on-page SEO (meta tags, structured data, Google best practices) on PaginasAmarillas.com, moving key pages from page 3 to page 1 for targeted
+keywords.Analyzed web analytics to identify high-impact content opportunities and implemented structured data markup to increase organic click-through rates by 50%.
+
+Stefanini — Senior Software Development Engineer
+Jul 2009 – Nov 2009
+Built a Windows Forms application in VB.NET with WCF integration for CISA’s property-registration workflows, doubling daily throughput (150 → 300) and halving processing time.
+Collaborated with business analysts to gather requirements and deliver the prototype within a 3-month deadline.
+SONDA — Junior Software Development Engineer
+Feb 2008 – Jul 2009
+Developed an accounts-receivable module using C#, ASP.NET WebForms, WCF, SQL Server, and TFS; streamlined billing workflows and increased monthly recoveries from 800 M to 960 M.
+Wrote unit and integration tests to ensure data integrity, reducing post-release defects by 35%.
+AXESNET S.A. — Junior Software Development Engineer
+Jan 2007 – Feb 2008
+Designed and implemented a C#/.NET payment-gateway prototype processing 13 transactions per second.
+Partnered with DBAs to model a high-performance SQL schema, supporting rapid transaction throughput.
+Technical Skills
+Languages: C# (Advanced), Visual Basic (Advanced), SQL (Advanced), Python (Intermediate), JavaScript/TypeScript (Intermediate)
+Frameworks & Tools: .NET Core, ASP.NET WebForms & MVC, Entity Framework, LINQ, Angular, React, Blazor, WCF, SOLR, TFS, GitHub, Azure DevOps, Snowflake, Spark, Scala
+Practices: Agile (Scrum, SAFe), SOLID Principles, Design Patterns, TDD, OOD, DevOps & CI/CD
+Cloud Platforms: Azure (Functions, DevOps, AI Services, Cognitive Services)
+AI/ML: TensorFlow, PyTorch, Azure Machine Learning, OpenAI APIs
+Languages Spoken: English (Intermediate), Spanish (Native)
+Education
+B.Sc. in Systems Engineering
+Universidad Distrital Francisco José de Caldas, Bogotá, Colombia
+Graduated July 2009

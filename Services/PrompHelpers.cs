@@ -1,4 +1,5 @@
-﻿using Models;
+﻿using System.Data;
+using Models;
 
 namespace Services
 {
@@ -44,6 +45,74 @@ namespace Services
             {
                 SystemContent = promptBuilder.BuildPrompt(),
                 UserContent = jobPostingText
+            };
+        }
+
+
+        public static Prompt GetParseResumePrompt(string resumeText)
+        {
+ 
+            const string JsonSchemaResume = @"
+            {
+                ""Name"": ""string"",
+              ""Title"": ""string"",
+              ""Location"": ""string"",
+              ""Contact Information"": {
+                    ""Phone"": ""string"",
+                ""Email"": ""string"",
+                ""LinkedIn"": ""string""
+              },
+              ""Professional Summary"": ""string"",
+              ""Bullet Points"": [""string""],
+              ""Technical Skills"": [""string""],
+              ""Soft Skills"": [""string""],
+              ""Languages"": [""string""],
+              ""Professional Experience"": [
+                {
+                    ""Role"": ""string"",
+                  ""Company"": ""string"",
+                  ""Location"": ""string"",
+                  ""Duration"": ""string"",
+                  ""Responsibilities"": [""string""],
+                  ""Tech Stack"": [""string""]
+                }
+              ],
+              ""Additional Qualifications"": [""string""],
+              ""Education"": {
+                    ""Institution"": ""string"",
+                ""Location"": ""string"",
+                ""Degree"": ""string"",
+                ""Graduation Date"": ""string""
+              }
+            }
+            ";
+            var promptBuilder = new AIPromptBuilder
+            {
+                Role = "Resume Information Extraction Specialist",
+                Task = $"Extract all information from this resume and format it as JSON with the following structure:\n{JsonSchemaResume}",
+                Context = "The text is a professional resume that needs to be parsed into structured data",
+                Format = "JSON format only, no additional commentary",
+                Tone = "professional",
+                Style = "concise"
+            };
+
+            // Add specific instructions for resume extraction
+            promptBuilder.AddConstraint("Extract the name from the first line of the resume");
+            promptBuilder.AddConstraint("Title should be extracted from the professional title near the name");
+            promptBuilder.AddConstraint("Location should be extracted from the contact information section");
+            promptBuilder.AddConstraint("Contact Information should include phone, email, and LinkedIn URL");
+            promptBuilder.AddConstraint("Professional Summary should be the full summary paragraph");
+            promptBuilder.AddConstraint("For Professional Experience, extract all positions with their details");
+            promptBuilder.AddConstraint("For each position, include company, role, duration, and responsibilities");
+            promptBuilder.AddConstraint("Technical Skills should include all listed skills, grouped by category");
+            promptBuilder.AddConstraint("Languages should include all mentioned languages with proficiency levels");
+            promptBuilder.AddConstraint("Education should include institution, degree, location, and graduation date");
+            promptBuilder.AddConstraint("For missing fields, use null as the value");
+
+            return new Prompt
+            {
+                SystemContent = promptBuilder.BuildPrompt(),
+                UserContent = resumeText
             };
         }
 
@@ -96,80 +165,80 @@ namespace Services
         //    };
         //}
 
-        public static Prompt GetParseResumePrompt(string resumeText)
-        {
-            if (string.IsNullOrWhiteSpace(resumeText))
-            {
-                throw new ArgumentException("Resume text cannot be null or empty.", nameof(resumeText));
-            }
+        //public static Prompt GetParseResumePrompt(string resumeText)
+        //{
+        //    if (string.IsNullOrWhiteSpace(resumeText))
+        //    {
+        //        throw new ArgumentException("Resume text cannot be null or empty.", nameof(resumeText));
+        //    }
 
-            const string JsonSchema = @"
-            {
-              ""Name"": ""string"",
-              ""Title"": ""string"",
-              ""Location"": ""string"",
-              ""Contact Information"": {
-                ""Phone"": ""string"",
-                ""Email"": ""string"",
-                ""LinkedIn"": ""string""
-              },
-              ""Professional Summary"": ""string"",
-              ""Bullet Points"": [""string""],
-              ""Technical Skills"": [""string""],
-              ""Soft Skills"": [""string""],
-              ""Languages"": [""string""],
-              ""Professional Experience"": [
-                {
-                  ""Role"": ""string"",
-                  ""Company"": ""string"",
-                  ""Location"": ""string"",
-                  ""Duration"": ""string"",
-                  ""Responsibilities"": [""string""],
-                  ""Tech Stack"": [""string""]
-                }
-              ],
-              ""Additional Qualifications"": [""string""],
-              ""Education"": {
-                ""Institution"": ""string"",
-                ""Location"": ""string"",
-                ""Degree"": ""string"",
-                ""Graduation Date"": ""string""
-              }
-            }";
+        //    const string JsonSchema = @"
+        //    {
+        //      ""Name"": ""string"",
+        //      ""Title"": ""string"",
+        //      ""Location"": ""string"",
+        //      ""Contact Information"": {
+        //        ""Phone"": ""string"",
+        //        ""Email"": ""string"",
+        //        ""LinkedIn"": ""string""
+        //      },
+        //      ""Professional Summary"": ""string"",
+        //      ""Bullet Points"": [""string""],
+        //      ""Technical Skills"": [""string""],
+        //      ""Soft Skills"": [""string""],
+        //      ""Languages"": [""string""],
+        //      ""Professional Experience"": [
+        //        {
+        //          ""Role"": ""string"",
+        //          ""Company"": ""string"",
+        //          ""Location"": ""string"",
+        //          ""Duration"": ""string"",
+        //          ""Responsibilities"": [""string""],
+        //          ""Tech Stack"": [""string""]
+        //        }
+        //      ],
+        //      ""Additional Qualifications"": [""string""],
+        //      ""Education"": {
+        //        ""Institution"": ""string"",
+        //        ""Location"": ""string"",
+        //        ""Degree"": ""string"",
+        //        ""Graduation Date"": ""string""
+        //      }
+        //    }";
 
-            const string SystemContent = @"
-            You are an expert recruiter specializing in technical talent evaluation.
-            Your task is to extract and structure resume information into a standardized JSON format.
-            Focus on identifying:
-            - Clear technical skills (without proficiency levels)
-            - Relevant experience with specific technologies
-            - Key achievements and responsibilities
-            - Clean educational background";
+        //    const string SystemContent = @"
+        //    You are an expert recruiter specializing in technical talent evaluation.
+        //    Your task is to extract and structure resume information into a standardized JSON format.
+        //    Focus on identifying:
+        //    - Clear technical skills (without proficiency levels)
+        //    - Relevant experience with specific technologies
+        //    - Key achievements and responsibilities
+        //    - Clean educational background";
 
-            const string TaskInstructions = @"
-            Analyze the following resume text and extract the requested information.
-            Follow these guidelines:
-            1. Include only skill names for technical skills (no durations or comments)
-            2. Keep descriptions concise and achievement-oriented
-            3. Maintain consistent formatting for dates and locations
-            4. Output must strictly adhere to the provided JSON schema";
+        //    const string TaskInstructions = @"
+        //    Analyze the following resume text and extract the requested information.
+        //    Follow these guidelines:
+        //    1. Include only skill names for technical skills (no durations or comments)
+        //    2. Keep descriptions concise and achievement-oriented
+        //    3. Maintain consistent formatting for dates and locations
+        //    4. Output must strictly adhere to the provided JSON schema";
 
-            string userContent = $@"
-            Resume Text to Process:
-            {resumeText}
+        //    string userContent = $@"
+        //    Resume Text to Process:
+        //    {resumeText}
 
-            Output Requirements:
-            {TaskInstructions}
+        //    Output Requirements:
+        //    {TaskInstructions}
 
-            Required JSON Structure:
-            {JsonSchema}";
+        //    Required JSON Structure:
+        //    {JsonSchema}";
 
-            return new Prompt
-            {
-                SystemContent = SystemContent,
-                UserContent = userContent
-            };
-        }
+        //    return new Prompt
+        //    {
+        //        SystemContent = SystemContent,
+        //        UserContent = userContent
+        //    };
+        //}
 
 
         public static Prompt GenerateResumeJsonPrompt(string jobOfferString, string resumeString)

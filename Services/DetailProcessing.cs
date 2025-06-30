@@ -114,12 +114,45 @@ namespace Services
                     }
                     catch
                     {
-                        var delays = new[] { 30, 5, 7, 100, 20 };
+                        var delays = new[] { 3, 5, 7, 10, 2 };
                         var random = new Random();
                         var minutes = delays[random.Next(delays.Length)];
                         var delay = TimeSpan.FromMinutes(minutes);
-                        _logger.LogWarning($"⚠️ ID:{_executionOptions.TimeStamp} Initial navigation failed. Retrying after {minutes} minutes...");
-                        await Task.Delay(delay);
+
+                        _logger.LogWarning($"⚠️ ID:{_executionOptions.TimeStamp} Initial navigation failed. Retrying after {minutes} minutes... (Press any key to skip waiting)");
+
+                        // Create a cancellation token source
+                        var cts = new CancellationTokenSource();
+
+                        // Start a task to monitor keyboard input
+                        var keyboardTask = Task.Run(() =>
+                        {
+                            if (Console.KeyAvailable)
+                            {
+                                Console.ReadKey(true); // Clear the buffer
+                                return;
+                            }
+
+                            Console.ReadKey(true); // Wait for any key press
+                            cts.Cancel();
+                        });
+
+                        try
+                        {
+                            // Wait for either the delay or a key press
+                            await Task.Delay(delay, cts.Token);
+                        }
+                        catch (TaskCanceledException)
+                        {
+                            _logger.LogInformation($"⏩ ID:{_executionOptions.TimeStamp} Wait interrupted by user. Continuing immediately...");
+                        }
+
+                        // Clean up the keyboard task if it's still running
+                        if (!keyboardTask.IsCompleted)
+                        {
+                            // Give it a short time to complete if a key was just pressed
+                            await Task.WhenAny(keyboardTask, Task.Delay(100));
+                        }
                         _driver.Navigate().GoToUrl(offer);
                     }
                     _logger.LogInformation($"🔍 ID:{_executionOptions.TimeStamp} Waiting for job details section to load...");
