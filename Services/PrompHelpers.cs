@@ -9,17 +9,22 @@ namespace Services
         public static Prompt GetParseJobOfferPrompt(string jobPostingText)
         {
             const string JsonSchemaJobOffer = @"{
-            'Company Name': string,
-            'Job Offer Title': string,
-            'Job Offer Summarize': string (1-2 sentence summary),
-            'Email Contact': string (default 'Not data' if not found),
-            'ContactHiringSection': string (default 'Not data' if not found),
-            'Key Skills Required': array of strings,
-            'Essential Qualifications': array or null,
-            'Essential Technical Skill Qualifications': array or null,
-            'Other Technical Skill Qualifications': array,
-            'Salary or Budget Offered': string,
-            'Description': string (3-5 sentence job description)
+                'CompanyName': 'string (required)',
+                'JobOfferTitle': 'string (required)',
+                'JobOfferSummarize': 'string (1-2 sentence summary, required)',
+                'EmailContact': 'string (default: \""Not provided\"")',
+                'ContactHiringSection': 'string (default: \""Not provided\"")',
+                'KeySkillsRequired': [
+                {
+                'Name': 'string (skill name, e.g., \""C#\"", \""SQL\"")',
+                'RelevancePercentage': 'integer (0-100, required) | Description: Weight of this skill in the job offer. Example: 80 for C# (critical), 20 for SQL (secondary). Sum across skills need not equal 100.'
+                }
+                ],
+                'EssentialQualifications': 'array[string] or null',
+                'EssentialTechnicalSkillQualifications': 'array[string] or null',
+                'OtherTechnicalSkillQualifications': 'array[string]',
+                'SalaryOrBudgetOffered': 'string (e.g., \""$100,000\"", \""Negotiable\"")',
+                'Description': 'string (3-5 sentence job description, required)'
             }";
 
             var promptBuilder = new AIPromptBuilder

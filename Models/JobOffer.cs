@@ -20,7 +20,7 @@
         public string ContactHiringSection { get; set; }
 
         [JsonPropertyName("Key Skills Required")]
-        public List<string> KeySkillsRequired { get; set; }
+        public List<Skill> KeySkillsRequired { get; set; }
 
         [JsonPropertyName("Essential Qualifications")]
         public List<string> EssentialQualifications { get; set; }
