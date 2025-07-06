@@ -12,12 +12,10 @@ namespace Commands
         public QualifiedCommand(
             ILogger<ApplyCommand> logger,
             IJobSearchCoordinator linkedInService,
-            IQualifiedService qualifiedService,
-            IJobDocumentCoordinator jobDocumentCoordinator)
+            IQualifiedService qualifiedService)
         {
             _logger = logger;
             _qualifiedService = qualifiedService;
-            _jobDocumentCoordinator = jobDocumentCoordinator;
         }
 
         public async Task ExecuteAsync(Dictionary<string, string>? arguments = null)
@@ -36,8 +34,6 @@ namespace Commands
             {
                 throw new ArgumentException("Missing required argument: resumeFilePath", nameof(arguments));
             }
-
-            var offers = await _jobDocumentCoordinator.GenerateJobsDocumentAsync();
             _logger.LogInformation("✅ Qualified resume generated successfully.");
             await _qualifiedService.QualifiedAsync(offersFilePath, resumeFilePath);
             _logger.LogInformation("✅ Qualified resume finished successfully.");

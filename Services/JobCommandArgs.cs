@@ -32,6 +32,6 @@
 
         private static bool IsCommand(string arg) => ValidCommands.Contains(arg);
 
-        private static bool IsArgument(string arg) =>  arg.StartsWith("--") && arg.Contains("=");
+        private static bool IsArgument(string arg) => arg.Contains("=");
     }
 }
