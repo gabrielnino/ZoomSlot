@@ -196,28 +196,26 @@ namespace Services
             var promptBuilder = new AIPromptBuilder
             {
                 Role = "Human Resorces Specialist",
-                Task = $"Qualified the resumee with percengete of fit the following resume for the follwoing job offer:\n",
-                Context = "The resume that needs to qualified for the jobOfer",
-                Format = "JSON format only, no additional commentary",
+                Task = $"Return a single number (0-100) representing the percentage fit between the provided resume and job description",
+                Context = "Evaluate how well the provided resume matches the requirements of the specified job offer",
+                Format = "{  \r\n  \"score\": [0-100] \r\n}",
                 Tone = "professional",
                 Style = "concise"
             };
 
-            // Add specific instructions for each field
-            //promptBuilder.AddConstraint("Company Name should be extracted from the first mention of the company (use names of companies common)");
-            //promptBuilder.AddConstraint("Job Offer Title should be extracted from the 'Job Description' section");
-            //promptBuilder.AddConstraint("For skills, focus on the technical skills mentioned in the Qualifications section");
-            //promptBuilder.AddConstraint("Categorize skills into 'Key Skills Required' (required) and 'Other Technical Skill Qualifications' (nice-to-have)");
-            //promptBuilder.AddConstraint("Description should be 3-5 sentences summarizing the role, responsibilities, and requirements");
-            //promptBuilder.AddConstraint("If salary information exists, include it exactly as written");
-            //promptBuilder.AddConstraint("For missing fields, use 'Not data' as the value");
-
+            promptBuilder.AddConstraint("The score must be an integer between 0 and 100.");
+            promptBuilder.AddConstraint("Round to the nearest whole number for precision.");
+            promptBuilder.AddConstraint("For skills, focus on the technical skills mentioned in the Qualifications section");
+            promptBuilder.AddConstraint("Calculate based on keyword matching between resume and job description.");
+            promptBuilder.AddConstraint("Weight experience duration heavily in the scoring.");
+            promptBuilder.AddConstraint("If salary information exists, include it exactly as written");
+            promptBuilder.AddConstraint("Factor in fulfillment of required qualifications");
+            promptBuilder.AddConstraint("Adjust for relevance of certifications/licenses.");
             var jobOffer = string.Join(Environment.NewLine, RawJobDescription);
-            var qualifiedText = string.Join(Environment.NewLine, RawJobDescription);
-            return new Prompt 
+            return new Prompt
             {
                 SystemContent = promptBuilder.BuildPrompt(),
-                UserContent = qualifiedText
+                UserContent = $"offer description: {jobOffer} resume:{resume}"
             };
         }
 
