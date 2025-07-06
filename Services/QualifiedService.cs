@@ -20,23 +20,37 @@ namespace Services
         }
         public async Task QualifiedAsync(string offersFilePath, string resumeFilePath)
         {
+            _logger.LogInformation("🔍 Loading job offers from: {OffersFile}", offersFilePath);
             var offers = await _jobStorageService.LoadJobsAsync(offersFilePath);
+            _logger.LogInformation("📄 Loading resume from: {ResumeFile}", resumeFilePath);
             var resume = await _jobStorageService.LoadFileAsync(resumeFilePath);
-            foreach (var offer in offers.ToList())
+            var offerList = offers.ToList();
+            _logger.LogInformation("⚙️ Starting qualification process for {Count} job offers.", offerList.Count);
+
+            for (int i = 0; i < offerList.Count; i++)
             {
+                var offer = offerList[i];
+                _logger.LogInformation("🧠 [{Current}/{Total}] Evaluating job: '{Title}' at '{Company}'",
+                    i + 1, offerList.Count, offer.JobOfferTitle, offer.CompanyName);
                 var evaluationPrompt = PrompHelpers.GetQualifiedPrompt(resume, offer.RawJobDescription);
-                _logger.LogDebug("Generated evaluation prompt for job offer: {Prompt}", evaluationPrompt);
+                _logger.LogDebug("📤 Evaluation prompt generated:\n{Prompt}", evaluationPrompt);
                 var score = await _openAIClient.GetChatCompletionAsync(evaluationPrompt);
                 var scoreJson = StringHelpers.ExtractJsonContent(score);
-                _logger.LogDebug("Extracted JSON evaluation result for resume.");
+                _logger.LogDebug("📥 Extracted JSON result:\n{Json}", scoreJson);
                 ResumeMatch? resumeMatch = JsonSerializer.Deserialize<ResumeMatch>(scoreJson, _options);
                 offer.AiFitScore = resumeMatch?.Score ?? 0;
+                _logger.LogInformation("✅ AI Fit Score assigned: {Score}", offer.AiFitScore);
             }
-            var timeStan = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+
+            var timeStamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
             var fileName = Path.GetFileNameWithoutExtension(offersFilePath);
             var basePath = Path.GetDirectoryName(offersFilePath);
-            var offersFilePathFinal = Path.Combine(basePath ?? string.Empty, $"{fileName}_qualified_{timeStan}.json");
-            await _jobStorageService.SaveJobOfferAsync(offersFilePathFinal, offers);
+            var offersFilePathFinal = Path.Combine(basePath ?? string.Empty, $"{fileName}_qualified_{timeStamp}.json");
+
+            _logger.LogInformation("💾 Saving qualified job offers to: {OutputFile}", offersFilePathFinal);
+            await _jobStorageService.SaveJobOfferAsync(offersFilePathFinal, offerList);
+            _logger.LogInformation("🎯 Resume qualification completed successfully. {Count} offers processed.", offerList.Count);
         }
+
     }
 }
