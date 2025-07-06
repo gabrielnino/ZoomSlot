@@ -84,8 +84,10 @@ public class Program
                services.AddTransient<SearchCommand>();
                services.AddTransient<ApplyCommand>();
                services.AddTransient<JobsCommand>();
-               services.AddTransient<ResumeCommand>();
+               services.AddTransient<PromtCommand>();
+               services.AddTransient<QualifiedCommand>();
                services.AddTransient<IJobSearchCoordinator, JobSearchCoordinator>();
+               services.AddTransient<IPromptGenerator, PromptGenerator>();
                services.AddTransient<IDetailProcessing, DetailProcessing>();
                services.AddTransient<ILoginService, LoginService>();
                services.AddTransient<ISecurityCheck, SecurityCheck>();
@@ -104,9 +106,8 @@ public class Program
                services.AddSingleton<IPageTrackingService, PageTrackingService>();
                services.AddSingleton<IDetailProcessing, DetailProcessing>();
                services.AddSingleton<IJobDocumentCoordinator, JobDocumentCoordinator>();
-               services.AddSingleton<IResumeStorageService, JsonResumeStorageService>();
-               services.AddSingleton<IResumeDocumentCoordinator, ResumeDocumentCoordinator>();
-               
+               services.AddSingleton<IQualifiedService, QualifiedService>();
+
 
            });
 }

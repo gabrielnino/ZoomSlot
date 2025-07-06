@@ -5,7 +5,7 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<RunArguments>--prompt</RunArguments>
+		<RunArguments>--qualified offersFilePath="processed_parse_jobs_with_skills.json" resumeFilePath="resume.txt"</RunArguments>
 	</PropertyGroup>
 
 	<ItemGroup>

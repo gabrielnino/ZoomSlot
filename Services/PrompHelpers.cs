@@ -189,6 +189,38 @@ namespace Services
             };
         }
 
+
+        public static Prompt GetQualifiedPrompt(string resume, IEnumerable<string> RawJobDescription)
+        {
+
+            var promptBuilder = new AIPromptBuilder
+            {
+                Role = "Human Resorces Specialist",
+                Task = $"Qualified the resumee with percengete of fit the following resume for the follwoing job offer:\n",
+                Context = "The resume that needs to qualified for the jobOfer",
+                Format = "JSON format only, no additional commentary",
+                Tone = "professional",
+                Style = "concise"
+            };
+
+            // Add specific instructions for each field
+            //promptBuilder.AddConstraint("Company Name should be extracted from the first mention of the company (use names of companies common)");
+            //promptBuilder.AddConstraint("Job Offer Title should be extracted from the 'Job Description' section");
+            //promptBuilder.AddConstraint("For skills, focus on the technical skills mentioned in the Qualifications section");
+            //promptBuilder.AddConstraint("Categorize skills into 'Key Skills Required' (required) and 'Other Technical Skill Qualifications' (nice-to-have)");
+            //promptBuilder.AddConstraint("Description should be 3-5 sentences summarizing the role, responsibilities, and requirements");
+            //promptBuilder.AddConstraint("If salary information exists, include it exactly as written");
+            //promptBuilder.AddConstraint("For missing fields, use 'Not data' as the value");
+
+            var jobOffer = string.Join(Environment.NewLine, RawJobDescription);
+            var qualifiedText = string.Join(Environment.NewLine, RawJobDescription);
+            return new Prompt 
+            {
+                SystemContent = promptBuilder.BuildPrompt(),
+                UserContent = qualifiedText
+            };
+        }
+
         //public static Prompt GetParseJobOfferPrompt(string jobOfferDescription)
         //{
         //    if (string.IsNullOrWhiteSpace(jobOfferDescription))

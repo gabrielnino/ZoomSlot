@@ -83,6 +83,7 @@ public class Program
                services.AddTransient<ApplyCommand>();
                services.AddTransient<JobsCommand>();
                services.AddTransient<PromtCommand>();
+               services.AddTransient<QualifiedCommand>();
                services.AddTransient<IJobSearchCoordinator, JobSearchCoordinator>();
                services.AddTransient<IPromptGenerator, PromptGenerator>();              
                services.AddTransient<IDetailProcessing, DetailProcessing>();
@@ -103,6 +104,8 @@ public class Program
                services.AddSingleton<IPageTrackingService, PageTrackingService>();
                services.AddSingleton<IDetailProcessing, DetailProcessing>();
                services.AddSingleton<IJobDocumentCoordinator, JobDocumentCoordinator>();
+               services.AddSingleton<IQualifiedService, QualifiedService>();
+               
 
 
 

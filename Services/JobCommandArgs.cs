@@ -8,7 +8,8 @@
             "--export",
             "--job",
             "--apply",
-            "--prompt"
+            "--prompt",
+            "--qualified"
         };
 
         public string MainCommand { get; }

@@ -165,6 +165,10 @@ namespace Services
             }
         }
 
-
+        public async Task<string>? LoadFileAsync(string filePath)
+        {
+            var readFile = await File.ReadAllTextAsync(filePath);
+            return readFile;
+        }
     }
 }

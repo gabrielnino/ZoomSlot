@@ -10,6 +10,7 @@ namespace Services.Interfaces
         Task SaveOffersAsync(string offersFilePath, IEnumerable<string> offersPending);
         Task SaveJobOfferDetailAsync(string offersDetailFilePath, IEnumerable<JobOfferDetail> offersDetail);
         Task SaveJobOfferAsync(string offersDetailFilePath, IEnumerable<JobOffer> offers);
+        Task<string>? LoadFileAsync(string filePath);
         string StorageFile { get; }
     }
 }

@@ -35,6 +35,9 @@ namespace Commands
                 case "--prompt":
                     commands.Add(_serviceProvider.GetRequiredService<PromtCommand>());
                     break;
+                case "--qualified":
+                    commands.Add(_serviceProvider.GetRequiredService<QualifiedCommand>());
+                    break;
                 default:
                     commands.Add(_serviceProvider.GetRequiredService<HelpCommand>());
                     break;
