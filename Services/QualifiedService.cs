@@ -24,12 +24,11 @@ namespace Services
             var resume = await _jobStorageService.LoadFileAsync(resumeFilePath);
             foreach (var offer in offers.ToList())
             {
-                var prompt = PrompHelpers.GetQualifiedPrompt(resume, offer.RawJobDescription);
-                _logger.LogDebug("Generated job offer prompt: {Prompt}", prompt);
-                var score = await _openAIClient.GetChatCompletionAsync(prompt);
-
+                var evaluationPrompt = PrompHelpers.GetQualifiedPrompt(resume, offer.RawJobDescription);
+                _logger.LogDebug("Generated evaluation prompt for job offer: {Prompt}", evaluationPrompt);
+                var score = await _openAIClient.GetChatCompletionAsync(evaluationPrompt);
                 var scoreJson = StringHelpers.ExtractJsonContent(score);
-                _logger.LogDebug("Extracted JSON content for resume.");
+                _logger.LogDebug("Extracted JSON evaluation result for resume.");
                 ResumeMatch? resumeMatch = JsonSerializer.Deserialize<ResumeMatch>(scoreJson, _options);
                 offer.AiFitScore = resumeMatch?.Score ?? 0;
             }
