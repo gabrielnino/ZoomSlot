@@ -42,7 +42,7 @@ namespace Commands
                     commands.Add(_serviceProvider.GetRequiredService<QualifiedCommand>());
                     break;
 
-                case JobCommandArgs.skill:
+                case JobCommandArgs.skills:
                     commands.Add(_serviceProvider.GetRequiredService<SkillCommand>());
                     break;
                 default:

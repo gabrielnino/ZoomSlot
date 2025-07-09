@@ -27,7 +27,7 @@ namespace Services
         {
             _logger.LogInformation("🚀 Skill Normalization Process Started");
 
-            string inputPath = DetailOffersFilePath;
+            string inputPath = _appConfig.Paths.InputFile;
             string categoryPath = _appConfig.Paths.CategoryFile;
             string outputPath = _appConfig.Paths.NormalizedOutputFile;
             string summaryPath = _appConfig.Paths.SummaryFile;
