@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpeakUp.AI", "SpeakUp.AI\Sp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ValkyrieHire.Bootstrapper", "ValkyrieHire.Bootstrapper\ValkyrieHire.Bootstrapper.csproj", "{AAC1226E-FE8A-4AC5-B8AC-0753BF54C014}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Normalizer", "Normalizer\Normalizer.csproj", "{66F99989-4817-40E1-9C2F-45DDE5B7CCC3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,10 @@ Global
 		{AAC1226E-FE8A-4AC5-B8AC-0753BF54C014}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AAC1226E-FE8A-4AC5-B8AC-0753BF54C014}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AAC1226E-FE8A-4AC5-B8AC-0753BF54C014}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66F99989-4817-40E1-9C2F-45DDE5B7CCC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66F99989-4817-40E1-9C2F-45DDE5B7CCC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66F99989-4817-40E1-9C2F-45DDE5B7CCC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66F99989-4817-40E1-9C2F-45DDE5B7CCC3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -82,6 +88,7 @@ Global
 		{D6AC81B3-E802-4408-A873-9912A6A340DA} = {7124FB41-22EB-4945-AB8E-36E799825948}
 		{F57222F2-A7EF-41C5-9C98-54F7581C2A65} = {5961CA48-9DEA-4265-A0EA-49D9B6B6225B}
 		{AAC1226E-FE8A-4AC5-B8AC-0753BF54C014} = {5961CA48-9DEA-4265-A0EA-49D9B6B6225B}
+		{66F99989-4817-40E1-9C2F-45DDE5B7CCC3} = {5961CA48-9DEA-4265-A0EA-49D9B6B6225B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {371AAEC5-4865-437E-BCFF-DB3CF8EEF4F0}

@@ -9,7 +9,8 @@
             "--job",
             "--apply",
             "--prompt",
-            "--qualified"
+            "--qualified",
+            "--skill"
         };
 
         public string MainCommand { get; }
