@@ -1,16 +1,27 @@
-﻿namespace Services
+﻿namespace Commands
 {
     public class JobCommandArgs
     {
+        public const string search = "--search";
+        public const string export = "--export";
+        public const string job = "--job";
+        public const string apply = "--apply";
+        public const string prompt = "--prompt";
+        public const string qualified = "--qualified";
+        public const string skill = "--skill";
+        public const string resume = "--resume";
+
+        
         private static readonly HashSet<string> ValidCommands = new(StringComparer.OrdinalIgnoreCase)
         {
-            "--search",
-            "--export",
-            "--job",
-            "--apply",
-            "--prompt",
-            "--qualified",
-            "--skill"
+            search,
+            export,
+            job,
+            apply,
+            prompt,
+            qualified,
+            skill,
+            resume
         };
 
         public string MainCommand { get; }

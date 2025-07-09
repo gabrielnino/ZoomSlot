@@ -20,26 +20,26 @@ namespace Commands
 
             switch (_jobCommandArgs.MainCommand.ToLowerInvariant())
             {
-                case "--search":
+                case JobCommandArgs.search:
                     commands.Add(_serviceProvider.GetRequiredService<SearchCommand>());
                     break;
-                case "--apply":
+                case JobCommandArgs.apply:
                     commands.Add(_serviceProvider.GetRequiredService<ApplyCommand>());
                     break;
-                case "--job":
+                case JobCommandArgs.job:
                     commands.Add(_serviceProvider.GetRequiredService<JobsCommand>());
                     break;
-                case "--resume":
+                case JobCommandArgs.resume:
                     commands.Add(_serviceProvider.GetRequiredService<ResumeCommand>());
                     break;
-                case "--prompt":
+                case JobCommandArgs.prompt:
                     commands.Add(_serviceProvider.GetRequiredService<PromtCommand>());
                     break;
-                case "--qualified":
+                case JobCommandArgs.qualified:
                     commands.Add(_serviceProvider.GetRequiredService<QualifiedCommand>());
                     break;
 
-                case "--skill":
+                case JobCommandArgs.skill:
                     commands.Add(_serviceProvider.GetRequiredService<SkillCommand>());
                     break;
                 default:
