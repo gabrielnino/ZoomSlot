@@ -35,6 +35,7 @@ namespace Services
         public static string NormalizeSkill(string skill)
         {
             return skill.ToLowerInvariant()
+                .Replace("vb.net", "vbnet") // 👈 AÑADE ESTO
                 .Replace(".net", "dotnet")
                 .Replace("c#", "csharp")
                 .Replace("&", " and ")
