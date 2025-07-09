@@ -1,40 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Configuration;
+using Microsoft.Extensions.Logging;
+using Services.Interfaces;
 
 namespace Services
 {
-    using System.Configuration;
-    using Configuration;
-    using Microsoft.Extensions.Logging;
-    using Services.Interfaces;
-
-    public class SkillNormalizerService : ISkillNormalizerService
+    public class SkillNormalizerService(
+        ISkillExtractor extractor,
+        ISkillGrouper grouper,
+        ICategoryResolver resolver,
+        IResultWriter writer,
+        AppConfig appConfig,
+        ILogger<SkillNormalizerService> logger) : ISkillNormalizerService
     {
-        private readonly ISkillExtractor _extractor;
-        private readonly ISkillGrouper _grouper;
-        private readonly ICategoryResolver _resolver;
-        private readonly IResultWriter _writer;
-        private readonly AppConfig _appConfig;
-        private readonly ILogger<SkillNormalizerService> _logger;
-
-        public SkillNormalizerService(
-            ISkillExtractor extractor,
-            ISkillGrouper grouper,
-            ICategoryResolver resolver,
-            IResultWriter writer,
-            AppConfig appConfig,
-            ILogger<SkillNormalizerService> logger)
-        {
-            _extractor = extractor;
-            _grouper = grouper;
-            _resolver = resolver;
-            _writer = writer;
-            _appConfig = appConfig;
-            _logger = logger;
-        }
+        private readonly ISkillExtractor _extractor = extractor;
+        private readonly ISkillGrouper _grouper = grouper;
+        private readonly ICategoryResolver _resolver = resolver;
+        private readonly IResultWriter _writer = writer;
+        private readonly AppConfig _appConfig = appConfig;
+        private readonly ILogger<SkillNormalizerService> _logger = logger;
 
         public async Task RunAsync()
         {

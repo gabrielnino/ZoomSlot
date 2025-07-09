@@ -100,9 +100,7 @@
                 return string.Empty;
 
             var normalizedText = text.Normalize(NormalizationForm.FormD);
-            return new string(normalizedText
-                .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
-                .ToArray());
+            return new string([.. normalizedText.Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)]);
         }
 
         private static string Normalize(string textToNormalize, HashSet<string> recognizedTerms, Dictionary<string, string>? replacementTerms = null, HashSet<string>? excludeWords = null)
@@ -123,7 +121,7 @@
             .ToList();
 
             var normalizedText = string.Join("-", words);
-            return normalizedText.Length > 50 ? normalizedText.Substring(0, 50) : normalizedText;
+            return normalizedText.Length > 50 ? normalizedText[..50] : normalizedText;
         }
 
         private static string ApplyTermReplacements(string textToNormalize, Dictionary<string, string>? replacementTerms)

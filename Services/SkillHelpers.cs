@@ -20,15 +20,16 @@ namespace Services
             skill = Regex.Replace(skill, @"^proficiency in\s*", "");
             return skill.Trim('.', ',', ';', ':', ' ');
         }
+        private static readonly string[] sourceArray = [
+            "years of experience", "experience with",
+            "knowledge of", "understanding of"
+        ];
 
         public static bool ShouldDiscard(string skill)
         {
             if (skill.Length < 2 || skill.Split().Length > 6) return true;
             if (Regex.IsMatch(skill, @"\d+\+?\s*years?")) return true;
-            return new[] {
-            "years of experience", "experience with",
-            "knowledge of", "understanding of"
-        }.Any(p => skill.Contains(p));
+            return sourceArray.Any(p => skill.Contains(p));
         }
 
         public static string NormalizeSkill(string skill)

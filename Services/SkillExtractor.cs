@@ -49,7 +49,7 @@ namespace Services
             }
 
             _logger.LogInformation("✅ Extracted {SkillCount} unique skills", skills.Count);
-            return skills.ToList();
+            return [.. skills];
         }
     }
 

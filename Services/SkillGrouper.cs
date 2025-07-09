@@ -32,7 +32,7 @@ namespace Services
                 if (match != null)
                     groups[match].Add(skill);
                 else
-                    groups[skill] = new List<string> { skill };
+                    groups[skill] = [skill];
             }
 
             _logger.LogInformation("📦 Grouped {GroupCount} skills into clusters", groups.Count);
