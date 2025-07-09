@@ -86,6 +86,7 @@ public class Program
                services.AddTransient<JobsCommand>();
                services.AddTransient<PromtCommand>();
                services.AddTransient<QualifiedCommand>();
+               services.AddTransient<SkillCommand>();
                services.AddTransient<IJobSearchCoordinator, JobSearchCoordinator>();
                services.AddTransient<IPromptGenerator, PromptGenerator>();
                services.AddTransient<IDetailProcessing, DetailProcessing>();
@@ -107,7 +108,12 @@ public class Program
                services.AddSingleton<IDetailProcessing, DetailProcessing>();
                services.AddSingleton<IJobDocumentCoordinator, JobDocumentCoordinator>();
                services.AddSingleton<IQualifiedService, QualifiedService>();
-
+               services.AddSingleton<IFileService, FileService>();
+               services.AddSingleton<ISkillExtractor, SkillExtractor>();
+               services.AddSingleton<ISkillGrouper, SkillGrouper>();
+               services.AddSingleton<ICategoryResolver, CategoryResolver>();
+               services.AddSingleton<IResultWriter, ResultWriter>();
+               services.AddSingleton<ISkillNormalizerService, SkillNormalizerService>();
 
            });
 }

@@ -7,5 +7,8 @@
         public Logging Logging { get; set; }
 
         public LlmProvider Llm { get; set; }
+
+        public PathsConfig Paths { get; set; }
+        public ThresholdConfig Thresholds { get; set; }
     }
 }

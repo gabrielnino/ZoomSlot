@@ -38,6 +38,10 @@ namespace Commands
                 case "--qualified":
                     commands.Add(_serviceProvider.GetRequiredService<QualifiedCommand>());
                     break;
+
+                case "--skill":
+                    commands.Add(_serviceProvider.GetRequiredService<SkillCommand>());
+                    break;
                 default:
                     commands.Add(_serviceProvider.GetRequiredService<HelpCommand>());
                     break;
