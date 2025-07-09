@@ -10,7 +10,8 @@ namespace Services
         ICategoryResolver resolver,
         IResultWriter writer,
         AppConfig appConfig,
-        ILogger<SkillNormalizerService> logger) : ISkillNormalizerService
+        ILogger<SkillNormalizerService> logger,
+        ExecutionOptions executionOptions) : ISkillNormalizerService
     {
         private readonly ISkillExtractor _extractor = extractor;
         private readonly ISkillGrouper _grouper = grouper;
@@ -18,12 +19,15 @@ namespace Services
         private readonly IResultWriter _writer = writer;
         private readonly AppConfig _appConfig = appConfig;
         private readonly ILogger<SkillNormalizerService> _logger = logger;
+        private readonly ExecutionOptions _executionOptions = executionOptions;
+
+        private string DetailOffersFilePath => Path.Combine(_executionOptions.ExecutionFolder, _appConfig.FilePaths.DetailOutputFilePath);
 
         public async Task RunAsync()
         {
             _logger.LogInformation("🚀 Skill Normalization Process Started");
 
-            string inputPath = _appConfig.Paths.InputFile;
+            string inputPath = DetailOffersFilePath;
             string categoryPath = _appConfig.Paths.CategoryFile;
             string outputPath = _appConfig.Paths.NormalizedOutputFile;
             string summaryPath = _appConfig.Paths.SummaryFile;

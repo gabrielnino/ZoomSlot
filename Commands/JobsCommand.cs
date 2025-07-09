@@ -22,10 +22,9 @@ namespace Commands
 
         public async Task ExecuteAsync(Dictionary<string, string>? arguments = null)
         {
+            _logger.LogInformation("✅ Job parse started successfully.");
             var offers = await _jobDocumentCoordinator.GenerateJobsDocumentAsync();
-            _logger.LogInformation("✅ Application document generated successfully.");
-            await _storageService.SaveJobOfferAsync(_storageService.StorageFile, offers);
-            _logger.LogInformation("✅ Application document finished successfully.");
+            _logger.LogInformation("✅ Job parse finished successfully.");
         }
 
     }

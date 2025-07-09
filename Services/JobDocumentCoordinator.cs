@@ -15,9 +15,10 @@ namespace Services
         private readonly ExecutionOptions _executionOptions;
         private readonly IDirectoryCheck _directoryCheck;
         private readonly ILogger<JobDocumentCoordinator> _logger;
+        private readonly AppConfig _appConfig;
         private const string FolderName = "Document";
         private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
-
+        private string DetailOffersFilePath => Path.Combine(_executionOptions.ExecutionFolder, _appConfig.FilePaths.DetailOutputFilePath);
         public JobDocumentCoordinator(
             IJobStorageService jobStorageService,
             IDocumentParse documentParse,
@@ -25,7 +26,8 @@ namespace Services
             IDocumentPDF documentPDF,
             IDirectoryCheck directoryCheck,
             ExecutionOptions executionOptions,
-            ILogger<JobDocumentCoordinator> logger)
+            ILogger<JobDocumentCoordinator> logger,
+            AppConfig appConfig)
         {
             _jobStorageService = jobStorageService;
             _documentParse = documentParse;
@@ -34,7 +36,7 @@ namespace Services
             _directoryCheck = directoryCheck;
             _executionOptions = executionOptions;
             _logger = logger;
-
+            _appConfig = appConfig;
             _directoryCheck.EnsureDirectoryExists(FolderPath);
             _logger.LogInformation("📁 Document directory ensured at: {FolderPath}", FolderPath);
         }
@@ -54,9 +56,9 @@ namespace Services
         public async Task<IEnumerable<JobOffer>> GenerateJobsDocumentAsync()
         {
             _logger.LogInformation("🚀 Starting document generation process...");
-            string sourceFilePath = Path.Combine(_executionOptions.ExecutionFolder, _jobStorageService.StorageFile);
+            string sourceFilePath = Path.Combine(_executionOptions.ExecutionFolder, DetailOffersFilePath);
             string pendingJobsFilePath = Path.Combine(_executionOptions.ExecutionFolder, "pending_parse_jobs.json");
-            string processedJobsFilePath = Path.Combine(_executionOptions.ExecutionFolder, "processed_parse_jobs.json");
+            string processedJobsFilePath = Path.Combine(_executionOptions.ExecutionFolder, _appConfig.Paths.InputFile);
             try
             {
                 var pendingJobs = File.Exists(pendingJobsFilePath) ? await _jobStorageService.LoadJobsDetailAsync(pendingJobsFilePath): [];
@@ -92,8 +94,6 @@ namespace Services
 
                 // Cleanup
                 if (File.Exists(pendingJobsFilePath)) File.Delete(pendingJobsFilePath);
-                if (File.Exists(processedJobsFilePath)) File.Delete(processedJobsFilePath);
-
                 _logger.LogInformation("🎉 Successfully generated {Count} job offer documents", results.Count);
                 return results;
             }
