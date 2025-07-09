@@ -49,7 +49,6 @@ namespace ValkyrieHire.Bootstrapper
                     services.AddTransient<PromtCommand>();
                     services.AddTransient<QualifiedCommand>();
                     services.AddTransient<SkillCommand>();
-
                     services.AddTransient<IJobSearchCoordinator, JobSearchCoordinator>();
                     services.AddTransient<IPromptGenerator, PromptGenerator>();
                     services.AddTransient<IDetailProcessing, DetailProcessing>();

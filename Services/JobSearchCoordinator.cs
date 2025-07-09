@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Configuration;
+using Microsoft.Extensions.Logging;
 using Models;
 using OpenQA.Selenium;
 using Services.Interfaces;
@@ -19,7 +20,8 @@ namespace Services
         private readonly IDirectoryCheck _directoryCheck;
         private readonly IJobStorageService _jobStorageService;
         private readonly ISecurityCheck _securityCheck;
-        private string OffersFilePath => Path.Combine(_executionOptions.ExecutionFolder, "offers.json");
+        private readonly AppConfig _config;
+        private string OffersFilePath => Path.Combine(_executionOptions.ExecutionFolder, _config.FilePaths.SearchOutputFilePath);
 
         public JobSearchCoordinator(
             IWebDriverFactory driverFactory,
@@ -31,7 +33,8 @@ namespace Services
             IPageProcessor processService,
             IDirectoryCheck directoryCheck,
             IJobStorageService jobStorageService,
-            ISecurityCheck securityCheck)
+            ISecurityCheck securityCheck,
+            AppConfig config)
         {
             _driver = driverFactory.Create();
             _logger = logger;
@@ -44,6 +47,7 @@ namespace Services
             _processService = processService;
             _jobStorageService = jobStorageService;
             _securityCheck = securityCheck;
+            _config = config;
         }
 
         public async Task<List<string>> SearchJobsAsync()

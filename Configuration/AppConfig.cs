@@ -1,4 +1,6 @@
-﻿namespace Configuration
+﻿using Configuration.Configuration;
+
+namespace Configuration
 {
     public class AppConfig
     {
@@ -10,5 +12,8 @@
 
         public PathsConfig Paths { get; set; }
         public ThresholdConfig Thresholds { get; set; }
+
+        public FilePathsConfig FilePaths { get; set; }
+
     }
 }

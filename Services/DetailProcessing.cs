@@ -73,17 +73,16 @@ namespace Services
                 var random = new Random();
                 for (int i = 0; i < totalOffers; i += batchSize)
                 {
-                    using (_driver = _driverFactory.Create())
-                    {
-                        _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(120));
-                        var batch = offerList.Skip(i).Take(batchSize);
-                        _logger.LogInformation($"🌐 ID:{_executionOptions.TimeStamp} Navigating and extracting details from current batch...");
-                        await Process(offers, searchText);
-                        var delay = delays[random.Next(delays.Length)];
-                        _logger.LogInformation($"⏳ ID:{_executionOptions.TimeStamp} Waiting for {delay}ms before next batch...");
-                        await Task.Delay(TimeSpan.FromSeconds(delay));
-                    }
+                    _driver = _driverFactory.Create();
+                    _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(120));
+                    var batch = offerList.Skip(i).Take(batchSize);
+                    _logger.LogInformation($"🌐 ID:{_executionOptions.TimeStamp} Navigating and extracting details from current batch...");
+                    await Process(offers, searchText);
+                    var delay = delays[random.Next(delays.Length)];
+                    _logger.LogInformation($"⏳ ID:{_executionOptions.TimeStamp} Waiting for {delay}ms before next batch...");
+                    await Task.Delay(TimeSpan.FromSeconds(delay));
                 }
+                _driver.Dispose();
                 _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Completed processing of all job offers. Total offers processed: {_offersDetail.Count}");
             }
             catch (Exception ex)

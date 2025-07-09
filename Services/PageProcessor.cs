@@ -227,7 +227,7 @@ namespace Services
             {
                 currentPosition += 10;
                 jsExecutor.ExecuteScript("arguments[0].scrollTop = arguments[1];", scrollable, currentPosition);
-                Thread.Sleep(50);
+                Thread.Sleep(20);
             }
 
             _logger.LogDebug($"🖱️ ID:{_executionOptions.TimeStamp} Scrolling completed.");

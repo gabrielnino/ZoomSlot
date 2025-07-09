@@ -5,17 +5,33 @@ using Services.Interfaces;
 
 namespace Commands
 {
-    public class SearchCommand(
-        IJobSearchCoordinator linkedInService,
-        ILogger<SearchCommand> logger) : ICommand
+    public class DetailCommand : ICommand
     {
-        private readonly IJobSearchCoordinator _linkedInService = linkedInService;
-        private readonly ILogger<SearchCommand> _logger = logger;
-
+        private readonly IDetailProcessing _detailProcessing;
+        private readonly ILogger<DetailCommand> _logger;
+        private readonly IJobStorageService _storageService;
+        private readonly AppConfig _config;
+        private readonly ExecutionOptions _executionOptions;
+        private string OffersFilePath => Path.Combine(_executionOptions.ExecutionFolder, _config.FilePaths.SearchOutputFilePath);
+        public DetailCommand(
+            ILogger<DetailCommand> logger,
+            IJobStorageService storageService,
+            IDetailProcessing detailProcessing,
+            ExecutionOptions executionOptions,
+            AppConfig config)
+        {
+            _logger = logger;
+            _storageService = storageService;
+            _detailProcessing = detailProcessing;
+            _config = config;
+            _executionOptions = executionOptions;
+        }
         public async Task ExecuteAsync(Dictionary<string, string>? arguments = null)
         {
-            _logger.LogInformation("Starting job search...");
-            await _linkedInService.SearchJobsAsync();
+            _logger.LogInformation("Starting job detailed...");
+            var job = await _storageService.LoadFileAsync(OffersFilePath);
+            var jobDetails = await _detailProcessing.ProcessOffersAsync(job.Split(Environment.NewLine), _config.JobSearch.SearchText);
+            await _storageService.SaveJobOfferDetailAsync(_storageService.StorageFile, jobDetails);
         }
         public void RenameFolder(string source, string destination)
         {
