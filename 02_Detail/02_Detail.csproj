@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>_02_Detail</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	  <RunArguments>--detail</RunArguments>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ValkyrieHire.Bootstrapper\ValkyrieHire.Bootstrapper.csproj" />
+  </ItemGroup>
+
+</Project>

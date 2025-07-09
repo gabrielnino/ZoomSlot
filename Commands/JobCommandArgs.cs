@@ -3,6 +3,7 @@
     public class JobCommandArgs
     {
         public const string search = "--search";
+        public const string detail = "--detail";
         public const string export = "--export";
         public const string job = "--job";
         public const string apply = "--apply";
@@ -15,6 +16,7 @@
         private static readonly HashSet<string> ValidCommands = new(StringComparer.OrdinalIgnoreCase)
         {
             search,
+            detail,
             export,
             job,
             apply,

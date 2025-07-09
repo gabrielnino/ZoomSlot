@@ -10,12 +10,11 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
-        var executionOptions = new ExecutionOptions();
-        Directory.CreateDirectory(executionOptions.ExecutionFolder);
+
 
         try
         {
-            using var host = AppHostBuilder.Create(args, executionOptions).Build();
+            using var host = AppHostBuilder.Create(args).Build();
             var commandFactory = host.Services.GetRequiredService<CommandFactory>();
             var commands = commandFactory.CreateCommand().ToList();
             var jobArgs = host.Services.GetRequiredService<JobCommandArgs>();

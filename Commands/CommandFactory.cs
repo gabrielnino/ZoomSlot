@@ -23,6 +23,9 @@ namespace Commands
                 case JobCommandArgs.search:
                     commands.Add(_serviceProvider.GetRequiredService<SearchCommand>());
                     break;
+                case JobCommandArgs.detail:
+                    commands.Add(_serviceProvider.GetRequiredService<DetailCommand>());
+                    break;
                 case JobCommandArgs.apply:
                     commands.Add(_serviceProvider.GetRequiredService<ApplyCommand>());
                     break;

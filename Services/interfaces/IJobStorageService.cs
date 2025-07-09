@@ -11,6 +11,7 @@ namespace Services.Interfaces
         Task SaveJobOfferDetailAsync(string offersDetailFilePath, IEnumerable<JobOfferDetail> offersDetail);
         Task SaveJobOfferAsync(string offersDetailFilePath, IEnumerable<JobOffer> offers);
         Task<string>? LoadFileAsync(string filePath);
+        Task<IEnumerable<string>> LoadJobsUrlAsync(string offersFilePath);
         string StorageFile { get; }
     }
 }

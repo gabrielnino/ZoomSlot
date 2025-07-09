@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Models;
 using Newtonsoft.Json;
 using Services.Interfaces;
+using Configuration;
 
 namespace Services
 {
@@ -118,6 +119,33 @@ namespace Services
                     return Enumerable.Empty<JobOffer>();
                 }
                 var jobs = JsonConvert.DeserializeObject<List<JobOffer>>(json) ?? new List<JobOffer>();
+                _logger.LogInformation("✅ Loaded {JobCount} job details from '{FilePath}'", jobs.Count, offersFilePath);
+                return jobs;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Failed to load job details");
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<string>> LoadJobsUrlAsync(string offersFilePath)
+        {
+            try
+            {
+
+                if (offersFilePath == null || !File.Exists(offersFilePath))
+                {
+                    _logger.LogWarning("⚠️ Job data file not found in '{LastFolder}'", offersFilePath);
+                    return Enumerable.Empty<string>();
+                }
+                var json = await File.ReadAllTextAsync(offersFilePath);
+                if (string.IsNullOrWhiteSpace(json))
+                {
+                    _logger.LogWarning("⚠️ Job data file '{FilePath}' is empty", offersFilePath);
+                    return Enumerable.Empty<string>();
+                }
+                var jobs = JsonConvert.DeserializeObject<List<string>>(json) ?? new List<string>();
                 _logger.LogInformation("✅ Loaded {JobCount} job details from '{FilePath}'", jobs.Count, offersFilePath);
                 return jobs;
             }

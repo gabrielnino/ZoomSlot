@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
-using Models;
+﻿using Configuration;
+using Microsoft.Extensions.Logging;
 using Services.Interfaces;
 
 namespace Services

@@ -12,6 +12,7 @@
     using Moq;
     using OpenQA.Selenium;
     using OpenQA.Selenium.Chrome;
+    using Configuration;
 
     namespace Tests.Services
     {
@@ -83,7 +84,7 @@
                 mockCapture.Setup(c => c.CaptureArtifactsAsync(It.IsAny<string>(), It.IsAny<string>()))
                            .ReturnsAsync("dummyTimestamp");
                 mockSecurity.Setup(s => s.IsSecurityCheck()).Returns(false);
-                var executionOptions = new ExecutionOptions();
+                var executionOptions = new ExecutionOptions("outPath");
                 var detailProcessing = new DetailProcessing(
                     mockFactory.Object,
                     mockLogger.Object,

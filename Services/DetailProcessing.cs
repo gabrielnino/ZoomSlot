@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.Json;
+using Configuration;
 using Microsoft.Extensions.Logging;
 using Models;
 using OpenQA.Selenium;
@@ -68,21 +69,9 @@ namespace Services
                     _logger.LogWarning("ID:{TimeStamp} - No offers provided to process.", _executionOptions.TimeStamp);
                     return [];
                 }
-                const int batchSize = 20;
                 var delays = new[] { 30, 50, 70, 100, 200 };
                 var random = new Random();
-                for (int i = 0; i < totalOffers; i += batchSize)
-                {
-                    _driver = _driverFactory.Create();
-                    _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(120));
-                    var batch = offerList.Skip(i).Take(batchSize);
-                    _logger.LogInformation($"🌐 ID:{_executionOptions.TimeStamp} Navigating and extracting details from current batch...");
-                    await Process(offers, searchText);
-                    var delay = delays[random.Next(delays.Length)];
-                    _logger.LogInformation($"⏳ ID:{_executionOptions.TimeStamp} Waiting for {delay}ms before next batch...");
-                    await Task.Delay(TimeSpan.FromSeconds(delay));
-                }
-                _driver.Dispose();
+                await Process(offerList, searchText);
                 _logger.LogInformation($"✅ ID:{_executionOptions.TimeStamp} Completed processing of all job offers. Total offers processed: {_offersDetail.Count}");
             }
             catch (Exception ex)
@@ -96,13 +85,16 @@ namespace Services
         private async Task Process(IEnumerable<string> offers, string searchText)
         {
             _logger.LogInformation($"🔐 ID:{_executionOptions.TimeStamp} Logging into LinkedIn...");
+            _driver = _driverFactory.Create();
+            _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(120));
             await _loginService.LoginAsync();
             if (_securityCheck.IsSecurityCheck())
             {
                 _logger.LogWarning($"🛡️ ID:{_executionOptions.TimeStamp} Security check detected. Attempting to solve puzzle...");
                 await _securityCheck.TryStartPuzzle();
             }
-            foreach (var offer in offers.ToList())
+            _offersPending = offers.ToList();
+            foreach (var offer in offers)
             {
                 try
                 {

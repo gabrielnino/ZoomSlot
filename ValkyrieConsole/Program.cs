@@ -1,13 +1,8 @@
-﻿using System;
-using Commands;
-using Configuration;
-using Microsoft.Extensions.Configuration;
+﻿using Commands;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Models;
 using Serilog;
 using Services;
-using Services.Interfaces;
 using ValkyrieHire.Bootstrapper;
 
 
@@ -15,12 +10,11 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
-        var executionOptions = new ExecutionOptions();
-        Directory.CreateDirectory(executionOptions.ExecutionFolder);
+
 
         try
         {
-            using var host = AppHostBuilder.Create(args, executionOptions).Build();
+            using var host = AppHostBuilder.Create(args).Build();
             var commandFactory = host.Services.GetRequiredService<CommandFactory>();
             var commands = commandFactory.CreateCommand().ToList();
             var jobArgs = host.Services.GetRequiredService<JobCommandArgs>();
@@ -54,4 +48,3 @@ public class Program
         }
     }
 }
-

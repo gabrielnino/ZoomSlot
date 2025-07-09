@@ -1,14 +1,16 @@
-﻿namespace Models
+﻿namespace Configuration
 {
     public class ExecutionOptions
     {
-        public ExecutionOptions()
+        private readonly string _outPath;
+        public ExecutionOptions(string outPath)
         {
+            _outPath = outPath;
             TimeStamp = ActiveTimeStamp ?? DateTime.Now.ToString("yyyyMMdd_HHmmss");
         }
 
-        public string ExecutionFolder => Path.Combine(Directory.GetCurrentDirectory(), $"{FolderName}_{TimeStamp}");
-        public string CompletedFolder => Path.Combine(Directory.GetCurrentDirectory(), $"{CompletedFolderName}_{TimeStamp}");
+        public string ExecutionFolder => Path.Combine(_outPath, $"{FolderName}_{TimeStamp}");
+        public string CompletedFolder => Path.Combine(_outPath, $"{CompletedFolderName}_{TimeStamp}");
         public static string FolderName => "Execution";
         public static string CompletedFolderName => "Completed";
         public string TimeStamp { get; }
@@ -16,7 +18,7 @@
         {
             get
             {
-                var current = Directory.GetCurrentDirectory();
+                var current = _outPath;
                 var pattern = $"{FolderName}_*";
                 var directories = Directory.GetDirectories(current, $"{FolderName}_*");
 

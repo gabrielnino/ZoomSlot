@@ -13,6 +13,7 @@ namespace Commands
         private readonly AppConfig _config;
         private readonly ExecutionOptions _executionOptions;
         private string OffersFilePath => Path.Combine(_executionOptions.ExecutionFolder, _config.FilePaths.SearchOutputFilePath);
+        private string DetailOffersFilePath => Path.Combine(_executionOptions.ExecutionFolder, _config.FilePaths.DetailOutputFilePath);
         public DetailCommand(
             ILogger<DetailCommand> logger,
             IJobStorageService storageService,
@@ -29,9 +30,9 @@ namespace Commands
         public async Task ExecuteAsync(Dictionary<string, string>? arguments = null)
         {
             _logger.LogInformation("Starting job detailed...");
-            var job = await _storageService.LoadFileAsync(OffersFilePath);
-            var jobDetails = await _detailProcessing.ProcessOffersAsync(job.Split(Environment.NewLine), _config.JobSearch.SearchText);
-            await _storageService.SaveJobOfferDetailAsync(_storageService.StorageFile, jobDetails);
+            var job = await _storageService.LoadJobsUrlAsync(OffersFilePath);
+            var jobDetails = await _detailProcessing.ProcessOffersAsync(job, _config.JobSearch.SearchText);
+            await _storageService.SaveJobOfferDetailAsync(DetailOffersFilePath, jobDetails);
         }
         public void RenameFolder(string source, string destination)
         {
