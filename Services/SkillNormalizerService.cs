@@ -19,9 +19,6 @@ namespace Services
         private readonly IResultWriter _writer = writer;
         private readonly AppConfig _appConfig = appConfig;
         private readonly ILogger<SkillNormalizerService> _logger = logger;
-        private readonly ExecutionOptions _executionOptions = executionOptions;
-
-        private string DetailOffersFilePath => Path.Combine(_executionOptions.ExecutionFolder, _appConfig.FilePaths.DetailOutputFilePath);
 
         public async Task RunAsync()
         {

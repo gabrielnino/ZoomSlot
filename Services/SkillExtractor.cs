@@ -1,23 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Services
+﻿namespace Services
 {
     using System.Text.Json.Nodes;
     using Microsoft.Extensions.Logging;
     using Services.Interfaces;
 
-    public class SkillExtractor : ISkillExtractor
+    public class SkillExtractor(ILogger<SkillExtractor> logger) : ISkillExtractor
     {
-        private readonly ILogger<SkillExtractor> _logger;
-
-        public SkillExtractor(ILogger<SkillExtractor> logger)
-        {
-            _logger = logger;
-        }
+        private readonly ILogger<SkillExtractor> _logger = logger;
 
         public async Task<List<string>> ExtractSkillsAsync(string inputFilePath)
         {
@@ -30,10 +19,12 @@ namespace Services
             foreach (var job in root ?? [])
             {
                 foreach (var key in new[]
-                         {
-                         "KeySkillsRequired", "EssentialQualifications",
-                         "EssentialTechnicalSkillQualifications", "OtherTechnicalSkillQualifications"
-                     })
+                {
+                    "KeySkillsRequired",
+                    "EssentialQualifications",
+                    "EssentialTechnicalSkillQualifications",
+                    "OtherTechnicalSkillQualifications"
+                })
                 {
                     foreach (var skill in job?[key]?.AsArray() ?? [])
                     {

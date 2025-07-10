@@ -77,7 +77,7 @@ namespace Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"❌ ID:{_executionOptions.TimeStamp} Unexpected error occurred while processing offer: {offers}");
-                await _capture.CaptureArtifactsAsync(_executionOptions.ExecutionFolder, "GeneralError");
+                await _capture.CaptureArtifactsAsync(FolderPath, "GeneralError");
             }
             return _offersDetail;
         }
@@ -153,7 +153,7 @@ namespace Services
                         var el = driver.FindElements(By.XPath(xPathJobs)).FirstOrDefault();
                         return el != null && el.Displayed;
                     });
-                    await _capture.CaptureArtifactsAsync(_executionOptions.ExecutionFolder, "Detailed Job offer");
+                    await _capture.CaptureArtifactsAsync(FolderPath, "Detailed Job offer");
                     if (_securityCheck.IsSecurityCheck())
                     {
                         _logger.LogWarning($"🛡️ ID:{_executionOptions.TimeStamp} Security check triggered again. Retrying puzzle...");
@@ -174,12 +174,12 @@ namespace Services
                 catch (WebDriverException ex)
                 {
                     _logger.LogError(ex, $"❌ ID:{_executionOptions.TimeStamp} WebDriver error occurred while processing offer: {offer}");
-                    await _capture.CaptureArtifactsAsync(_executionOptions.ExecutionFolder, "WebDriverError");
+                    await _capture.CaptureArtifactsAsync(FolderPath, "WebDriverError");
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, $"❌ ID:{_executionOptions.TimeStamp} Unexpected error occurred while processing offer: {offer}");
-                    await _capture.CaptureArtifactsAsync(_executionOptions.ExecutionFolder, "GeneralError");
+                    await _capture.CaptureArtifactsAsync(FolderPath, "GeneralError");
                 }
             }
             _logger.LogInformation($"📦 ID:{_executionOptions.TimeStamp} Finished processing. Total offers processed: {_offersDetail.Count}, remaining: {_offersPending.Count}");
