@@ -80,6 +80,73 @@ namespace Services
             }
             return result;
         }
+
+        public static Dictionary<string, List<string>> ConsolidateGroups(
+            Dictionary<string, List<string>> groups, 
+            Func<string, string> categoryResolver, 
+            int minGroupSize = 3)
+        {
+            var consolidated = new Dictionary<string, List<string>>();
+
+            foreach (var group in groups)
+            {
+                var skills = group.Value;
+                var category = categoryResolver(group.Key);
+
+                if (skills.Count < minGroupSize)
+                {
+                    if (consolidated.ContainsKey(category))
+                    {
+                        consolidated[category].AddRange(skills);
+                    }
+                    else
+                    {
+                        consolidated[category] = new List<string>(skills);
+                    }
+                }
+                else
+                {
+                    consolidated[group.Key] = skills;
+                }
+            }
+
+            return consolidated;
+        }
+
+        public static Dictionary<string, List<string>> ReclassifyGroups(
+            Dictionary<string, List<string>> groups, 
+            Func<string, string> categoryResolver)
+        {
+            var finalGroups = new Dictionary<string, List<string>>();
+
+            foreach (var group in groups)
+            {
+                var category = group.Key;
+                var skills = group.Value;
+
+                foreach (var skill in skills)
+                {
+                    if (ShouldDiscard(skill)) continue;
+
+                    var newCategory = categoryResolver(skill);
+
+                    if (finalGroups.TryGetValue(newCategory, out List<string>? value))
+                    {
+                        value.Add(skill);
+                    }
+                    else
+                    {
+                        finalGroups[newCategory] = new List<string> { skill };
+                    }
+                }
+            }
+
+            // Remove duplicates and sort
+            return finalGroups.ToDictionary(
+                g => g.Key,
+                g => g.Value.Distinct().OrderBy(s => s).ToList()
+            );
+        }
     }
 
 }

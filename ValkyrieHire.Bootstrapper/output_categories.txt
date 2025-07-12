@@ -1,4 +1,4 @@
-[GENERAL_TECH] - 192 skills
+[GENERAL_TECH] - 176 skills
   - ability to create and train datasets
   - ability to multi task
   - ability to stand for extended periods
@@ -16,19 +16,16 @@
   - asp dotnet
   - aspdotnet
   - aspdotnet core
-  - aspdotnet mvc
   - authentication
   - autocad revit
   - aws cloud
   - aws cloud services
   - back end development
-  - back end development with some front end experience
   - being a part of your community
   - bicep arm templates
   - c al language
   - c c++
   - c++
-  - c++ development skills, including c++ multi threading
   - c++ or csharp
   - cassandra cql nosql or sql databases
   - ci cd
@@ -63,7 +60,6 @@
   - d365 f and o applications
   - dataverse
   - deep experience in dotnet environments
-  - deep expertise in domain driven software development
   - designing ci cd pipelines and build
   - developed high quality, testable software
   - diagnostic radiographic fluoroscopic procedures
@@ -80,7 +76,6 @@
   - experience in ci cd
   - experience in content creation pipelines
   - experience in e commerce
-  - experience in fast paced, test driven, collaborative environments
   - experience in institutional investment firm
   - experience in investment management
   - experience in modern dotnet technologies
@@ -90,7 +85,6 @@
   - experience working in microsoft 365
   - experience working with large scale systems
   - extensive experience in on prem c++
-  - familiarity of modern cpu gpu hardware architectures
   - familiarity with ci cd pipeline
   - familiarity with cloud security compliance standards
   - familiarity with the microsoft dotnet platform
@@ -137,7 +131,6 @@
   - oauth2 openid connect
   - object oriented design
   - object oriented design concepts
-  - object oriented design patterns
   - object oriented languages
   - object oriented programming
   - object oriented programming languages
@@ -149,7 +142,6 @@
   - professional experience in backend software development
   - proficient in dotnet
   - proficient in ooad oop uml
-  - proficient with ci cd concepts and tooling
   - programming languages
   - proven experience in csharp with aspdotnet
   - public cloud platforms
@@ -159,13 +151,8 @@
   - s.o.l.i.d principles familiarity
   - secure software development
   - self driven
-  - self motivated and competent to work independently
   - self motivated and great organizational skills
   - self motivated and independent
-  - self motivated and passionate about ui systems
-  - self motivated and works with minimal supervision
-  - self motivated, responsible, and a fast learner
-  - self motivated, results oriented, and customer focused
   - self starter and key contributor
   - server less architecture
   - software development
@@ -174,7 +161,6 @@
   - sql nosql databases
   - strategic thinker and deadline driven
   - strong grasp of software development principles
-  - strong low level os internals in windows
   - strong proficiency in c c++ programming
   - strong programming skills in modern c++
   - strong software engineering skills in csharp
@@ -184,11 +170,9 @@
   - team and or delivery leadership
   - unix o s
   - use of software development tools
-  - user focused, passionate, solutions focused, and innovative
   - valid driver’s license and insurability
   - vbnet
   - vbnet experience
-  - well designed code and solid programming skills
   - windows kernel programming driver development
   - x++
 
@@ -207,8 +191,7 @@
   - sales
   - sales negotiation
 
-[NON_TECHNICAL_COMMUNICATION] - 36 skills
-  - clear, friendly, and open minded communication skills
+[NON_TECHNICAL_COMMUNICATION] - 35 skills
   - collaborative communication
   - collaborative communication skills
   - communication
@@ -218,7 +201,6 @@
   - excellent communication and collaboration skills
   - excellent communication and documentation skills
   - excellent communication skills
-  - excellent communication, collaboration, and problem solving skills
   - excellent communication, interpersonal, and leadership skills
   - excellent communication, organizational, and analytical skills
   - excellent interpersonal and communication skills
@@ -244,6 +226,7 @@
   - strong expertise in writing unit tests
   - strong problem solving and communication skills
   - strong verbal and written communication skills
+  - strong written and verbal communication skills
 
 [NON_TECHNICAL_EDUCATION_CERTIFICATION] - 12 skills
   - api 653 certification
@@ -259,15 +242,13 @@
   - master’s degree preferred
   - patient education
 
-[NON_TECHNICAL_EDUCATION_TEACHING] - 15 skills
+[NON_TECHNICAL_EDUCATION_TEACHING] - 13 skills
   - ability to use online teaching tools
   - comfort with remote tutoring technology
   - commitment to continuous learning and mentoring
   - effective interpersonal and teaching skills
   - experience mentoring growing junior team members
   - experience mentoring other developers
-  - experience teaching k 12 or college students
-  - experience tutoring k 12 or college students
   - interactive teaching methods
   - mentoring
   - mentoring and coaching abilities
@@ -283,22 +264,18 @@
 [NON_TECHNICAL_OPERATIONS] - 1 skills
   - warehouse experience
 
-[NON_TECHNICAL_PROBLEM_SOLVING] - 22 skills
+[NON_TECHNICAL_PROBLEM_SOLVING] - 18 skills
   - analytical and strategic problem solving
   - critical thinking
-  - demonstrated problem solving ability and logical thinking
   - excellent problem solving and reasoning skills
   - excellent problem solving and troubleshooting skills
   - excellent problem solving skills
-  - great problem solving skills, build solutions iteratively
   - outstanding development and problem solving abilities
-  - passion for continuous learning and problem solving
   - problem solver
   - problem solving
   - problem solving and analytical skills
   - problem solving and troubleshooting
   - solid analytical and problem solving abilities
-  - strong analytical, problem solving, and decision making skills
   - strong organizational, analytical, and facilitation skills
   - strong problem solving and analytical skills
   - strong problem solving and troubleshooting skills
@@ -307,7 +284,7 @@
   - superior problem solving and troubleshooting skills
   - support troubleshooting through solid analytical reasoning
 
-[NON_TECHNICAL_PROJECT_MGMT] - 24 skills
+[NON_TECHNICAL_PROJECT_MGMT] - 23 skills
   - agile
   - agile environment
   - agile jira
@@ -322,7 +299,6 @@
   - agile, tdd, and continuous integration
   - experience in agile scrum methodology
   - experience in an agile environment
-  - experience in an agile scrum development environment
   - experience in waterfall and agile methodology
   - familiarity with agile methodologies
   - project management experience
@@ -352,7 +328,7 @@
   - go node.js
   - node.js
 
-[TECHNICAL_CLOUD_AWS] - 7 skills
+[TECHNICAL_CLOUD_AWS] - 8 skills
   - aws
   - aws cdk
   - aws infrastructure
@@ -360,8 +336,9 @@
   - aws s3
   - aws serverless
   - aws services
+  - experience working with aws
 
-[TECHNICAL_CLOUD_AZURE] - 23 skills
+[TECHNICAL_CLOUD_AZURE] - 22 skills
   - aws azure google cloud
   - aws or azure devops
   - aws oracle azure cloud technologies
@@ -382,7 +359,6 @@
   - experience in azure services
   - familiarity with azure cloud services
   - familiarity with microsoft azure services
-  - git and platforms like github azure devops
   - microsoft azure
   - microsoft certifications in d365 or azure
 
@@ -414,7 +390,6 @@
 
 [TECHNICAL_DATA_DATABASE_SQL] - 20 skills
   - database skills in postgresql, t sql
-  - experience in sql programming and profiling optimization
   - familiarity with microsoft sql based technologies
   - ms sql
   - ms sql server
@@ -424,6 +399,7 @@
   - pl sql
   - postgres
   - postgresql
+  - relational databases sql
   - sql
   - sql and database use
   - sql databases
@@ -465,13 +441,11 @@
 [TECHNICAL_EMBEDDED_DRIVERS] - 1 skills
   - professional experience working on device drivers
 
-[TECHNICAL_FRONTEND_FRAMEWORKS] - 18 skills
+[TECHNICAL_FRONTEND_FRAMEWORKS] - 16 skills
   - angular
   - angular react
   - angular react nextjs
   - familiarity with react, and css
-  - front end development with angular or react
-  - proficient in react redux, html5, css3, sass
   - react
   - react angular
   - react angular blazor
@@ -485,17 +459,17 @@
   - vue
   - vue.js
 
-[TECHNICAL_FRONTEND_STYLING] - 4 skills
+[TECHNICAL_FRONTEND_STYLING] - 5 skills
   - bootstrap
   - css
   - html css
+  - html5 css
   - sass less bootstrap tailwind
 
-[TECHNICAL_FRONTEND_WEB_COMPONENTS] - 7 skills
+[TECHNICAL_FRONTEND_WEB_COMPONENTS] - 6 skills
   - html
   - html 5+
   - html5
-  - html5 css
   - html5 css3
   - html5 css3 sass
   - html5+
@@ -547,7 +521,7 @@
   - systems design
   - systems design skills
 
-[TECHNICAL_GENERAL_TECH_DATABASES] - 20 skills
+[TECHNICAL_GENERAL_TECH_DATABASES] - 18 skills
   - advanced experience in relational databases
   - data capture
   - data deduplication
@@ -559,13 +533,11 @@
   - database optimization experience
   - database software
   - document databases
-  - experience working with aws
   - experience working with databases
   - experience working with relational databases
   - has executed large scale data migrations
   - proficiency with database operations and queries
   - relational databases
-  - relational databases sql
   - strong experience in relational databases
   - understands large datasets and data mapping
 
@@ -733,7 +705,7 @@
   - internet protocols
   - ip and network connectivity
 
-[TECHNICAL_GENERAL_TECH_SOFT_SKILLS] - 56 skills
+[TECHNICAL_GENERAL_TECH_SOFT_SKILLS] - 55 skills
   - ability to build trusted relationships
   - ability to coach and mentor
   - ability to conduct remote sessions
@@ -781,7 +753,6 @@
   - smiling and making others smile
   - strong collaboration and leadership skills
   - strong sense of responsibility
-  - strong written and verbal communication skills
   - strong written and verbal communicator
   - strong written and verbal english skills
   - team player
@@ -791,7 +762,7 @@
   - thrive in a collaborative environment
   - working under pressure
 
-[TECHNICAL_GENERAL_TECH_SOFTWARE_DEVELOPMENT] - 21 skills
+[TECHNICAL_GENERAL_TECH_SOFTWARE_DEVELOPMENT] - 20 skills
   - ability to refactor complex, monolithic systems
   - algorithm optimization
   - code quality and standards adherence
@@ -803,7 +774,6 @@
   - debugging memory corruptions
   - debugging tools
   - experience across the entire development lifecycle
-  - experience developing and debugging multi threaded software
   - graphics debugging tools
   - high performance, memory efficient, multithreaded code
   - multithreaded code
@@ -814,7 +784,7 @@
   - solid background in data processing
   - strong development background
 
-[TECHNICAL_GENERAL_TECH_TESTING_QA] - 27 skills
+[TECHNICAL_GENERAL_TECH_TESTING_QA] - 26 skills
   - angular testing tools
   - automated testing frameworks
   - automated tests
@@ -827,7 +797,6 @@
   - familiarity with test driven development
   - inspection and testing of mechanical units
   - ndt testing
-  - playwright or similar end to end testing frameworks
   - road testing
   - software testing and tdd
   - software testing and test driven development
@@ -876,7 +845,8 @@
   - visualforce
   - wordpress
 
-[TECHNICAL_GENERAL_TECH_WEB_DEVELOPMENT] - 14 skills
+[TECHNICAL_GENERAL_TECH_WEB_DEVELOPMENT] - 15 skills
+  - aspdotnet mvc
   - aspdotnet mvc core
   - background in full stack development
   - building web applications at scale
@@ -925,13 +895,14 @@
   - c programming
   - expertise in modern c++ development
 
-[TECHNICAL_PROGRAMMING_CONCEPTS] - 9 skills
+[TECHNICAL_PROGRAMMING_CONCEPTS] - 10 skills
   - algorithms
   - algorithms and data structures
   - data structures
   - data structures algorithms
   - design patterns
   - extensive expertise in oop concepts
+  - object oriented design patterns
   - object oriented programming and design patterns
   - software design patterns and development methodologies
   - solid principles and design patterns
@@ -951,11 +922,10 @@
   - spring and spring boot, hibernate
   - spring boot
 
-[TECHNICAL_PROGRAMMING_JAVASCRIPT_TYPESCRIPT] - 17 skills
+[TECHNICAL_PROGRAMMING_JAVASCRIPT_TYPESCRIPT] - 16 skills
   - angular typescript
   - excellent javascript typescript programming skills
   - experience developing with java and javascript
-  - expert in html css javascript and web protocols
   - expertise in typescript coding
   - html css javascript
   - html5 css3 javascript typescript
@@ -973,8 +943,7 @@
 [TECHNICAL_PROGRAMMING_MOBILE] - 1 skills
   - kotlin
 
-[TECHNICAL_PROGRAMMING_PHP] - 3 skills
-  - object oriented languages, particularly java and php
+[TECHNICAL_PROGRAMMING_PHP] - 2 skills
   - php
   - strong proficiency in php
 
