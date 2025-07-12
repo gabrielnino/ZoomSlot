@@ -32,7 +32,13 @@ namespace Services
             string categoryPath = _appConfig.Paths.CategoryFile;
             string outputPath = _appConfig.Paths.NormalizedOutputFile;
             string summaryPath = _appConfig.Paths.SummaryFile;
-
+            string resumeFileName = _appConfig.Paths.ResumeFile;
+            var resumePath = Path.Combine(_appConfig.Paths.OutPath, resumeFileName);
+            if(File.Exists(resumePath))
+            {
+                File.Delete(resumePath);
+            }
+            File.Copy(resumeFileName, resumePath);
             await _resolver.InitializeAsync(categoryPath);
             var skills = await _extractor.ExtractSkillsAsync(inputPath);
             var skillsNormalize = skills.Select(SkillHelpers.NormalizeSkill);
@@ -99,12 +105,12 @@ namespace Services
             // Find categories for each skill
             foreach (var skill in skillRelevanceLookup)
             {
-                var category = finalGroups.FirstOrDefault(g => g.Value.Contains(skill.Key)).Key;
-                if (category != null)
+                var category = finalGroups.FirstOrDefault(g => g.Value.Contains(skill.Key));
+                if (category.Key != null)
                 {
                     skillCategories.Add(new SkillCategory
                     {
-                        Category = category,
+                        Category = category.Key,
                         Relevance = skill.Value
                     });
                 }

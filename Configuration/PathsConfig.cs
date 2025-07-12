@@ -12,6 +12,7 @@ namespace Configuration
         public string CategoryFile { get; set; }
         public string NormalizedOutputFile { get; set; }
         public string SummaryFile { get; set; }
+        public string ResumeFile { get; set; }
         public string OutPath { get; set; }
         
     }
