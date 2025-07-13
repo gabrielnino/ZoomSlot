@@ -92,7 +92,7 @@ namespace Services
             }
 
             _logger.LogInformation("📁 Moving execution folder to completed folder...");
-            Directory.Move(_executionOptions.ExecutionFolder, _executionOptions.CompletedFolder);
+            RobustMoveDirectory(_executionOptions.ExecutionFolder, _executionOptions.CompletedFolder);
 
             _logger.LogInformation("📁 Copying reports with Robocopy...");
             RoboCopyFiles(_appConfig.Paths.ReportFolder, _appConfig.Paths.OutPath);
