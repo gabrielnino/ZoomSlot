@@ -45,7 +45,10 @@ namespace Services
             await _resolver.InitializeAsync(categoryPath);
 
             _logger.LogInformation("🔍 Extracting skills from input file...");
-            var skills = await _extractor.ExtractSkillsAsync(inputPath);
+
+            var filePath = Path.Combine(_executionOptions.ExecutionFolder, _appConfig.Paths.InputFile);
+
+            var skills = await _extractor.ExtractSkillsAsync(filePath);
 
             _logger.LogInformation("🧽 Normalizing skills...");
             var skillsNormalize = skills.Select(SkillHelpers.NormalizeSkill);
@@ -63,7 +66,7 @@ namespace Services
             await _writer.WriteResultsAsync(finalGroups, outputPath, summaryPath);
 
             _logger.LogInformation("📦 Processing job offers...");
-            var jsonText = await File.ReadAllTextAsync(inputPath);
+            var jsonText = await File.ReadAllTextAsync(filePath);
             var jobOffers = JsonSerializer.Deserialize<List<JobOffer>>(jsonText) ?? [];
             var result = new List<JobOffer>();
 
