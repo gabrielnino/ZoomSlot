@@ -25,6 +25,7 @@ namespace Services
         private readonly AppConfig _appConfig = appConfig;
         private readonly ILogger<SkillNormalizerService> _logger = logger;
         private readonly ExecutionOptions _executionOptions = executionOptions;
+
         public async Task RunAsync()
         {
             _logger.LogInformation("🚀 Skill Normalization Process Started");
@@ -35,23 +36,36 @@ namespace Services
             string summaryPath = _appConfig.Paths.SummaryFile;
             string resumeFileName = _appConfig.Paths.ResumeFile;
             var resumePath = Path.Combine(_appConfig.Paths.OutPath, resumeFileName);
-            if(File.Exists(resumePath))
+
+            _logger.LogInformation("📁 Preparing resume file...");
+            if (File.Exists(resumePath))
             {
                 File.Delete(resumePath);
             }
             File.Copy(resumeFileName, resumePath);
+
+            _logger.LogInformation("📖 Initializing category resolver...");
             await _resolver.InitializeAsync(categoryPath);
+
+            _logger.LogInformation("🔍 Extracting skills from input file...");
             var skills = await _extractor.ExtractSkillsAsync(inputPath);
+
+            _logger.LogInformation("🧽 Normalizing skills...");
             var skillsNormalize = skills.Select(SkillHelpers.NormalizeSkill);
+
+            _logger.LogInformation("🧠 Grouping skills...");
             var grouped = _grouper.GroupSkills(skillsNormalize);
 
-            // Add consolidation and reclassification steps
+            _logger.LogInformation("🔗 Consolidating groups...");
             var consolidated = SkillHelpers.ConsolidateGroups(grouped, _resolver.ResolveCategory);
+
+            _logger.LogInformation("🧮 Reclassifying groups...");
             var finalGroups = SkillHelpers.ReclassifyGroups(consolidated, _resolver.ResolveCategory);
 
+            _logger.LogInformation("💾 Writing results to output and summary files...");
             await _writer.WriteResultsAsync(finalGroups, outputPath, summaryPath);
 
-            // Process job offers with categories
+            _logger.LogInformation("📦 Processing job offers...");
             var jsonText = await File.ReadAllTextAsync(inputPath);
             var jobOffers = JsonSerializer.Deserialize<List<JobOffer>>(jsonText) ?? [];
             var result = new List<JobOffer>();
@@ -68,25 +82,29 @@ namespace Services
 
             if (result.Count > 0)
             {
+                _logger.LogInformation("📤 Writing categorized job offers...");
                 var outputJson = JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
                 await File.WriteAllTextAsync(outputPath, outputJson);
             }
             else
             {
-                _logger.LogWarning("No job offers with valid skills found after normalization.");
+                _logger.LogWarning("⚠️ No job offers with valid skills found after normalization.");
             }
 
-            File.Move(_executionOptions.ExecutionFolder, _executionOptions.CompletedFolder);
-            RoboCopyFiles(_appConfig.Paths.ReportFolder, _appConfig.Paths.OutPath);
-            _logger.LogInformation("🎉 Skill Normalization Completed");
-        }
+            _logger.LogInformation("📁 Moving execution folder to completed folder...");
+            Directory.Move(_executionOptions.ExecutionFolder, _executionOptions.CompletedFolder);
 
+            _logger.LogInformation("📁 Copying reports with Robocopy...");
+            RoboCopyFiles(_appConfig.Paths.ReportFolder, _appConfig.Paths.OutPath);
+
+            _logger.LogInformation("✅ Skill Normalization Completed Successfully");
+        }
 
         public static void RoboCopyFiles(string sourceDir, string destDir, string robocopyOptions = "/MOV /NP /R:3 /W:1")
         {
             if (!Directory.Exists(sourceDir))
             {
-                Console.WriteLine($"Source directory does not exist: {sourceDir}");
+                Console.WriteLine($"❌ Source directory does not exist: {sourceDir}");
                 return;
             }
 
@@ -109,7 +127,6 @@ namespace Services
             {
                 process.Start();
 
-                // Read output and error streams
                 string output = process.StandardOutput.ReadToEnd();
                 string error = process.StandardError.ReadToEnd();
 
@@ -118,21 +135,23 @@ namespace Services
                 if (process.ExitCode > 7)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"Robocopy failed with exit code {process.ExitCode}");
+                    Console.WriteLine($"❌ Robocopy failed with exit code {process.ExitCode}");
                     Console.WriteLine(error);
                     Console.ResetColor();
                 }
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("Robocopy succeeded.");
+                    Console.WriteLine("✅ Robocopy succeeded.");
                     Console.ResetColor();
                     Console.WriteLine(output);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error running Robocopy: {ex.Message}");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"❌ Error running Robocopy: {ex.Message}");
+                Console.ResetColor();
             }
         }
 
@@ -146,7 +165,6 @@ namespace Services
             var skillCategories = new List<SkillCategory>();
             var skillRelevanceLookup = new Dictionary<string, int>();
 
-            // Process KeySkillsRequired
             if (offer.KeySkillsRequired != null)
             {
                 foreach (var skill in offer.KeySkillsRequired)
@@ -159,7 +177,6 @@ namespace Services
                 }
             }
 
-            // Find categories for each skill
             foreach (var skill in skillRelevanceLookup)
             {
                 var category = finalGroups.FirstOrDefault(g => g.Value.Contains(skill.Key));
@@ -176,5 +193,4 @@ namespace Services
             return skillCategories;
         }
     }
-
 }
