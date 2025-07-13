@@ -265,11 +265,6 @@ border-color: #fdd34d;
   transform-origin: 60px 60px;
 }
 
-.match-gauge-container {
-  display: flex;
-  gap: 2rem;
-  justify-content: center;
-}
 
 .job-raw-description {
   grid-column: span 3;
@@ -289,4 +284,78 @@ border-color: #fdd34d;
   padding: 1rem;
   border-radius: var(--border-radius);
   border: 1px solid var(--border-color);
+}
+
+
+.skills-gauge-container {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1.5rem;
+  align-items: start;
+  grid-column: span 3;
+}
+
+.detail-card-key {
+  margin: 0;
+}
+
+.match-gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: var(--tertiary-bg-color);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+}
+
+.top-details-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+  background-color: var(--tertiary-bg-color);
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+}
+
+.key-skills-section {
+  flex: 1;
+}
+
+.key-skills-section h4 {
+  margin-top: 0;
+  color: var(--primary-color);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.match-gauge-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 150px;
+}
+
+.match-gauge {
+  text-align: center;
+}
+
+.gauge {
+  width: 100px;
+  height: 100px;
+}
+
+.gauge-text {
+  font-size: 1.3rem;
+}
+
+.gauge-label {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-muted-color);
 }

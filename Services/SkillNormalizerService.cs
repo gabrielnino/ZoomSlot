@@ -38,11 +38,8 @@ namespace Services
             var resumePath = Path.Combine(_appConfig.Paths.OutPath, resumeFileName);
 
             _logger.LogInformation("📁 Preparing resume file...");
-            if (File.Exists(resumePath))
-            {
-                File.Delete(resumePath);
-            }
-            File.Copy(resumeFileName, resumePath);
+            File.Copy(resumeFileName, resumePath, overwrite: true);
+            _logger.LogInformation("📁 Resume file copied and overwritten if existed.");
 
             _logger.LogInformation("📖 Initializing category resolver...");
             await _resolver.InitializeAsync(categoryPath);
@@ -92,66 +89,32 @@ namespace Services
             }
 
             _logger.LogInformation("📁 Moving execution folder to completed folder...");
-            RobustMoveDirectory(_executionOptions.ExecutionFolder, _executionOptions.CompletedFolder);
-
             _logger.LogInformation("📁 Copying reports with Robocopy...");
             RoboCopyFiles(_appConfig.Paths.ReportFolder, _appConfig.Paths.OutPath);
 
             _logger.LogInformation("✅ Skill Normalization Completed Successfully");
         }
 
-        public static void RoboCopyFiles(string sourceDir, string destDir, string robocopyOptions = "/MOV /NP /R:3 /W:1")
+        public void RoboCopyFiles(string sourceDir, string destDir)
         {
-            if (!Directory.Exists(sourceDir))
-            {
-                Console.WriteLine($"❌ Source directory does not exist: {sourceDir}");
-                return;
-            }
-
-            Directory.CreateDirectory(destDir);
-
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "robocopy",
-                    Arguments = $"\"{sourceDir}\" \"{destDir}\" {robocopyOptions}",
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                }
-            };
-
             try
             {
-                process.Start();
+                Directory.CreateDirectory(destDir);
 
-                string output = process.StandardOutput.ReadToEnd();
-                string error = process.StandardError.ReadToEnd();
-
-                process.WaitForExit();
-
-                if (process.ExitCode > 7)
+                foreach (string file in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"❌ Robocopy failed with exit code {process.ExitCode}");
-                    Console.WriteLine(error);
-                    Console.ResetColor();
+                    string relativePath = Path.GetRelativePath(sourceDir, file);
+                    string destPath = Path.Combine(destDir, relativePath);
+                    Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
+                    File.Copy(file, destPath, overwrite: true);
                 }
-                else
-                {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("✅ Robocopy succeeded.");
-                    Console.ResetColor();
-                    Console.WriteLine(output);
-                }
+
+                _logger.LogInformation("📁 Files copied from execution to completed folder.");
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"❌ Error running Robocopy: {ex.Message}");
-                Console.ResetColor();
+                _logger.LogError(ex, $"❌ Failed to copy folder content from {sourceDir} to {destDir}");
+                throw;
             }
         }
 

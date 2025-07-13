@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Job Offer Viewer</title>
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
   <div class="container">
     <header class="top-controls">
@@ -39,52 +41,54 @@
             <p>Please load a JSON file to begin viewing job offers.</p>
           </div>
           <div id="jobContent" class="hidden">
-            <div class="match-gauge-container">
+          <div class="top-details-container">
+            <div class="key-skills-section">
+              <h4>Key Skills</h4>
+              <ul id="keySkillsList" class="skill-list"></ul>
+            </div>
+            <div class="match-gauge-section">
               <div class="match-gauge">
                 <svg class="gauge" viewBox="0 0 120 120">
                   <circle class="gauge-background" cx="60" cy="60" r="54" stroke-width="12"></circle>
-                  <circle class="gauge-arc" cx="60" cy="60" r="54" stroke-width="12" stroke-dasharray="339.292" stroke-dashoffset="339.292"></circle>
+                  <circle class="gauge-arc" cx="60" cy="60" r="54" stroke-width="12" stroke-dasharray="339.292"
+                    stroke-dashoffset="339.292"></circle>
                   <text class="gauge-text" x="60" y="65" text-anchor="middle">0%</text>
                 </svg>
                 <div class="gauge-label">Match</div>
               </div>
             </div>
-            <header class="job-header">
-              <h2 class="job-title">
-                <span id="addedIcon" class="icon hidden" title="This job has been added">⭐</span>
-                <span id="titleText"></span>
-              </h2>
-              <div id="lblCompany" class="job-company"></div>
-              <div id="lblSalary" class="job-salary"></div>
-            </header>
-            <p id="txtSummary" class="job-summary"></p>
-            <a id="btnApply" class="btn-apply hidden" href="#" target="_blank" rel="noopener noreferrer">Apply Now 🚀</a>
-            <div class="details-grid">
-              <div class="detail-card-key">
-                <h4>Key Skills</h4>
-                <ul id="keySkillsList" class="skill-list"></ul>
+          </div>
+            <details class="detail-card job-detail-collapsible">
+              <header class="job-header">
+                <h2 class="job-title">
+                  <span id="addedIcon" class="icon hidden" title="This job has been added">⭐</span>
+                  <span id="titleText"></span>
+                </h2>
+                <div id="lblCompany" class="job-company"></div>
+                <div id="lblSalary" class="job-salary"></div>
+              </header>
+              <p id="txtSummary" class="job-summary"></p>
+              <a id="btnApply" class="btn-apply hidden" href="#" target="_blank" rel="noopener noreferrer">Apply Now
+                🚀</a>
+              <div class="details-grid">
+                <details class="detail-card job-detail-collapsible">
+                  <summary>🎓 Essential Qualifications</summary>
+                  <ul id="essentialQualificationsList" class="qualifications-list"></ul>
+                </details>
+                <details class="detail-card job-detail-collapsible">
+                  <summary>🛠️ Essential Technical Skills</summary>
+                  <ul id="essentialTechSkillsList" class="qualifications-list"></ul>
+                </details>
+                <details class="detail-card job-detail-collapsible">
+                  <summary>🧰 Other Technical Skills</summary>
+                  <ul id="otherTechSkillsList" class="qualifications-list"></ul>
+                </details>
+                <details id="jobRawDescription" class="job-raw-description">
+                  <summary>📄 Full Job Description</summary>
+                  <div id="rawDescriptionContent"></div>
+                </details>
               </div>
-
-              <details class="detail-card job-detail-collapsible">
-                <summary>🎓 Essential Qualifications</summary>
-                <ul id="essentialQualificationsList" class="qualifications-list"></ul>
-              </details>
-
-              <details class="detail-card job-detail-collapsible">
-                <summary>🛠️ Essential Technical Skills</summary>
-                <ul id="essentialTechSkillsList" class="qualifications-list"></ul>
-              </details>
-
-              <details class="detail-card job-detail-collapsible">
-                <summary>🧰 Other Technical Skills</summary>
-                <ul id="otherTechSkillsList" class="qualifications-list"></ul>
-              </details>
-
-              <details id="jobRawDescription" class="job-raw-description">
-                <summary>📄 Full Job Description</summary>
-                <div id="rawDescriptionContent"></div>
-              </details>
-            </div>
+            </details>
           </div>
         </div>
         <footer class="job-footer">
@@ -106,4 +110,5 @@
   </div>
   <script src="app.js"></script>
 </body>
+
 </html>
