@@ -14,7 +14,9 @@ namespace Configuration
         public string SummaryFile { get; set; }
         public string ResumeFile { get; set; }
         public string OutPath { get; set; }
-        
+        public string ReportFolder { get; set; }
+
+
     }
 
 }

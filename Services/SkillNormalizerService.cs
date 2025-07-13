@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using Configuration;
@@ -23,7 +24,7 @@ namespace Services
         private readonly IResultWriter _writer = writer;
         private readonly AppConfig _appConfig = appConfig;
         private readonly ILogger<SkillNormalizerService> _logger = logger;
-
+        private readonly ExecutionOptions _executionOptions = executionOptions;
         public async Task RunAsync()
         {
             _logger.LogInformation("🚀 Skill Normalization Process Started");
@@ -75,9 +76,65 @@ namespace Services
                 _logger.LogWarning("No job offers with valid skills found after normalization.");
             }
 
+            File.Move(_executionOptions.ExecutionFolder, _executionOptions.CompletedFolder);
+            RoboCopyFiles(_appConfig.Paths.ReportFolder, _appConfig.Paths.OutPath);
             _logger.LogInformation("🎉 Skill Normalization Completed");
         }
 
+
+        public static void RoboCopyFiles(string sourceDir, string destDir, string robocopyOptions = "/MOV /NP /R:3 /W:1")
+        {
+            if (!Directory.Exists(sourceDir))
+            {
+                Console.WriteLine($"Source directory does not exist: {sourceDir}");
+                return;
+            }
+
+            Directory.CreateDirectory(destDir);
+
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "robocopy",
+                    Arguments = $"\"{sourceDir}\" \"{destDir}\" {robocopyOptions}",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                }
+            };
+
+            try
+            {
+                process.Start();
+
+                // Read output and error streams
+                string output = process.StandardOutput.ReadToEnd();
+                string error = process.StandardError.ReadToEnd();
+
+                process.WaitForExit();
+
+                if (process.ExitCode > 7)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"Robocopy failed with exit code {process.ExitCode}");
+                    Console.WriteLine(error);
+                    Console.ResetColor();
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine("Robocopy succeeded.");
+                    Console.ResetColor();
+                    Console.WriteLine(output);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error running Robocopy: {ex.Message}");
+            }
+        }
 
         private static List<SkillCategory> ExtractCategories(JobOffer offer, Dictionary<string, List<string>> finalGroups)
         {

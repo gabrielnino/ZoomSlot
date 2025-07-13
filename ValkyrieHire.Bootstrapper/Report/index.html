@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Job Offer Viewer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header class="top-controls">
+      <div class="control-group">
+        <button id="btnLoad">📂 Load JSON File</button>
+        <input type="file" id="fileInput" accept=".json" style="display: none;">
+        <button id="btnLoadResume">👤 Load Resume</button>
+        <input type="file" id="resumeInput" accept=".json" style="display: none;">
+      </div>
+      <div class="control-group">
+        <button id="btnDecreaseFont" aria-label="Decrease Font Size">A-</button>
+        <span id="lblFontSize" class="font-size-label">Font: 16px</span>
+        <button id="btnIncreaseFont" aria-label="Increase Font Size">A+</button>
+      </div>
+      <div class="control-group">
+        <button id="btnExportJson">📤 Export Selected</button>
+      </div>
+    </header>
+    <main class="main-layout">
+      <aside class="added-jobs">
+        <h3>Selected Jobs</h3>
+        <div class="search-wrapper">
+          <input type="text" id="txtSearch" placeholder="Filter selected jobs...">
+        </div>
+        <ul id="addedJobList"></ul>
+      </aside>
+      <section class="main-content">
+        <div class="job-display">
+          <div id="placeholder" class="placeholder">
+            <h2>Welcome!</h2>
+            <p>Please load a JSON file to begin viewing job offers.</p>
+          </div>
+          <div id="jobContent" class="hidden">
+            <div class="match-gauge-container">
+              <div class="match-gauge">
+                <svg class="gauge" viewBox="0 0 120 120">
+                  <circle class="gauge-background" cx="60" cy="60" r="54" stroke-width="12"></circle>
+                  <circle class="gauge-arc" cx="60" cy="60" r="54" stroke-width="12" stroke-dasharray="339.292" stroke-dashoffset="339.292"></circle>
+                  <text class="gauge-text" x="60" y="65" text-anchor="middle">0%</text>
+                </svg>
+                <div class="gauge-label">Match</div>
+              </div>
+            </div>
+            <header class="job-header">
+              <h2 class="job-title">
+                <span id="addedIcon" class="icon hidden" title="This job has been added">⭐</span>
+                <span id="titleText"></span>
+              </h2>
+              <div id="lblCompany" class="job-company"></div>
+              <div id="lblSalary" class="job-salary"></div>
+            </header>
+            <p id="txtSummary" class="job-summary"></p>
+            <a id="btnApply" class="btn-apply hidden" href="#" target="_blank" rel="noopener noreferrer">Apply Now 🚀</a>
+            <div class="details-grid">
+              <div class="detail-card-key">
+                <h4>Key Skills</h4>
+                <ul id="keySkillsList" class="skill-list"></ul>
+              </div>
+
+              <details class="detail-card job-detail-collapsible">
+                <summary>🎓 Essential Qualifications</summary>
+                <ul id="essentialQualificationsList" class="qualifications-list"></ul>
+              </details>
+
+              <details class="detail-card job-detail-collapsible">
+                <summary>🛠️ Essential Technical Skills</summary>
+                <ul id="essentialTechSkillsList" class="qualifications-list"></ul>
+              </details>
+
+              <details class="detail-card job-detail-collapsible">
+                <summary>🧰 Other Technical Skills</summary>
+                <ul id="otherTechSkillsList" class="qualifications-list"></ul>
+              </details>
+
+              <details id="jobRawDescription" class="job-raw-description">
+                <summary>📄 Full Job Description</summary>
+                <div id="rawDescriptionContent"></div>
+              </details>
+            </div>
+          </div>
+        </div>
+        <footer class="job-footer">
+          <div class="navigation">
+            <button id="btnPrev">◀ Previous</button>
+            <div class="progress-container">
+              <progress id="progressBar" value="0" max="100"></progress>
+              <span id="progressText">0 / 0</span>
+            </div>
+            <button id="btnNext">Next ▶</button>
+          </div>
+          <div class="job-actions">
+            <button id="btnAddJob">⭐ Select Job</button>
+            <button id="btnDeleteJob" class="btn-delete">🗑️ Unselect</button>
+          </div>
+        </footer>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
