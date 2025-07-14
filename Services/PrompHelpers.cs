@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Text.Json;
 using Models;
 
 namespace Services
@@ -217,6 +218,63 @@ namespace Services
                 SystemContent = promptBuilder.BuildPrompt(),
                 UserContent = $"offer description: {jobOffer} resume:{resume}"
             };
+        }
+
+        public static Prompt GetPrompt(Dictionary<string, List<string>> skillCategoryHierarchy, string skill)
+        {
+            var options = new JsonSerializerOptions()
+            {
+                WriteIndented = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+            var JsonCategoryHierarchy = JsonSerializer.Serialize(skillCategoryHierarchy, options);
+
+            var skillCategorySchema = @"
+            {
+              ""$schema"": ""http://json-schema.org/draft-07/schema#"",
+              ""type"": ""object"",
+              ""patternProperties"": {
+                ""^.*$"": {
+                  ""type"": ""array"",
+                  ""items"": {
+                    ""type"": ""string""
+                  },
+                  ""description"": ""List of skill keyword variations belonging to the category""
+                }
+              }
+              ""description"": ""A mapping of skill category names to arrays of related skill expressions.""
+            }";
+
+            var promptBuilder = new AIPromptBuilder
+            {
+                Role = "Tech Skill Classifier Specialist",
+                Task = $"Classify the submitted skill into the provided skill category hierarchy, if you dont find a match category create a new one",
+                Context = "You are classifying technical and non-technical skills into a comprehensive skill category hierarchy",
+                Format = $"JSON format skill category hierarchy: {Environment.NewLine}{JsonCategoryHierarchy}",
+                Tone = "professional",
+                Style = "concise"
+            };
+
+            // Add specific instructions for resume extraction
+            //promptBuilder.AddConstraint("Extract the name from the first line of the resume");
+            //promptBuilder.AddConstraint("Title should be extracted from the professional title near the name");
+            //promptBuilder.AddConstraint("Location should be extracted from the contact information section");
+            //promptBuilder.AddConstraint("Contact Information should include phone, email, and LinkedIn URL");
+            //promptBuilder.AddConstraint("Professional Summary should be the full summary paragraph");
+            //promptBuilder.AddConstraint("For Professional Experience, extract all positions with their details");
+            //promptBuilder.AddConstraint("For each position, include company, role, duration, and responsibilities");
+            //promptBuilder.AddConstraint("Technical Skills should include all listed skills, grouped by category");
+            //promptBuilder.AddConstraint("Languages should include all mentioned languages with proficiency levels");
+            //promptBuilder.AddConstraint("Education should include institution, degree, location, and graduation date");
+            //promptBuilder.AddConstraint("For missing fields, use null as the value");
+
+            var prompt = new Prompt
+            {
+                SystemContent = promptBuilder.BuildPrompt(),
+                UserContent = skill
+            };
+
+            return prompt;
         }
 
         //public static Prompt GetParseJobOfferPrompt(string jobOfferDescription)

@@ -25,7 +25,7 @@
                         var name = skill?["Name"]?.ToString();
                         if (!string.IsNullOrWhiteSpace(name))
                         {
-                            var cleaned = SkillHelpers.CleanSkillName(name);
+                            var cleaned = SkillHelpers.CleanSkill(name);
                             if (!SkillHelpers.ShouldDiscard(cleaned))
                                 skills.Add(cleaned);
                         }

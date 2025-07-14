@@ -52,7 +52,8 @@ namespace Services
             var skills = await _extractor.ExtractSkillsAsync(filePath);
 
             _logger.LogInformation("🧽 Normalizing skills...");
-            var skillsNormalize = skills.Select(SkillHelpers.NormalizeSkill).Distinct().Order();
+            var skillsNormalize = skills.Select(SkillHelpers.CleanSkill).Distinct().Order();
+  
 
             _logger.LogInformation("🧠 Grouping skills...");
             var grouped = _grouper.GroupSkills(skillsNormalize);
@@ -80,8 +81,6 @@ namespace Services
                     result.Add(jobOffer);
                 }
             }
-
-            await _resolver.WriteAsync(categoryPath, Uncategorized);
 
             if (result.Count > 0)
             {
@@ -123,14 +122,14 @@ namespace Services
             }
         }
 
-        private List<SkillCategory> ExtractCategories(JobOffer offer, Dictionary<string, List<string>> finalGroups)
+        private Dictionary<string, List<Skill>> ExtractCategories(JobOffer offer, Dictionary<string, List<string>> finalGroups)
         {
             if (offer == null || finalGroups == null)
             {
                 return [];
             }
 
-            var skillCategories = new List<SkillCategory>();
+            var skillCategories = new Dictionary<string, List<Skill>>();
             var skillRelevanceLookup = new Dictionary<string, Skill>();
 
             if (offer.KeySkillsRequired != null)
@@ -139,7 +138,7 @@ namespace Services
                 {
                     if (skill != null && !string.IsNullOrWhiteSpace(skill.Name))
                     {
-                        var normalized = SkillHelpers.NormalizeSkill(skill.Name);
+                        var normalized = SkillHelpers.CleanSkill(skill.Name);
                         skillRelevanceLookup[normalized] = skill;
                     }
                 }
@@ -155,11 +154,14 @@ namespace Services
                     Uncategorized.Add(skill.Key);
                     continue;
                 }
-                skillCategories.Add(new SkillCategory
+
+                if(skillCategories.ContainsKey(category.Key))
                 {
-                    Category = category.Key,
-                    KeySkill = skill.Value
-                });
+                    skillCategories[category.Key].Add(skill.Value);
+                    continue;
+                }
+
+                skillCategories.Add(category.Key, [skill.Value]);
 
             }
 

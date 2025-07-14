@@ -1,907 +1,955 @@
-[GENERAL_TECH] - 394 skills
-  - 3d game programming
-  - accessibility standards
-  - acumatica framework
-  - adodotnet
-  - agentic systems
-  - ai genai tools
-  - ai ml
-  - ai technologies
+[GENERAL_TECH] - 100 skills
+  - aigenaitools
   - aks
   - al
-  - al language
-  - alara
-  - analytics tools
-  - anatomy
-  - android ndk
-  - android sdk
-  - angularjs
+  - allanguage
   - ansible
   - ant
-  - apex soql
-  - api creation and configuration
-  - api integration
-  - api integrations
-  - application development
-  - archer development
-  - arm templating
-  - asp dotnet
-  - asp dotnet core
-  - asp dotnet programming
-  - aspdotnet
-  - aspdotnet 4.5
-  - aspdotnet core
-  - aspdotnet csharp
-  - aspdotnet programming
+  - apexsoql
   - authentication
-  - automated test harness
   - automation
-  - aws cloud
-  - aws cloud services
-  - back end development
-  - backend development
+  - awscloud
+  - backenddevelopment
   - bash
-  - batch file processing
-  - bicep
-  - bicep arm templates
-  - blazor
-  - blob storage
-  - business development
-  - business process design
-  - c al
-  - c c++
-  - c++
-  - c++ csharp
-  - c++ or csharp
-  - capital markets
-  - capital markets technology business
-  - cash handling
-  - cassandra cql nosql sql
-  - changeman, compuware tools, ca tools
-  - charles river investment management solution
-  - chef
-  - ci cd
-  - ci cd pipeline
-  - ci cd pipelines
-  - ci cd systems
-  - ci cd tools
-  - ci cd workflows
-  - clean code
-  - cloud based technologies
-  - cloud computing
-  - cloud hybrid architectures
-  - cloud native applications
-  - cloud native architecture
-  - cloud native architectures
-  - cloud native development
-  - cloud native technologies
-  - cloud security
-  - cloud solutions
-  - cloud systems
-  - cloud technologies
-  - cms tools
-  - code review
-  - computer aided design
-  - computer graphics
-  - computer science fundamentals
-  - consulting techniques
-  - container orchestration
-  - container orchestration systems
-  - container tech
-  - containerization
-  - core
-  - cosmos db
-  - crims
-  - crm software
-  - cross platform mobile app development
-  - csharp
-  - csharp aspdotnet dotnet core
-  - csharp c++
-  - csharp dotnet
-  - csharp dotnet core
-  - csharp programming
-  - csharpdotnet
-  - css3+
-  - d365 f and o applications
-  - dapper
+  - businessdevelopment
+  - cloudbasedtechnologies
+  - cloudcomputing
+  - cloudnativeapplications
+  - cloudnativedevelopment
+  - cloudsolutions
+  - cloudsystems
+  - cloudtechnologies
+  - css3
+  - d365foapplications
   - data
-  - data lakes data bricks
   - database
-  - database design
-  - database technologies
+  - databasedesign
   - databases
-  - databricks
-  - dataverse
-  - dataverse schema design
-  - ddd pattern
   - delphi
-  - design or architecture
-  - developer express
-  - devsecops mlops
   - di
-  - digital communications platforms
-  - distributed application design
-  - distributed cloud based solutions
-  - distributed computing
-  - distributed system designs
-  - domain driven design
-  - dynamics 365 business central  nav
-  - dynamics 365 ce
-  - dynamics 365 f and o
-  - dynamics 365 online and on premise
-  - dynamics 365 sdk
-  - dynamics crm 2016 and higher
-  - ef6 and ef core+
-  - electron chromium openfin
-  - embedding models
-  - engineering leadership
-  - engineering mindset
+  - dynamics365fo
+  - dynamics365sdk
+  - embeddedlinux
+  - embeddingmodels
   - english
-  - enterprise level security protocols
-  - entityframework linq
-  - erp platforms
-  - etl processes
   - etls
-  - event driven architecture
-  - event management
-  - federated identity
-  - finance
-  - financial services banking
-  - fine tuning language models
-  - firstspirit cms
-  - fix protocol
-  - front end design
-  - front end development
-  - front end technologies
-  - front end ui
-  - frontend frameworks
-  - full software development life cycle
-  - full stack development
-  - gameplay systems
-  - github
-  - gitops
-  - google cloud platform
-  - governance
-  - gpu accelerated media pipelines
-  - grc projects
-  - grpc
-  - high concurrency programming
-  - hris systems
-  - iac expertise
+  - eventmanagement
+  - fullstackdevelopment
+  - gameplaysystems
   - iis
-  - impact analysis
-  - information security
-  - integration frameworks
-  - interactive learning tools
-  - issue logging and tracking
-  - it operations
   - j2ee
   - jest
-  - jest mocha
   - jni
-  - jquery
   - json
   - junit
-  - k 12 education
-  - kanban
-  - kdb+ q
-  - kernel mode drivers
-  - knockout.js
-  - laravel
-  - leadership mentorship
+  - kdbq
   - linq
-  - logic apps
-  - ls central
-  - mac internals
-  - machine vision programming
-  - macos
-  - maintenance and asset management
-  - market knowledge
-  - marketing
-  - maui xamarin
+  - linux
+  - linuxbasedsystems
+  - linuxhpuxunixmswindows
+  - linuxos
+  - linuxsystemcalls
+  - linuxunix
   - maven
-  - medical terminology
-  - merchandise strategies
   - messaging
-  - micro frontends
-  - micro service architecture
-  - microservice architecture
-  - microsoft
-  - microsoft d365
-  - microsoft dataverse
-  - microsoft dotnet
-  - microsoft dotnet csharp
-  - microsoft dotnet full stack development
-  - microsoft dynamics
-  - microsoft dynamics 365
-  - microsoft dynamics 365 crm
-  - microsoft dynamics crm
-  - middleware solutions
-  - middleware tools
-  - modern c++
-  - module federation
-  - monitoring and observability
   - mqtt
-  - ms dynamics
-  - ms dynamics 365 ce
-  - ms dynamics 365 crm
-  - ms office
-  - ms windows
+  - mswindows
   - mulesoft
-  - multi platform development
-  - multi threaded and concurrent applications
-  - multi threaded programming
-  - multi threading
-  - multithread programming
-  - multithreaded asynchronous programming
-  - multithreading
-  - mvvm architecture
-  - n tier systems
-  - needle safety
+  - needlesafety
   - nestjs
-  - network security products
+  - nextjs
   - nginx
-  - nhibernate
   - node
   - nosql
-  - nosql databases
-  - oauth2 openid connect
-  - object oriented analysis and design
-  - object oriented design
-  - object oriented development
-  - object oriented principles
-  - object oriented programming
-  - object oriented programming languages
-  - objective c
-  - observability
-  - ooa ood
+  - nosqlcouchbasemongodb
+  - nosqldatabases
+  - nosqlmongodb
+  - ooaood
   - oop
-  - oop ood
-  - oop principles
-  - oops, solid design principles
+  - oopood
   - openshift
-  - opentext teamsite livesite
-  - oracle
-  - oracle tuxedo
-  - patient care and handling
-  - performance engineering
-  - pharmaceutical regulated processes
-  - pli, cobol, jcl, markiv, telon, ca7
-  - power fx
-  - powerapps
-  - powerbi
-  - prisma
-  - pro*c
-  - programming
-  - programming languages
-  - project management
-  - public cloud
-  - radiation safety
-  - rag vector stores
-  - rdbms
-  - reactjs
-  - reactjs angularjs
-  - real estate
-  - real estate license
-  - real time rendering
-  - redux
-  - regulatory compliance
-  - relational and nosql databases
-  - relational database
-  - relational database systems
-  - reliability and scaling
-  - requirements definition
-  - rest
-  - rest apis json
-  - rest services
-  - rest soap
-  - rest soap services
-  - restapi
-  - restful apis json
-  - restful architecture
-  - restful services
-  - retail management
-  - risk assessment
-  - risk management
-  - rxjs ngrx
-  - sap crystal reports
-  - sap s 4hana
-  - scalable architecture design
-  - scalable software
-  - sdlc process
-  - secret clearance
-  - secure software development
-  - security
-  - security compliance
-  - security development
-  - server side technologies
-  - serverless technologies
-  - servicenow, office 365, ibm data studio
-  - single page application
+  - opentextteamsitelivesite
+  - posixapis
+  - saps4hana
   - sitefinity
   - snowflake
-  - soap rest services
-  - soap restful services
-  - soap services
-  - socket programming
-  - software development
-  - software development principles
-  - software lifecycle management
-  - software programming language
-  - solution definition
-  - sourcetree
-  - sql and nosql
-  - sql and nosql databases
-  - sql nosql
-  - sql nosql databases
-  - sql server nosql database
-  - sqlite
+  - solutiondefinition
+  - sqlnosql
+  - sqlnosqldatabases
   - ssas
   - ssis
-  - standard library
-  - sterile technique
-  - stored procedures
-  - supervisory experience
   - swift
-  - system architecture
-  - system level programming
-  - systems administration
-  - systems analysis
-  - systems troubleshooting
+  - systemsanalysis
   - tailwind
-  - tcp ip
-  - team foundation server
-  - technical design
-  - technical strategy
-  - templating in c++
-  - test case execution
-  - threading async programming
-  - troubleshooting crm plugins and workflows
-  - ts sci with fsp
-  - ui development
-  - ui web technology stacks
+  - tcpip
+  - tcpipnonhttpclients
+  - testcaseexecution
+  - uidevelopment
   - uml
-  - unit tests ui automation tests
+  - unittestingnunitmstestxunit
+  - unittestingxunitnunit
+  - unittestsuiautomationtests
   - unity
   - unix
-  - unix o s
+  - unixlinux
+  - unixos
   - uwp
-  - ux best practices
-  - vbnet
-  - vbnet 10.0
-  - vercel neon
-  - version control
-  - wcag owasp standards
-  - wcf
-  - web and intranet architecture
-  - web and server based platforms
-  - web service frameworks
-  - web sockets
-  - webapi
-  - webpack
-  - websockets
-  - windbg
   - windows
-  - windows applications
-  - windows core functionality
-  - windows development
-  - windows forms
-  - windows kernel programming
-  - windows os
-  - windows server
-  - workshop facilitation
-  - writing instruction
-  - x++
-  - z os mainframe environment
+  - windowsdevelopment
+  - windowsos
+  - xml
+  - xmlschema
 
-[NON_TECHNICAL_ANALYTICS] - 1 skills
-  - power bi
-
-[NON_TECHNICAL_BUSINESS] - 9 skills
-  - client relationship management
-  - customer service
-  - dynamics 365 customer engagement
-  - microsoft dynamics 365 customer engagement
+[NON_TECHNICAL_BUSINESS] - 2 skills
   - sales
-  - sales performance
-  - sales pipeline management
-  - sales targets
-  - wireless sales
+  - salespipelinemanagement
 
-[NON_TECHNICAL_COMMUNICATION] - 5 skills
-  - business requirement documentation
-  - communication
-  - communication skills
-  - windows communication foundation
-  - windows interprocess communication
+[NON_TECHNICAL_EDUCATION_CERTIFICATION] - 1 skills
+  - k12education
 
-[NON_TECHNICAL_EDUCATION_TEACHING] - 3 skills
-  - mentoring
-  - mentoring or tech lead
-  - online tutoring
-
-[NON_TECHNICAL_PROBLEM_SOLVING] - 1 skills
-  - problem solving
-
-[NON_TECHNICAL_PROJECT_MGMT] - 10 skills
+[NON_TECHNICAL_PROJECT_MGMT] - 7 skills
   - agile
-  - agile and lean methodologies
-  - agile development
-  - agile management
-  - agile methodologies
-  - agile methodology
-  - agile process
-  - agile scrum
-  - agile scrum methodology
-  - scrum
+  - agiledevelopment
+  - agileleanmethodologies
+  - agilemanagement
+  - agilemethodologies
+  - agilemethodology
+  - kanban
 
-[TECHNICAL_BACKEND_APIS] - 10 skills
-  - graphql
-  - openapi spec
-  - rest api
-  - rest api design
-  - rest api micro services
-  - rest apis
-  - rest soap apis
-  - restful apis graphql
-  - soap apis
-  - soap rest api
+[TECHNICAL_BACKEND_APIS] - 2 skills
+  - openapispec
+  - soapapis
 
-[TECHNICAL_BACKEND_MESSAGING] - 3 skills
-  - apache kafka
+[TECHNICAL_BACKEND_MESSAGING] - 1 skills
   - kafka
-  - rabbitmq kafka ibm mq
 
-[TECHNICAL_BACKEND_SERVER] - 2 skills
-  - node.js
-  - node.js express
-
-[TECHNICAL_CLOUD_AWS] - 9 skills
+[TECHNICAL_CLOUD_AWS] - 4 skills
   - aws
-  - aws dynamodb
-  - aws lambda
-  - aws opensearch
-  - aws s3
-  - aws serverless offerings
-  - aws services
-  - aws stack
-  - kafka aws sns sqs rabbitmq azurebus
+  - awsdynamodb
+  - awslambda
+  - awss3
 
-[TECHNICAL_CLOUD_AZURE] - 38 skills
-  - aws azure
-  - aws azure gcp
-  - aws azure google cloud
-  - aws or azure
-  - aws or azure devops
-  - azure
-  - azure active directory
-  - azure ad entra id
-  - azure ado
-  - azure app services
-  - azure aws
-  - azure cloud
-  - azure cloud hosting
-  - azure cloud services
-  - azure csharp
-  - azure data factory
-  - azure databricks
-  - azure devops
-  - azure devops pipeline
-  - azure function app
-  - azure functions
-  - azure functions logic apps
-  - azure kubernetes service
-  - azure logic apps
-  - azure or aws
-  - azure platform services
-  - azure service bus
-  - azure services
-  - azure sql
-  - azure sql server
-  - azure web apps
-  - github azure devops ci cd
-  - microsoft azure
-  - microsoft azure apis
-  - microsoft azure services
-  - ms azure devops
-  - ms azure devops git yaml pipelines
-  - powershell azure cli
+[TECHNICAL_CLOUD_AZURE] - 3 skills
+  - adobephotoshop
+  - cicdtoolsgithubado
+  - logicapps
 
-[TECHNICAL_CLOUD_CLOUD_GENERAL] - 9 skills
-  - aws kubernetes
-  - docker
-  - docker  kubernetes
-  - docker kubernetes
-  - docker kubernetes aks
-  - html5 css3 saas less
-  - kubernetes
-  - kubernetes openshift
-  - saas products
-
-[TECHNICAL_CLOUD_GCP] - 2 skills
-  - aws gcp openstack
+[TECHNICAL_CLOUD_GCP] - 3 skills
+  - awsgcpopenstack
   - gcp
+  - templatingcpp
 
-[TECHNICAL_DATA_BIG_DATA] - 1 skills
-  - spark
+[TECHNICAL_DATA_DATA_ENGINEERING] - 1 skills
+  - datamodeling
 
-[TECHNICAL_DATA_DATA_ENGINEERING] - 2 skills
-  - data governance
-  - data modeling
-
-[TECHNICAL_DATA_DATABASE_NOSQL] - 2 skills
-  - cassandra
+[TECHNICAL_DATA_DATABASE_NOSQL] - 1 skills
   - mongodb
 
-[TECHNICAL_DATA_DATABASE_SQL] - 40 skills
-  - linux, web servers, mysql
-  - microsoft sql database
-  - microsoft sql postgresql mysql
-  - microsoft sql server
-  - mongodb mysql ms sql
-  - mongodb sql
-  - ms sql
-  - ms sql postgres
-  - ms sql server
+[TECHNICAL_DATA_DATABASE_SQL] - 12 skills
+  - mongodbmysqlmssql
+  - mongodbsql
+  - mssql
   - mysql
-  - oracle 19c and pl sql
-  - oracle 19c pl sql
-  - oracle sql
-  - pl sql
-  - postgres
-  - postgres mysql
-  - postgresql
-  - postgresql  sql
-  - postgresql microsoft sql server mongodb
-  - postgresql mysql
-  - postgresql t sql
-  - rdbms sql plsql
+  - plsql
   - sql
-  - sql  sql server
-  - sql cosmos db
-  - sql database design
-  - sql databases
-  - sql databases and transact sql
-  - sql postgresql
-  - sql scripting
-  - sql server
-  - sql server mongodb
-  - sql server mysql
-  - sql server oracle
-  - sql server postgresql
-  - sql server postgresql mongodb
-  - sql server t sql
-  - t sql
-  - transact sql
-  - tsql sql
+  - sqlcosmosdb
+  - sqldatabasedesign
+  - sqldatabases
+  - sqlite
+  - tsql
+  - tsqlsql
 
-[TECHNICAL_DEVOPS_CI_CD] - 3 skills
-  - continuous integration continuous delivery
-  - jenkins
-  - teamcity jenkins
-
-[TECHNICAL_DEVOPS_DEVOPS_GENERAL] - 7 skills
-  - build pipelines
-  - devops
-  - devops ci cd
-  - devops ci cd pipeline integration
-  - devops devsecops
-  - devops practices
-  - infrastructure as code
-
-[TECHNICAL_DEVOPS_INFRA_AS_CODE] - 1 skills
-  - terraform
-
-[TECHNICAL_DEVOPS_VERSION_CONTROL] - 4 skills
+[TECHNICAL_DEVOPS_CI_CD] - 16 skills
+  - buildpipelines
+  - cicd
+  - cicdgitjenkins
+  - cicdjenkins
+  - cicdjenkinsteamcity
+  - cicdpipeline
+  - cicdpipelines
+  - cicdsystems
+  - devopscicd
   - git
-  - git github
-  - git workflows
-  - github git
+  - gitgithub
+  - github
+  - githubgit
+  - gitops
+  - jenkins
+  - teamcityjenkins
 
-[TECHNICAL_FRONTEND_FRAMEWORKS] - 27 skills
-  - angular
-  - angular 12+
-  - angular 14.0+
-  - angular 14+
-  - angular 8.0+
-  - angular or react
-  - angular react
-  - angular react jquery
-  - angular react node.js
-  - angular react vue.js
-  - bootstrap angular jquery
-  - google angular framework
-  - react
-  - react angular
-  - react angular blazor
-  - react angular vue.js
-  - react angular vue.js unity
-  - react js
-  - react next.js
-  - react react native
-  - react redux
-  - react vue
-  - react.js
-  - react.js vue.js angular.js
-  - vue
-  - vue.js
-  - vue.js react
+[TECHNICAL_DEVOPS_DEVOPS_GENERAL] - 1 skills
+  - devops
 
-[TECHNICAL_FRONTEND_STYLING] - 7 skills
-  - bootstrap
-  - css
-  - css scss html
-  - html css
-  - html css js
-  - html5 css
-  - sass less bootstrap tailwind
+[TECHNICAL_FRONTEND_FRAMEWORKS] - 1 skills
+  - vuejs
 
-[TECHNICAL_FRONTEND_WEB_COMPONENTS] - 8 skills
+[TECHNICAL_FRONTEND_WEB_COMPONENTS] - 2 skills
   - html
-  - html 5
-  - html 5+
   - html5
-  - html5 css3
-  - html5 css3 sass
-  - html5 css3 scss sass
-  - html5+
-
-[TECHNICAL_GAME_DEV_ENGINES] - 1 skills
-  - unreal engine
 
 [TECHNICAL_GAME_DEV_GAMEPLAY] - 1 skills
-  - gameplay ability system
+  - gameplayabilitysystem
 
-[TECHNICAL_GENERAL_TECH_API_DEVELOPMENT] - 13 skills
-  - api design
-  - api development
-  - api development and management
+[TECHNICAL_GENERAL_TECH_API_DEVELOPMENT] - 6 skills
+  - apidesign
+  - apidevelopment
+  - apidevelopmentmanagement
   - apis
-  - cad apis
-  - http based web apis
-  - low level graphics apis
-  - rest grpc apis
-  - restful api
-  - restful api design
-  - restful apis
-  - web apis
-  - web development
+  - cadapis
+  - webdevelopment
 
-[TECHNICAL_GENERAL_TECH_CLOUD_DEVOPS] - 7 skills
-  - build systems
-  - containers
-  - high availability systems
-  - linux containers
-  - source control
-  - stl containers
-  - systems design
+[TECHNICAL_GENERAL_TECH_CLOUD_DEVOPS] - 2 skills
+  - highavailabilitysystems
+  - systemsdesign
 
-[TECHNICAL_GENERAL_TECH_DATABASES] - 5 skills
-  - data storage
-  - database management
-  - database software
-  - non relational databases
-  - relational databases
+[TECHNICAL_GENERAL_TECH_DATABASES] - 1 skills
+  - databasemanagement
 
-[TECHNICAL_GENERAL_TECH_INDUSTRY_SPECIFIC] - 47 skills
-  - 3d metrology computer vision
-  - amazon web services
-  - aspdotnet core web api
-  - aspdotnet web api
-  - business central web services
+[TECHNICAL_GENERAL_TECH_INDUSTRY_SPECIFIC] - 18 skills
   - com
+  - communication
+  - communicationskills
   - ebpf
-  - firewalls
-  - food preparation
-  - game development
-  - gdscript
-  - identity and access management
-  - identity and access management protocols
-  - java web services
-  - kvm hypervisor
-  - network programming
-  - network protocols
-  - networked game principles
-  - operating systems concepts
-  - operational excellence
-  - posix apis
-  - private connectivity
-  - recruiting
-  - redis
-  - redis memcached
-  - redis mongodb elasticsearch
+  - gamedevelopment
+  - httpbasedwebapis
+  - identityaccessmanagementiam
+  - msdynamics2016d365
   - scala
-  - secure coding practices
-  - service oriented architecture
-  - soap web services
-  - software architecture
-  - solution design
-  - stored procedures and triggers
-  - vpc endpoints
-  - wcf web api
-  - web api
-  - web api 2
-  - web api restful api
-  - web services
-  - web services and web api
-  - web services web apis
-  - windows api win32 com
-  - windows internals
-  - windows os kernel and driver development
-  - xml
-  - xml schema
-  - xml soap rest
-
-[TECHNICAL_GENERAL_TECH_NETWORKING] - 6 skills
-  - apache http server
-  - dns
-  - http protocol
-  - hypervisor technologies
-  - ip and network connectivity
-  - tcp ip and non http clients
-
-[TECHNICAL_GENERAL_TECH_SOFT_SKILLS] - 3 skills
-  - collaborative team environment
-  - team collaboration
-  - teamwork
+  - solutiondesign
+  - vpcendpoints
+  - wcfwebapi
+  - webapi
+  - webapi2
+  - webapis
+  - websockets
+  - windowsapiwin32com
+  - windowscommunicationfoundation
 
 [TECHNICAL_GENERAL_TECH_SOFTWARE_DEVELOPMENT] - 7 skills
-  - coding standards and code reviews
   - debugging
-  - debugging tools
-  - graphics debugging tools
-  - high performance, memory efficient, multithreaded code
-  - oo design
-  - performance optimization
+  - debuggingtoolsvisualstudiowindbg
+  - oodesign
+  - visualstudio
+  - visualstudio20172022
+  - visualstudioide
+  - windbg
 
-[TECHNICAL_GENERAL_TECH_TESTING_QA] - 10 skills
-  - automated testing frameworks
-  - automated tests
-  - automation testing
-  - integration testing
-  - software testing and test driven development
-  - test driven development
-  - testing frameworks
-  - unit testing
-  - unit testing integration testing
-  - unit testing, dependency injection, ci cd
+[TECHNICAL_GENERAL_TECH_TESTING_QA] - 4 skills
+  - automationtesting
+  - unittesting
+  - unittestingdependencyinjectioncicd
+  - unittestingnunitmoq
 
-[TECHNICAL_GENERAL_TECH_TOOLS_PLATFORMS] - 24 skills
-  - adobe experience manager
-  - adobe photoshop
-  - angularjs nodejs
-  - copilot studio
-  - dynamics 365 finance and operations
-  - microsoft dynamics 365 ce
-  - microsoft power platform
-  - next.js
-  - next.js remix
+[TECHNICAL_GENERAL_TECH_TOOLS_PLATFORMS] - 2 skills
   - nodejs
-  - power apps
-  - power automate
-  - power pages
-  - power platform
-  - power platform tools
-  - salesforce
-  - sharepoint
-  - sharepoint online
   - shopify
-  - sketchup
-  - springboot
-  - ssrs
-  - ssrs custom reports
-  - wordpress
 
-[TECHNICAL_GENERAL_TECH_WEB_DEVELOPMENT] - 10 skills
-  - aspdotnet core mvc
-  - aspdotnet mvc
-  - frontend technologies
+[TECHNICAL_GENERAL_TECH_WEB_DEVELOPMENT] - 11 skills
+  - html5css
+  - html5css3
+  - html5css3saasless
+  - html5css3sass
+  - html5css3scsssass
   - mvc
-  - mvc wcf
-  - ui frameworks
-  - ui ux design
-  - web application development
-  - web applications
-  - web technologies
+  - mvcwcf
+  - uiuxdesign
+  - webapplicationdevelopment
+  - webapplications
+  - webtechnologies
 
 [TECHNICAL_ML_AI_AI_GENERAL] - 1 skills
-  - ai optimization
-
-[TECHNICAL_ML_AI_COMPUTER_VISION] - 1 skills
-  - opencv
+  - aioptimization
 
 [TECHNICAL_ML_AI_MACHINE_LEARNING] - 1 skills
-  - machine learning
+  - aiml
 
-[TECHNICAL_PROGRAMMING_.NET] - 37 skills
-  - csharp dotnet wpf
-  - entity framework
-  - entity framework core
-  - entity framework, linq
-  - net
-  - net  dotnet framework
-  - net 4.5+
-  - net 4.x
-  - net 6
-  - net 6 8
-  - net 6 and 8
-  - net 6+
-  - net 8 or newer
-  - net application development
-  - net core
-  - net core  dotnet 6+
-  - net core 8
-  - net core 8+
-  - net core dotnet6+
-  - net csharp
-  - net development
-  - net dotnet core
-  - net dotnet core aspdotnet mvc
-  - net framework
-  - net framework 4.8 or later
-  - net framework 4.8.1
-  - net framework 4+ and dotnet core
-  - net framework and core
-  - net framework dotnet core
-  - net framework using csharp
-  - net languages
-  - net maui
-  - net platform
-  - net wpf
-  - web frameworks
-  - winforms
-  - wpf
-
-[TECHNICAL_PROGRAMMING_C_CPP] - 1 skills
-  - c programming
-
-[TECHNICAL_PROGRAMMING_CONCEPTS] - 5 skills
+[TECHNICAL_PROGRAMMING_.NET] - 627 skills
+  - 3dgameprogramming
+  - 3dmetrologycomputervision
+  - accessibilitystandardsaoda
+  - acumaticaframeworkxrp
+  - adobemanageraem
+  - adodotnet
+  - agileprocess
+  - agilescrum
+  - agilescrumkanban
+  - agilescrummethodology
+  - alara
   - algorithms
-  - computer science algorithms
-  - data structures
-  - data structures and algorithms
-  - design patterns
-
-[TECHNICAL_PROGRAMMING_GO] - 3 skills
-  - go
-  - golang
-  - golang go
-
-[TECHNICAL_PROGRAMMING_JAVA_ECOSYSTEM] - 9 skills
-  - express.js django spring boot
-  - java
-  - java dotnet
-  - java j2ee
-  - java spring
-  - kotlin java
-  - spring
-  - spring boot
-  - spring framework
-
-[TECHNICAL_PROGRAMMING_JAVASCRIPT_TYPESCRIPT] - 23 skills
-  - angular react with typescript
-  - angular typescript
-  - angular typescript rxjs ngrx
-  - bootstrap javascript
-  - html css javascript
-  - html css javascript jquery
-  - html css javascript typescript
-  - html5 css3 javascript
-  - html5 css3 javascript typescript
-  - html5 javascript
-  - html5 javascript css
+  - amazonwebservices
+  - anatomyincludingcrosssectional
+  - androidndk
+  - androidsdk
+  - angular
+  - angular12
+  - angular14
+  - angular140
+  - angular80
+  - angularjs
+  - angularjsnodejs
+  - angularmodern9
+  - angularorreact
+  - angularreact
+  - angularreactjquery
+  - angularreactnodejs
+  - angularreacttypescript
+  - angularreactvuejs
+  - angulartypescript
+  - angulartypescriptrxjsngrx
+  - angularv17includingtypescriptrxjsngrxlodashmaterial
+  - apachehttpserver
+  - apicreationconfiguration
+  - apiintegration
+  - apiintegrationrestfulsoap
+  - apiintegrations
+  - apimicroservices
+  - apirestoauthjsonxml
+  - archerdevelopment
+  - armtemplating
+  - aspdotnet
+  - aspdotnet45
+  - aspdotnetcore
+  - aspdotnetcoremvc
+  - aspdotnetcorewebapi
+  - aspdotnetcsharp
+  - aspdotnetmvc
+  - aspdotnetprogramming
+  - aspdotnetwebapi
+  - aspdotnetwebapirest
+  - automatedtestharness
+  - automatedtestingframeworks
+  - automatedtestingframeworkspytestgroovyspock
+  - automatedtestsunitintegration
+  - awsazure
+  - awsazuregcp
+  - awsazuregooglecloud
+  - awscloudservices
+  - awskubernetes
+  - awslambdaapigatewayrds
+  - awsopensearch
+  - awsorazure
+  - awsorazuredevops
+  - awsserverlessofferingsegawslambdadynamodb
+  - awsservices
+  - azure
+  - azureactivedirectoryaad
+  - azureadentraid
+  - azureado
+  - azureappservices
+  - azureaws
+  - azurecloud
+  - azurecloudhosting
+  - azurecloudservices
+  - azurecsharp
+  - azuredatabricks
+  - azuredatafactory
+  - azuredevops
+  - azuredevopspipeline
+  - azurefunctionapp
+  - azurefunctions
+  - azurefunctionslogicapps
+  - azurekubernetesservice
+  - azurekubernetesserviceaks
+  - azurelogicapps
+  - azuremanagedidentityservicebusappservicesfunctionappswebapps
+  - azureoraws
+  - azurepaasazurefunctionslogicappsservicebus
+  - azureplatformservices
+  - azureservicebus
+  - azureservices
+  - azureservicesapimanagementazurefunctionslogicapps
+  - azureservicesfunctionslogicappsadstorage
+  - azuresql
+  - azuresqlserver
+  - azurewebapps
+  - backenddevelopmentnodejspythonorcsharp
+  - bashpowershell
+  - batchfileprocessing
+  - batchscriptpowershell
+  - biceparmtemplates
+  - blazor
+  - blobstorage
+  - bootstrap
+  - bootstrapangularjquery
+  - bootstrapjavascript
+  - buildpipelinesjenkinsazuredevopsgitlabteamcity
+  - buildsystemsgitlabworkflowsnantmsbuild
+  - businesscentralwebservices
+  - businessprocessdesign
+  - businessrequirementdocumentation
+  - capitalmarkets
+  - capitalmarketstechnologybusiness
+  - cassandra
+  - cassandracqlnosqlsql
+  - changemancompuwaretoolscatools
+  - charlesriverinvestmentmanagementsolutioncrims
+  - cicdgitazurepipelines
+  - cicdpipelinesjenkinsdockerkubernetes
+  - cicdworkflows
+  - clientrelationshipmanagement
+  - cloudhybridarchitectures
+  - cloudnativearchitecture
+  - cloudnativearchitectures
+  - cloudnativetechnologiesk8shelmdockerterraform
+  - cloudsecurity
+  - cmstoolswordpresssharepoint
+  - codereview
+  - codingstandardscodereviews
+  - collaborativeteamenvironment
+  - computeraideddesigncad
+  - computergraphics
+  - computernetworkingvpn
+  - computersciencealgorithms
+  - computersciencefundamentals
+  - containerization
+  - containerorchestration
+  - containerorchestrationsystemskubernetesdocker
+  - containersk8shelmdocker
+  - containertechlxddockerkubernetes
+  - continuousintegrationcontinuousdelivery
+  - core
+  - cppcsharp
+  - cpporcsharp
+  - cprogramming
+  - crimsversion20r1orlater
+  - crmsoftware
+  - crossplatformmobileappdevelopment
+  - csharp
+  - csharpaspdotnetdotnetcore
+  - csharpcpp
+  - csharpdotnet
+  - csharpdotnetcore
+  - csharpdotnetwpf
+  - csharpjavapython
+  - csharpprogramming
+  - customerservice
+  - dapper
+  - databasesoftware
+  - databricks
+  - datagovernance
+  - datalakesdatabricks
+  - datastorage
+  - datastructures
+  - datastructuresalgorithms
+  - dataverse
+  - dataverseschemadesign
+  - db2imsdbimstmorcics
+  - dddpattern
+  - debuggingmemorycorruptionsprocesscontentionsandsystemperformance
+  - designorarchitecture
+  - designpatterns
+  - developerexpress
+  - devopscicdpipelineintegrationhelios
+  - devopspractices
+  - devopspracticesegcicdpipelines
+  - digitalcommunicationsplatforms
+  - distributedapplicationdesign
+  - distributedcloudbasedsolutions
+  - distributedcomputing
+  - distributedsystemdesigns
+  - distributedsystems
+  - docker
+  - dockerkubernetes
+  - dockerkubernetesaks
+  - domaindrivendesign
+  - dotnet
+  - dotnet45
+  - dotnet4x
+  - dotnet6
+  - dotnet68
+  - dotnet8ornewer
+  - dotnetapplicationdevelopment
+  - dotnetatleastdotnet5
+  - dotnetcore
+  - dotnetcore8
+  - dotnetcorecsharp
+  - dotnetcoredotnet6
+  - dotnetcsharp
+  - dotnetcsharporvb
+  - dotnetdevelopment
+  - dotnetdotnetcore
+  - dotnetdotnetframework
+  - dotnetframework
+  - dotnetframework481
+  - dotnetframework48orlater
+  - dotnetframework4anddotnetcore
+  - dotnetframeworkcore
+  - dotnetframeworkdotnetcore
+  - dotnetframeworkorcore
+  - dotnetframeworkusingcsharp
+  - dotnetlanguages
+  - dotnetmaui
+  - dotnetplatformcsharp
+  - dotnetwpf
+  - dynamics365businesscentralnav
+  - dynamics365cecrm
+  - dynamics365customerengagementsalesservice
+  - dynamics365financeoperations
+  - dynamics365onlineonpremise
+  - dynamicscrm2016higher
+  - ef6efcore
+  - electronchromiumopenfin
+  - engineeringleadership
+  - engineeringmindsetcleancodingtestingautomation
+  - enterpriselevelsecurityprotocols
+  - entityframework
+  - entityframeworkcore
+  - entityframeworklinq
+  - erpplatformssapmicrosoftdynamicssalesforce
+  - etlprocesses
+  - eventdrivenarchitecture
+  - eventdrivenmicroservices
+  - expressjsdjangospringboot
+  - federatedidentity
+  - financialservicesbanking
+  - finetuninglanguagemodels
+  - firewalls
+  - firstspiritcms
+  - fixprotocol
+  - foodpreparation
+  - frontenddesign
+  - frontendframeworksangularblazorreact
+  - frontendhtmljavascriptreactangular
+  - frontendtechnologies
+  - frontendui
+  - fullsoftwarelifecycle
+  - gdscript
+  - githubazuredevopscicd
+  - gitworkflows
+  - googleangularframework
+  - googlecloudplatform
+  - googlecloudplatformgcp
+  - gorubypythonjava
+  - governance
+  - gpuacceleratedmediapipelines
+  - graphicsdebuggingtoolspixrenderdocconsole
+  - graphql
+  - grcprojects
+  - grpc
+  - highconcurrencyprogramming
+  - highperformancememoryefficientmultithreadedcode
+  - hrissystemssapsuccessfactorspreferred
+  - html5css3javascript
+  - html5css3javascripttypescript
+  - html5javascript
+  - html5javascriptcss
+  - htmlcssjavascript
+  - htmlcssjavascriptjquery
+  - htmlcssjavascripttypescript
+  - httpprotocol
+  - hypervisortechnologieshypervvirtualboxkvmqemu
+  - iacexpertiseegserverlessframeworkterraform
+  - identityaccessmanagementprotocolsssosamloauth
+  - informationsecurity
+  - infrastructureascodeiac
+  - infrastructureascoderesourcemanagertemplates
+  - integrationframeworksodatarest
+  - integrationtesting
+  - interactivelearningtools
+  - ipnetworkconnectivity
+  - issueloggingtracking
+  - itoperations
+  - javaandroid
+  - javadotnet
   - javascript
-  - javascript  typescript
-  - javascript ajax jquery
-  - javascript frameworks
-  - javascript html5 css3
-  - javascript jquery
-  - javascript spa framework
-  - javascript typescript
-  - python typescript golang
-  - python, go, java, or javascript
+  - javascriptajaxjquery
+  - javascriptes6
+  - javascriptframeworks
+  - javascriptframeworksangularreactvuejs
+  - javascriptframeworksreactnextjsfabricjsnodejs
+  - javascriptframeworksvuejsreacttypescript
+  - javascripthtml5css3
+  - javascriptjquery
+  - javascriptjsjqueryjson
+  - javascriptnodejs
+  - javascriptreactredux
+  - javascriptreactreduxnodejs
+  - javascriptspaframeworkegangularreact
+  - javascripttypescript
+  - javascriptvue
+  - javaspring
+  - javaspringboot
+  - javawebservicesrestful
+  - jquery
+  - kafkaawssnssqsrabbitmqazurebus
+  - kernelmodedrivers
+  - kubernetes
+  - kubernetesopenshift
+  - kvmhypervisor
+  - laravel
+  - leadershipmentorship
+  - linuxcontainers
+  - linuxdebianorubuntu
+  - linuxinternals
+  - linuxkernel
+  - linuxkerneldevelopment
+  - linuxkernelnetworkprotocolstack
+  - linuxwebserversmysql
+  - lowlevelgraphicsapisdx12vulkanconsole
+  - lscentral
+  - machinelearning
+  - machinevisionprogramming
+  - macinternals
+  - marketing
+  - markettorontorealestate
+  - mauixamarin
+  - medicalterminology
+  - mentoring
+  - mentoringortechlead
+  - merchandisestrategies
+  - microfrontends
+  - microservicearchitecture
+  - microservices
+  - microservicesarchitecture
+  - microserviceskafka
+  - microsoft
+  - microsoftazure
+  - microsoftazureapis
+  - microsoftazureservices
+  - microsoftd365
+  - microsoftdataverse
+  - microsoftdotnet
+  - microsoftdotnetcsharp
+  - microsoftdotnetfullstackdevelopment
+  - microsoftdynamics
+  - microsoftdynamics365
+  - microsoftdynamics365axfinanceoperations
+  - microsoftdynamics365ce
+  - microsoftdynamics365crm
+  - microsoftdynamics365customerengagement
+  - microsoftdynamicscrm
+  - microsoftpowerplatform
+  - microsoftsqldatabase
+  - microsoftsqlpostgresqlmysql
+  - microsoftsqlserver
+  - microsoftvisualstudio
+  - middlewaresolutions
+  - middlewaretoolsmulesoft
+  - moderncpp
+  - modulefederation
+  - monitoringobservability
+  - msazuredevops
+  - msazuredevopsgityamlpipelines
+  - msdynamics365crm
+  - mssqlpostgres
+  - mssqlserver
+  - multiplatformdevelopment
+  - multithreadedasynchronousprogramming
+  - multithreadedconcurrentapplications
+  - multithreadedprogramming
+  - multithreading
+  - multithreadprogramming
+  - mvvmarchitecture
+  - netdotnetcoreaspdotnetmvc
+  - netframework
+  - networkedgameprinciples
+  - networking
+  - networkingconceptsiptcpdhcpetc
+  - networkingnetworkprotocolswireshark
+  - networkingsecuritydnsvpncloudloadbalancing
+  - networkprogramming
+  - networkprotocols
+  - networksecurityproducts
+  - nextjsremix
+  - nhibernate
+  - nodejsexpress
+  - nonrelationaldatabases
+  - ntiersystems
+  - objectorientedanalysisdesign
+  - objectorienteddesign
+  - objectorienteddesignood
+  - objectorienteddevelopment
+  - objectorientedprinciples
+  - objectorientedprogramming
+  - objectorientedprogramminglanguages
+  - observability
+  - onlinetutoring
+  - oopprinciples
+  - oopssoliddesignprinciples
+  - operatingsystemsconcepts
+  - operationalexcellence
+  - oracle
+  - oracle19cplsql
+  - oraclesql
+  - oracletuxedo
+  - patientcarehandling
+  - performanceengineering
+  - performanceoptimization
+  - pharmaceuticalregulatedprocesses
+  - plicoboljclmarkivtelonca7
+  - postgres
+  - postgresmysql
+  - postgresql
+  - postgresqlmicrosoftsqlservermongodb
+  - postgresqlmysql
+  - postgresqlsql
+  - postgresqltsql
+  - powerapps
+  - powerautomate
+  - powerbi
+  - powerfx
+  - powerpages
+  - powerplatform
+  - powerplatformcanvasappspowerautomateflow
+  - powerplatformtoolspowerautomatepowerappspowerbi
+  - powershell
+  - powershellazurecli
+  - powershellscripting
+  - prisma
+  - privateconnectivity
+  - problemsolving
+  - proc
+  - programming
+  - programminglanguages
+  - projectmanagement
+  - publiccloudawsazuregcp
+  - pythonazuredatabricks
+  - pythongojavaorjavascript
+  - pythontypescriptgolang
+  - rabbitmqkafkaibmmq
+  - radiationsafety
+  - ragvectorstores
+  - rdbms
+  - rdbmssqlplsql
+  - react
+  - reactangular
+  - reactangularblazor
+  - reactangularvuejs
+  - reactangularvuejsunity
+  - reactjs
+  - reactjsangularjs
+  - reactjsvuejsangularjs
+  - reactnextjs
+  - reactreactnative
+  - reactredux
+  - reacttypescript
+  - reactvue
+  - realestate
+  - realestatelicensereco
+  - realtimerendering
+  - recruiting
+  - redis
+  - redismemcached
+  - redismongodbelasticsearch
+  - redux
+  - regulatorycompliance
+  - relationaldatabaseoraclepostgressqlserver
+  - relationaldatabaseoraclesqlserver
+  - relationaldatabases
+  - relationaldatabasesmssqlpostgresql
+  - relationaldatabasesmssqlpostgresqlmariadb
+  - relationaldatabasesystemsoracle
+  - relationalnosqldatabases
+  - reliabilityscaling
+  - requirementsdefinition
+  - rest
+  - restapi
+  - restapidesign
+  - restapimicroservices
+  - restapis
+  - restapisjson
+  - restfulapi
+  - restfulapidesign
+  - restfulapis
+  - restfulapisgraphql
+  - restfulapisjson
+  - restfularchitecture
+  - restfulservices
+  - restgrpcapis
+  - restservices
+  - restsoap
+  - restsoapapis
+  - restsoapservices
+  - retailmanagement
+  - riskassessment
+  - riskmanagement
+  - rubyonrails
+  - rust
+  - rxjsngrx
+  - saasproducts
+  - salesforcesalesmarketingclouds
+  - salesperformance
+  - salestargets
+  - sapcrystalreports
+  - sasslessbootstraptailwind
+  - scalablearchitecturedesign
+  - scalablesoftware
+  - scrum
+  - sdlcprocess
+  - secretclearance
+  - securecodingpractices
+  - securesoftwaredevelopment
+  - security
+  - securitycompliance
+  - securitydevelopment
+  - securityimplementation
+  - serverlesstechnologies
+  - serversidetechnologies
+  - servicenowoffice365ibmdatastudio
+  - serviceorientedarchitecture
+  - serviceorientedarchitecturesoa
+  - sharepoint
+  - sharepointonline
+  - soaprestapi
+  - soaprestfulservices
+  - soaprestservices
+  - soapservices
+  - soapwebservices
+  - socketprogramming
+  - softwarearchitecture
+  - softwaredevelopment
+  - softwarelifecyclemanagement
+  - softwareprinciples
+  - softwareprogramminglanguage
+  - softwaretestingtestdrivendevelopment
+  - sourcecontrolsvngit
+  - sourcetree
+  - spark
+  - spring
+  - springboot
+  - springframework
+  - springspringbootbatchintegrationdietc
+  - sqldatabasestransactsql
+  - sqloraclesqlserver
+  - sqlorms
+  - sqlpostgresql
+  - sqlscripting
+  - sqlserver
+  - sqlservermongodb
+  - sqlservermysql
+  - sqlservernosqldatabase
+  - sqlserveroracle
+  - sqlserverpostgresql
+  - sqlserverpostgresqlmongodb
+  - sqlservertsql
+  - sqlsqlserver
+  - ssrs
+  - ssrscustomreports
+  - standardlibrary
+  - steriletechnique
+  - stlcontainers
+  - storedprocedures
+  - storedprocedurestriggers
+  - supervisory
+  - systemarchitecture
+  - systemdesignarchitecture
+  - systemlevelprogramming
+  - systemsadministrationlinuxwindows
+  - systemstroubleshooting
+  - teamcollaboration
+  - teamfoundationserver
+  - teamwork
+  - technicalstrategy
+  - terraform
+  - testdrivendevelopment
+  - testdriventdd
+  - testingframeworksjmeterxunitselenium
+  - threadingasyncprogramming
+  - tlscertificates
+  - transactsql
+  - troubleshootingcrmpluginsworkflows
   - typescript
-  - typescript javascript
+  - typescriptjavascript
+  - uiframeworks
+  - uiframeworksavaloniawpf
+  - unittestingintegrationtesting
+  - unittestingintegrationtestingacceptancetestingandloadtesting
+  - unixlinuxenvironments
+  - unrealengine
+  - uxbestpractices
+  - vbnet
+  - vbnet100
+  - vercelneon
+  - versioncontrolgit
+  - vuejsreact
+  - vueorangularreact
+  - wcagowaspstandards
+  - webapirestfulapi
+  - webapplicationsecurity
+  - webframeworksdjangoflask
+  - webintranetarchitecture
+  - webreactangularvuejs
+  - webserverbasedplatforms
+  - webserviceframeworkssoaprest
+  - webservices
+  - webserviceswcfrestwebapisadodotnet
+  - webserviceswebapi
+  - webserviceswebapis
+  - windowscorefunctionality
+  - windowscsharpdotnetvisualstudio
+  - windowsforms
+  - windowsinternals
+  - windowsinterprocesscommunication
+  - windowskernelprogramming
+  - windowsoskerneldriverdevelopment
+  - windowsserver
+  - winforms
+  - wirelesssales
+  - wordpress
+  - workshopfacilitation
+  - wpf
+  - writinginstruction
+  - xmlsoaprest
+  - zosmainframeenvironment
+
+[TECHNICAL_PROGRAMMING_C_CPP] - 46 skills
+  - agenticsystems
+  - aitechnologies
+  - analyticstoolsgoogleanalytics
+  - apachekafka
+  - applicationdevelopment
+  - awsstack
+  - bicep
+  - cal
+  - cashhandling
+  - ccpp
+  - chef
+  - cleancode
+  - cmake
+  - consultingtechniques
+  - copilotstudio
+  - cosmosdb
+  - cpp
+  - cppcpp1720
+  - css
+  - cssscsshtml
+  - databasetechnologies
+  - devopsdevsecops
+  - devsecopsmlops
+  - finance
+  - htmlcss
+  - htmlcssjs
+  - impactanalysis
+  - jestmocha
+  - knockoutjs
+  - macos
+  - maintenanceassetmanagement
+  - msdynamics365ce
+  - msoffice
+  - oauth2openidconnect
+  - objectivec
+  - opencv
+  - singlepageapplication
+  - sketchup
+  - technicaldesign
+  - tsscifsp
+  - uiwebtechnologystacks
+  - visualstudiocode
+  - visualstudiocodenpmnodejs
+  - wcf
+  - webpack
+  - windowsapplications
+
+[TECHNICAL_PROGRAMMING_GO] - 4 skills
+  - go
+  - gogolang
+  - golang
+  - golanggo
+
+[TECHNICAL_PROGRAMMING_JAVA_ECOSYSTEM] - 3 skills
+  - java
+  - javaj2ee
+  - kotlinjava
 
 [TECHNICAL_PROGRAMMING_MOBILE] - 1 skills
   - kotlin
@@ -909,66 +957,17 @@
 [TECHNICAL_PROGRAMMING_PHP] - 1 skills
   - php
 
-[TECHNICAL_PROGRAMMING_PYTHON_ECOSYSTEM] - 3 skills
-  - csharp java python
-  - go ruby python java
+[TECHNICAL_PROGRAMMING_PYTHON_ECOSYSTEM] - 2 skills
   - python
+  - pythondjangoflask
 
-[TECHNICAL_PROGRAMMING_RUBY] - 1 skills
-  - ruby on rails
+[TECHNICAL_SECURITY_APP_SECURITY] - 1 skills
+  - dns
 
-[TECHNICAL_PROGRAMMING_RUST] - 1 skills
-  - rust
+[TECHNICAL_SYSTEM_DESIGN] - 1 skills
+  - systemdesign
 
-[TECHNICAL_SECURITY_APP_SECURITY] - 2 skills
-  - security implementation
-  - web application security
-
-[TECHNICAL_SECURITY_CRYPTO] - 1 skills
-  - tls certificates
-
-[TECHNICAL_SYSTEM_CONCEPTS] - 3 skills
-  - computer networking
-  - networking
-  - networking concepts
-
-[TECHNICAL_SYSTEM_DESIGN] - 8 skills
-  - api microservices
-  - distributed systems
-  - event driven microservices
-  - microservices
-  - microservices architecture
-  - microservices kafka
-  - system design
-  - system design architecture
-
-[TECHNICAL_SYSTEM_TOOLS] - 25 skills
-  - bash powershell
-  - batch script powershell
-  - cmake
-  - embedded linux
-  - linux
-  - linux based systems
-  - linux hp ux unix ms windows
-  - linux internals
-  - linux kernel
-  - linux kernel development
-  - linux kernel network protocol stack
-  - linux os
-  - linux system calls
-  - linux unix
-  - microsoft visual studio
-  - powershell
-  - powershell scripting
-  - unix linux
-  - unix linux environments
-  - visual studio
-  - visual studio 2017 2022
-  - visual studio 2017 and 2022
-  - visual studio code
-  - visual studio code npm node.js
-  - visual studio ide
-
-[TECHNICAL_TESTING_TEST_AUTOMATION] - 1 skills
-  - test automation
+[TECHNICAL_TESTING_TEST_AUTOMATION] - 2 skills
+  - testautomation
+  - testautomationpostmanseleniumnunit
 

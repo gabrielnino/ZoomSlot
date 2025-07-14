@@ -9,7 +9,7 @@
         public string EmailContact { get; set; }
         public string ContactHiringSection { get; set; }
         public List<Skill> KeySkillsRequired { get; set; }
-        public List<SkillCategory> Skills { get; set; }
+        public Dictionary<string, List<Skill>> Skills { get; set; }
         public List<Skill> EssentialQualifications { get; set; }
         public List<Skill> EssentialTechnicalSkillQualifications { get; set; }
         public List<Skill> OtherTechnicalSkillQualifications { get; set; }
