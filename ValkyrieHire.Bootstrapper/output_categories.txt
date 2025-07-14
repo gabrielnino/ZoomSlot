@@ -1,4 +1,4 @@
-[GENERAL_TECH] - 837 skills
+[GENERAL_TECH] - 816 skills
   - 3d game programming
   - a desire to change the world
   - ability to create and train datasets
@@ -60,10 +60,6 @@
   - archer development
   - architecting solutions and database modeling
   - arm templating
-  - asp dotnet
-  - asp dotnet core
-  - asp dotnet core experience
-  - asp dotnet programming
   - aspdotnet
   - aspdotnet 4.5
   - aspdotnet core
@@ -125,7 +121,6 @@
   - cassandra cql nosql or sql databases
   - cassandra cql nosql sql
   - certifications like cisa or cissp
-  - certified in dotnet, or cloud technologies
   - change management
   - changeman, compuware tools, ca tools
   - charles river investment management solution
@@ -203,10 +198,7 @@
   - cross platform mobile app development
   - csharp
   - csharp and c++
-  - csharp aspdotnet dotnet core
   - csharp c++
-  - csharp dotnet
-  - csharp dotnet core
   - csharp programming
   - csharp ui development
   - csharpdotnet
@@ -314,7 +306,6 @@
   - experience deploying and maintaining cloud applications
   - experience developing automation solutions
   - experience developing desktop applications
-  - experience developing in a dotnet environment
   - experience developing scalable service oriented architectures
   - experience formulating business processes
   - experience in agile software development
@@ -332,7 +323,6 @@
   - experience in fix protocol
   - experience in gui design
   - experience in handling sensitive data security
-  - experience in modern dotnet technologies
   - experience in monitoring and observability capabilities
   - experience in multiple programming languages
   - experience in multiple technology stacks
@@ -350,14 +340,11 @@
   - experience supporting production environment
   - experience supporting windows forms
   - experience using or developing web service
-  - experience using the dotnet platform
   - experience working in a cloud environment
   - experience working in fintech
   - experience working with public cloud infrastructure
   - experience working with software development teams
-  - experienced in dotnet and csharp
   - expertise in caching frameworks
-  - expertise in csharp and dotnet frameworks
   - expertise in technologies like jms, solace
   - expertise with ci cd pipelines
   - exposure of data management methodologies
@@ -365,13 +352,11 @@
   - exposure to highly interfaced erp environments
   - exposure to json, xml
   - exposure to mlops tools and frameworks
-  - extensive experience in csharp dotnet development
   - familiarity with ci cd pipeline
   - familiarity with ci cd pipelines
   - familiarity with cloud environments
   - familiarity with cloud platforms
   - familiarity with database technologies
-  - familiarity with dotnet 6 onwards
   - familiarity with k 12 curriculum
   - familiarity with lease renewal paperwork
   - familiarity with messaging services
@@ -393,7 +378,6 @@
   - firstspirit cms
   - fix protocol
   - flexible and adaptable to changing priorities
-  - fluent in modern dotnet
   - front end and server side development
   - front end design
   - front end development
@@ -505,9 +489,6 @@
   - microsoft certification preferred
   - microsoft d365
   - microsoft dataverse
-  - microsoft dotnet
-  - microsoft dotnet csharp
-  - microsoft dotnet full stack development
   - microsoft dynamics
   - microsoft dynamics 365
   - microsoft dynamics 365 crm
@@ -620,7 +601,6 @@
   - professional experience in backend software development
   - professional written and spoken english
   - proficiency with code management tools
-  - proficient in dotnet
   - proficient in front end technologies
   - proficient in industry standard best practices
   - proficient with containerization technologies
@@ -776,7 +756,6 @@
   - templating in c++
   - tenacity and long term value thinking
   - test case execution
-  - the dotnet framework and related technologies
   - thinks clearly and calmly under pressure
   - threading async programming
   - thrives in dynamic product environments
@@ -1717,11 +1696,32 @@
 [TECHNICAL_ML_AI_MACHINE_LEARNING] - 1 skills
   - machine learning
 
-[TECHNICAL_PROGRAMMING_.NET] - 46 skills
+[TECHNICAL_PROGRAMMING_.NET] - 69 skills
+  - asp dotnet
+  - asp dotnet core
+  - asp dotnet core experience
+  - asp dotnet programming
+  - certified in dotnet, or cloud technologies
+  - csharp aspdotnet dotnet core
+  - csharp dotnet
+  - csharp dotnet core
   - csharp dotnet wpf
+  - csharp, aspdotnet, dotnet core, javascript, sql
   - entity framework
   - entity framework core
   - entity framework, linq
+  - experience developing in a dotnet environment
+  - experience in modern dotnet technologies
+  - experience using the dotnet platform
+  - experienced in dotnet and csharp
+  - expertise in csharp and dotnet frameworks
+  - extensive experience in csharp dotnet development
+  - familiarity with dotnet 6 onwards
+  - fluent in modern dotnet
+  - java dotnet
+  - microsoft dotnet
+  - microsoft dotnet csharp
+  - microsoft dotnet full stack development
   - net
   - net  dotnet framework
   - net , python, and ai frameworks
@@ -1761,6 +1761,8 @@
   - net platform
   - net programming
   - net wpf
+  - proficient in dotnet
+  - the dotnet framework and related technologies
   - web frameworks
   - winforms
   - wpf
@@ -1785,12 +1787,11 @@
   - golang
   - golang go
 
-[TECHNICAL_PROGRAMMING_JAVA_ECOSYSTEM] - 17 skills
+[TECHNICAL_PROGRAMMING_JAVA_ECOSYSTEM] - 16 skills
   - experience developing in java
   - express.js django spring boot
   - java
   - java and csharp
-  - java dotnet
   - java exposure
   - java j2ee
   - java knowledge
@@ -1804,12 +1805,11 @@
   - spring framework
   - strong java, j2ee, spring
 
-[TECHNICAL_PROGRAMMING_JAVASCRIPT_TYPESCRIPT] - 35 skills
+[TECHNICAL_PROGRAMMING_JAVASCRIPT_TYPESCRIPT] - 34 skills
   - angular react with typescript
   - angular typescript
   - angular typescript rxjs ngrx
   - bootstrap javascript
-  - csharp, aspdotnet, dotnet core, javascript, sql
   - csharp, typescript, javascript, sql development components
   - experience developing with java and javascript
   - experience working with react and javascript

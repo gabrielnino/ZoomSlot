@@ -46,7 +46,6 @@ namespace ValkyrieHire.Bootstrapper
                     services.AddTransient<ApplyCommand>();
                     services.AddTransient<JobsCommand>();
                     services.AddTransient<PromtCommand>();
-                    services.AddTransient<QualifiedCommand>();
                     services.AddTransient<SkillCommand>();
                     services.AddTransient<IJobSearchCoordinator, JobSearchCoordinator>();
                     services.AddTransient<IPromptGenerator, PromptGenerator>();
@@ -67,7 +66,6 @@ namespace ValkyrieHire.Bootstrapper
                     services.AddSingleton<IUtil, Util>();
                     services.AddSingleton<IPageTrackingService, PageTrackingService>();
                     services.AddSingleton<IJobDocumentCoordinator, JobDocumentCoordinator>();
-                    services.AddSingleton<IQualifiedService, QualifiedService>();
                     services.AddSingleton<IFileService, FileService>();
                     services.AddSingleton<ISkillExtractor, SkillExtractor>();
                     services.AddSingleton<ISkillGrouper, SkillGrouper>();

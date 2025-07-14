@@ -8,7 +8,6 @@
         public const string job = "--job";
         public const string apply = "--apply";
         public const string prompt = "--prompt";
-        public const string qualified = "--qualified";
         public const string skills = "--skills";
         public const string resume = "--resume";
 
@@ -21,7 +20,6 @@
             job,
             apply,
             prompt,
-            qualified,
             skills,
             resume
         };

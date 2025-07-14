@@ -38,10 +38,6 @@ namespace Commands
                 case JobCommandArgs.prompt:
                     commands.Add(_serviceProvider.GetRequiredService<PromtCommand>());
                     break;
-                case JobCommandArgs.qualified:
-                    commands.Add(_serviceProvider.GetRequiredService<QualifiedCommand>());
-                    break;
-
                 case JobCommandArgs.skills:
                     commands.Add(_serviceProvider.GetRequiredService<SkillCommand>());
                     break;
