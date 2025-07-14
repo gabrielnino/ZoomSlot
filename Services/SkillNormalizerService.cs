@@ -25,6 +25,7 @@ namespace Services
         private readonly AppConfig _appConfig = appConfig;
         private readonly ILogger<SkillNormalizerService> _logger = logger;
         private readonly ExecutionOptions _executionOptions = executionOptions;
+        private readonly List<string>  Uncategorized = [];
 
         public async Task RunAsync()
         {
@@ -51,7 +52,7 @@ namespace Services
             var skills = await _extractor.ExtractSkillsAsync(filePath);
 
             _logger.LogInformation("🧽 Normalizing skills...");
-            var skillsNormalize = skills.Select(SkillHelpers.NormalizeSkill);
+            var skillsNormalize = skills.Select(SkillHelpers.NormalizeSkill).Distinct().Order();
 
             _logger.LogInformation("🧠 Grouping skills...");
             var grouped = _grouper.GroupSkills(skillsNormalize);
@@ -79,6 +80,8 @@ namespace Services
                     result.Add(jobOffer);
                 }
             }
+
+            await _resolver.WriteAsync(categoryPath, Uncategorized);
 
             if (result.Count > 0)
             {
@@ -120,7 +123,7 @@ namespace Services
             }
         }
 
-        private static List<SkillCategory> ExtractCategories(JobOffer offer, Dictionary<string, List<string>> finalGroups)
+        private List<SkillCategory> ExtractCategories(JobOffer offer, Dictionary<string, List<string>> finalGroups)
         {
             if (offer == null || finalGroups == null)
             {
@@ -144,15 +147,20 @@ namespace Services
 
             foreach (var skill in skillRelevanceLookup)
             {
+               
                 var category = finalGroups.FirstOrDefault(g => g.Value.Contains(skill.Key));
-                if (category.Key != null)
+                if (category.Key == null)
                 {
-                    skillCategories.Add(new SkillCategory
-                    {
-                        Category = category.Key,
-                        KeySkill = skill.Value
-                    });
+                    _logger.LogWarning("⚠️ No category found for skill: {Skill}", skill.Key);
+                    Uncategorized.Add(skill.Key);
+                    continue;
                 }
+                skillCategories.Add(new SkillCategory
+                {
+                    Category = category.Key,
+                    KeySkill = skill.Value
+                });
+
             }
 
             return skillCategories;

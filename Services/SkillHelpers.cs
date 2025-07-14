@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Services
+﻿namespace Services
 {
     using System.Text.RegularExpressions;
-    using System.Text.Json;
 
     public static class SkillHelpers
     {
@@ -62,24 +55,7 @@ namespace Services
             return 2.0 * matches / (s1.Length + s2.Length);
         }
 
-        public static Dictionary<string, List<string>> FlattenCategories(Dictionary<string, object> root, string prefix = "")
-        {
-            var result = new Dictionary<string, List<string>>();
-            foreach (var (key, value) in root)
-            {
-                if (value is JsonElement je && je.ValueKind == JsonValueKind.Array)
-                {
-                    result[prefix + key] = je.EnumerateArray().Select(x => x.GetString()!).ToList();
-                }
-                else if (value is JsonElement je2 && je2.ValueKind == JsonValueKind.Object)
-                {
-                    var nested = JsonSerializer.Deserialize<Dictionary<string, object>>(je2.ToString()!)!;
-                    foreach (var kv in FlattenCategories(nested, $"{prefix}{key}_"))
-                        result[kv.Key] = kv.Value;
-                }
-            }
-            return result;
-        }
+
 
         public static Dictionary<string, List<string>> ConsolidateGroups(
             Dictionary<string, List<string>> groups, 
@@ -114,8 +90,8 @@ namespace Services
         }
 
         public static Dictionary<string, List<string>> ReclassifyGroups(
-            Dictionary<string, List<string>> groups, 
-            Func<string, string> categoryResolver)
+    Dictionary<string, List<string>> groups,
+    Func<string, string> categoryResolver)
         {
             var finalGroups = new Dictionary<string, List<string>>();
 
@@ -129,10 +105,14 @@ namespace Services
                     if (ShouldDiscard(skill)) continue;
 
                     var newCategory = categoryResolver(skill);
-
-                    if (finalGroups.TryGetValue(newCategory, out List<string>? value))
+                    if (string.IsNullOrWhiteSpace(newCategory))
                     {
-                        value.Add(skill);
+                        newCategory = "UNCATEGORIZED";
+                    }
+
+                    if (finalGroups.TryGetValue(newCategory, out var list))
+                    {
+                        list.Add(skill);
                     }
                     else
                     {
@@ -141,12 +121,12 @@ namespace Services
                 }
             }
 
-            // Remove duplicates and sort
             return finalGroups.ToDictionary(
                 g => g.Key,
                 g => g.Value.Distinct().OrderBy(s => s).ToList()
             );
         }
+
     }
 
 }

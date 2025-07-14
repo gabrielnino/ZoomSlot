@@ -18,13 +18,7 @@
             var skills = new HashSet<string>();
             foreach (var job in root ?? [])
             {
-                foreach (var key in new[]
-                {
-                    "KeySkillsRequired",
-                    "EssentialQualifications",
-                    "EssentialTechnicalSkillQualifications",
-                    "OtherTechnicalSkillQualifications"
-                })
+                foreach (var key in new[] { "KeySkillsRequired" })
                 {
                     foreach (var skill in job?[key]?.AsArray() ?? [])
                     {

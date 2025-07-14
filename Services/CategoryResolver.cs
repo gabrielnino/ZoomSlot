@@ -21,15 +21,35 @@ namespace Services
             _logger = logger;
         }
 
+        public Dictionary<string, List<string>> FlatCategories => _flatCategories;
+
         public async Task InitializeAsync(string categoryFilePath)
         {
             _logger.LogInformation("📂 Loading category hierarchy from {Path}", categoryFilePath);
 
-            var json = await File.ReadAllTextAsync(categoryFilePath);
-            var root = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
-
-            _flatCategories = SkillHelpers.FlattenCategories(root);
-            _logger.LogInformation("✅ Loaded {CategoryCount} categories", _flatCategories.Count);
+            try
+            {
+                var json = await File.ReadAllTextAsync(categoryFilePath);
+                var data = JsonSerializer.Deserialize<Dictionary<string, List<string>>>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+                if (data == null)
+                {
+                    _logger.LogWarning("⚠️ Category file was read but returned null after deserialization.");
+                    _flatCategories = [];
+                }
+                else
+                {
+                    _flatCategories = data;
+                    _logger.LogInformation("✅ Loaded {CategoryCount} categories", _flatCategories.Count);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Failed to load or parse the category hierarchy file: {Path}", categoryFilePath);
+                _flatCategories = [];
+            }
         }
 
         public string ResolveCategory(string skill)
@@ -43,6 +63,27 @@ namespace Services
             }
 
             return "GENERAL_TECH";
+        }
+
+        public async Task WriteAsync(string categoryFilePath, List<string> uncategorized)
+        {
+            _flatCategories.Add("UNCATEGORIZED", [.. uncategorized.Distinct().Order()]);
+            _logger.LogInformation("💾 Writing category hierarchy to {Path}", categoryFilePath);
+
+            try
+            {
+                var json = JsonSerializer.Serialize(_flatCategories, new JsonSerializerOptions
+                {
+                    WriteIndented = true
+                });
+
+                await File.WriteAllTextAsync(categoryFilePath, json);
+                _logger.LogInformation("✅ Successfully saved {CategoryCount} categories to file.", _flatCategories.Count);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Failed to write category hierarchy to file: {Path}", categoryFilePath);
+            }
         }
     }
 
