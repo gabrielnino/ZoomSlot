@@ -94,7 +94,6 @@ namespace Services
             _logger.LogInformation("📁 Moving execution folder to completed folder...");
             _logger.LogInformation("📁 Copying reports with Robocopy...");
             RoboCopyFiles(_appConfig.Paths.ReportFolder, _appConfig.Paths.OutPath);
-
             _logger.LogInformation("✅ Skill Normalization Completed Successfully");
         }
 
@@ -129,7 +128,7 @@ namespace Services
             }
 
             var skillCategories = new List<SkillCategory>();
-            var skillRelevanceLookup = new Dictionary<string, int>();
+            var skillRelevanceLookup = new Dictionary<string, Skill>();
 
             if (offer.KeySkillsRequired != null)
             {
@@ -138,7 +137,7 @@ namespace Services
                     if (skill != null && !string.IsNullOrWhiteSpace(skill.Name))
                     {
                         var normalized = SkillHelpers.NormalizeSkill(skill.Name);
-                        skillRelevanceLookup[normalized] = skill.RelevancePercentage;
+                        skillRelevanceLookup[normalized] = skill;
                     }
                 }
             }
@@ -151,7 +150,7 @@ namespace Services
                     skillCategories.Add(new SkillCategory
                     {
                         Category = category.Key,
-                        Relevance = skill.Value
+                        KeySkill = skill.Value
                     });
                 }
             }

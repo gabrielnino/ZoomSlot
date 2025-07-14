@@ -1,199 +1,1957 @@
-[GENERAL_TECH] - 41 skills
+[GENERAL_TECH] - 837 skills
+  - 3d game programming
+  - a desire to change the world
+  - ability to create and train datasets
+  - ability to manage competing priorities
+  - ability to manage multiple priorities
+  - ability to mentor and develop employees
+  - ability to mentor junior engineers
   - ability to mentor junior team members
+  - ability to mentor team members
+  - ability to multi task effectively
+  - ability to operate with limited supervision
+  - ability to remain calm under pressure
+  - ability to work across functions
+  - ability to work cross functionally
   - ability to work independently and proactively
+  - ability to work with multiple stakeholders
+  - accessibility standards
+  - accounting knowledge
+  - acumatica framework
   - ada web compliance best practices
-  - api soap file formats
+  - adaptability to new technologies
+  - adaptability to new tools and trends
+  - adobe creative suite
+  - adodotnet
+  - advanced c c++ skills
+  - agentic systems
+  - agile kanban software development methodologies
+  - agile software development experience
+  - ai genai tools
+  - ai ml
+  - ai powered feature implementation
+  - ai technologies
+  - ajax
+  - aks
+  - aks clusters in production
+  - al
+  - al language
+  - alara
+  - an eye for accessibility and performance
+  - analytical skills
+  - analytical thinking
+  - analytical thinking, application development, applications programming
+  - analytics tools
+  - anatomy
+  - android ndk
+  - android sdk
+  - angularjs
+  - ansible
+  - ant
+  - apex soql
+  - apex soql, java, sql
+  - api creation and configuration
+  - api integration
+  - api integrations
+  - application code migration
+  - application development
+  - application programming interface
+  - application security
+  - archer development
+  - architecting solutions and database modeling
+  - arm templating
   - asp dotnet
+  - asp dotnet core
+  - asp dotnet core experience
+  - asp dotnet programming
   - aspdotnet
+  - aspdotnet 4.5
   - aspdotnet core
+  - aspdotnet csharp
+  - aspdotnet programming
+  - at least one modern frontend framework
+  - attention to well crafted software
+  - authentication
+  - automated build, test and deployment tools
+  - automated test harness
+  - automation
+  - automation test development experience
+  - autonomous learning
+  - autosys experience for job scheduling
+  - aws cloud
+  - aws cloud services
+  - bachelor in management or engineering
+  - back end development
+  - backend development
+  - background in enterprise it security environments
+  - background in tdd, unit test tools
+  - balancing competing interests
+  - banking domain knowledge
+  - banking financial wealth management experience
+  - bash
+  - basic coding knowledge in csharp
+  - basic technical skills for remote sessions
+  - batch file processing
+  - batch processing knowledge
+  - biased for action and technically progressive
+  - bicep
+  - bicep arm templates
+  - big data and event streaming
+  - big data experience
+  - bilingualism
+  - blazor
+  - blob storage
+  - bonus: pos systems experience
+  - build tools
+  - building restful apis and authentication authorization
+  - business analysis
+  - business analysis, project management skills
+  - business development
+  - business process design
+  - business process design, engineering, or optimization
+  - c al
+  - c c++
+  - c, c++, and or assembly
   - c++
+  - c++ csharp
+  - c++ or csharp
+  - capital market experience
+  - capital markets
+  - capital markets domain experience
+  - capital markets experience preferred
+  - capital markets products banking
+  - capital markets technology business
+  - cash handling
+  - cassandra cql nosql or sql databases
+  - cassandra cql nosql sql
+  - certifications like cisa or cissp
+  - certified in dotnet, or cloud technologies
+  - change management
+  - changeman, compuware tools, ca tools
+  - charles river investment management solution
+  - chef
   - ci cd
+  - ci cd concepts
+  - ci cd concepts and tooling
+  - ci cd pipeline
+  - ci cd pipeline setup and management
+  - ci cd pipelines
+  - ci cd systems
+  - ci cd tools
+  - ci cd workflows
+  - ci systems
+  - clean code
+  - cloud and devops knowledge
+  - cloud based technologies
+  - cloud computing
+  - cloud computing development
+  - cloud development
+  - cloud development and deployment
+  - cloud experience, especially aws
+  - cloud hybrid architectures
+  - cloud native application development
+  - cloud native applications
+  - cloud native architecture
   - cloud native architectures
+  - cloud native development
+  - cloud native development skills
+  - cloud native technologies
+  - cloud platforms and deployment tools
   - cloud security
-  - coaching and mentorship
+  - cloud services and devops concept
+  - cloud solutions
+  - cloud systems
+  - cloud technologies
+  - cms tools
+  - code quality and standards
+  - code review
+  - collaborative and team oriented
+  - collaborative and team oriented mindset
+  - collaborative approach to product development
+  - college cegep education
+  - comfortable guiding others and providing feedback
+  - comfortable working in a hybrid environment
+  - commitment to clean and efficient code
+  - commitment to quality and excellence
+  - competitive compensation and benefits package
+  - compliance with laws and regulations
+  - computer aided design
+  - computer graphics
+  - computer science fundamentals
+  - consultative, collaborative, relationship builder
+  - consulting skills
+  - consulting techniques
+  - container orchestration
+  - container orchestration systems
+  - container platforms
+  - container tech
+  - containerization
+  - containerization and orchestration
+  - containerization frameworks
+  - content creation pipelines
+  - continuous learning
+  - continuous learning mindset
+  - core
   - cosmos db
+  - cost estimation
+  - crash dump analysis
+  - creative thinking skills
+  - crims
+  - crm and technology tools proficiency
+  - crm software
+  - cross functional influencing and stakeholder engagement
+  - cross platform mobile app development
   - csharp
-  - curiosity and motivation to learn
-  - deep curiosity and sense of urgency
+  - csharp and c++
+  - csharp aspdotnet dotnet core
+  - csharp c++
+  - csharp dotnet
+  - csharp dotnet core
+  - csharp programming
+  - csharp ui development
+  - csharpdotnet
+  - css3+
+  - curiosity and coachability
+  - curiosity and connection
+  - curiosity and purpose
+  - curiosity, initiative, and a learning mindset
+  - custom applications
+  - customer focused approach
+  - customer oriented
+  - customer oriented with strong people skills
+  - d365
+  - d365 f and o applications
+  - dapper
+  - data
+  - data engineering and pipeline maintenance
+  - data lakes data bricks
+  - data migration
+  - data migration and integration strategies
+  - data quality and security
+  - data visualization
+  - database
+  - database design
+  - database design management
+  - database design, performance management, and tuning
+  - database proficiency
+  - database technologies
+  - databases
+  - databases: relational database systems
+  - databricks
+  - dataverse
+  - dataverse schema design
+  - ddd pattern
+  - deeply curious and data fluent
+  - degree in computer science
+  - degree in computer science or engineering
+  - degree in computer science or similar
+  - delivery using modern methodologies
+  - delphi
+  - demonstrated leadership and project management skills
+  - design and implementation of solution architecture
+  - design or architecture
+  - designing and developing cloud native applications
+  - designing ci cd pipelines and build
+  - desired skills and experience
+  - desktop application experience
+  - detail and big picture orientation
+  - developed high quality, testable software
+  - developer express
+  - developing full stack applications using csharp
+  - developing reusable web components
+  - development of computer applications
+  - development skills
+  - devsecops mlops
+  - di
+  - digital communications platforms
+  - distributed application design
+  - distributed cloud based solutions
+  - distributed computing
+  - distributed computing experience
+  - distributed system designs
+  - document and communicate research and results
+  - domain driven design
+  - driver development
+  - dynamics 365
+  - dynamics 365 business central  nav
+  - dynamics 365 ce
+  - dynamics 365 f and o
+  - dynamics 365 online and on premise
+  - dynamics 365 sdk
+  - dynamics crm 2016 and higher
+  - dynamics crm sdk development
+  - dynamics developer
+  - e commerce and internet applications
+  - eagerness to teach and mentor others
+  - ef6 and ef core+
+  - effective verbal and written communications
+  - electron chromium openfin
+  - embedding models
+  - engineering leadership
+  - engineering mindset
+  - english
+  - english for multi national team alignment
+  - enterprise grade solution delivery
+  - enterprise level security protocols
+  - enterprise service bus technologies
+  - enthusiastic self starter
   - entityframework linq
-  - experience in content creation pipelines
+  - erp
+  - erp platforms
+  - etl processes
+  - etls
+  - etls, pipelines, messaging
+  - event driven architecture
+  - event management
+  - event streaming framework experience
+  - excellent communicator
+  - excellent project management and organizational skills
+  - excellent troubleshooting and analytical skills
+  - experience building complex software systems
+  - experience building messaging platforms
+  - experience collaborating on cross functional teams
+  - experience creating lld
+  - experience deploying and maintaining cloud applications
+  - experience developing automation solutions
+  - experience developing desktop applications
+  - experience developing in a dotnet environment
+  - experience developing scalable service oriented architectures
+  - experience formulating business processes
+  - experience in agile software development
+  - experience in agile software development environments
+  - experience in assessing complex business requirements
+  - experience in building automated test harness
+  - experience in capital markets
+  - experience in ci cd pipelines
+  - experience in container technologies
+  - experience in csharp programming language
+  - experience in developing reusable web components
+  - experience in financial banking sector
+  - experience in financial services capital markets
+  - experience in financial services industry
+  - experience in fix protocol
+  - experience in gui design
+  - experience in handling sensitive data security
   - experience in modern dotnet technologies
   - experience in monitoring and observability capabilities
-  - familiarity with industry best practices
-  - fluent in english
+  - experience in multiple programming languages
+  - experience in multiple technology stacks
+  - experience in pharmacy
+  - experience in programming and analysis
+  - experience in real time applications
+  - experience in trading applications
+  - experience in troubleshooting and scalable solutions
+  - experience in working on any os
+  - experience integrating third party systems
+  - experience leading a team of developers
+  - experience managing multiple concurrent tasks
+  - experience modernizing legacy cloud services
+  - experience of modern software development methodologies
+  - experience supporting production environment
+  - experience supporting windows forms
+  - experience using or developing web service
+  - experience using the dotnet platform
+  - experience working in a cloud environment
+  - experience working in fintech
+  - experience working with public cloud infrastructure
+  - experience working with software development teams
+  - experienced in dotnet and csharp
+  - expertise in caching frameworks
+  - expertise in csharp and dotnet frameworks
+  - expertise in technologies like jms, solace
+  - expertise with ci cd pipelines
+  - exposure of data management methodologies
+  - exposure to fax protocols or ocr
+  - exposure to highly interfaced erp environments
+  - exposure to json, xml
+  - exposure to mlops tools and frameworks
+  - extensive experience in csharp dotnet development
+  - familiarity with ci cd pipeline
+  - familiarity with ci cd pipelines
+  - familiarity with cloud environments
+  - familiarity with cloud platforms
+  - familiarity with database technologies
+  - familiarity with dotnet 6 onwards
+  - familiarity with k 12 curriculum
+  - familiarity with lease renewal paperwork
+  - familiarity with messaging services
+  - familiarity with native application development
+  - familiarity with object relational mapping tools
+  - familiarity with process modeling techniques
+  - familiarity with rmq messaging
+  - familiarity with sap crystal reports
+  - familiarity with standard it security practices
+  - familiarity with sysinternals tools and windbg
+  - familiarity with templating in c++
+  - familiarity with the club industry
+  - fast technology adaptation
+  - federated identity
+  - finance
+  - financial services banking
+  - financial services industry experience
+  - fine tuning language models
+  - firstspirit cms
+  - fix protocol
+  - flexible and adaptable to changing priorities
+  - fluent in modern dotnet
+  - front end and server side development
+  - front end design
+  - front end development
+  - front end development skills
+  - front end frameworks
+  - front end technologies
+  - front end ui
+  - frontend frameworks
+  - full sdlc experience
+  - full software development life cycle
+  - full software development life cycle experience
+  - full stack development
+  - full stack programmer
+  - functional programming
+  - gameplay systems
+  - general database design principles
+  - github
+  - gitops
+  - good english knowledge
+  - good working experience in c++
   - google cloud platform
+  - governance
+  - gpu accelerated media pipelines
+  - grc projects
+  - great communicators
+  - great relationship manager and collaborator
+  - growth oriented perspective
+  - grpc
+  - hands on expertise in powerapps development
+  - hands on rdbms experience
+  - high concurrency programming
+  - hris systems
+  - iac expertise
+  - ibm mq
+  - iis
+  - impact analysis
+  - impeccable written and spoken english
+  - implement secure authentication and authorization mechanisms
+  - implementing security measures for cloud applications
   - incident response
-  - initiative to fix issues without waiting
+  - independent contributor with drive
+  - industrial protocols
+  - information security
+  - information system development methodologies and applications
+  - innovative and passionate about your work
+  - integration architecture
+  - integration frameworks
+  - interactive learning tools
+  - interest in financial markets
+  - interest in investment management
+  - interest in mathematics
+  - interpersonal and negotiation skills
+  - interpersonal skills
   - issue identification and resolution
-  - micro services
+  - issue logging and tracking
+  - it operations
+  - iterative software development principles
+  - j2ee
+  - jest
+  - jest mocha
+  - jira and confluence knowledge
+  - jni
+  - jquery
+  - json
+  - json, xml
+  - junit
+  - k 12 education
+  - kanban
+  - kdb+ q
+  - kernel level development
+  - kernel mode drivers
+  - knockout.js
+  - knowledge and experience in architecture modernization
+  - knowledge and technical skills in c++
+  - knowledge in nosql technologies
+  - laravel
+  - leadership and team management
+  - leadership experience
+  - leadership mentorship
+  - leadership qualities
+  - leading a software development team
+  - legacy systems
+  - licensed real estate agent with reco
+  - linq
+  - logic apps
+  - ls central
+  - mac internals
+  - machine vision programming
+  - macos
+  - maintenance and asset management
+  - making things simpler
+  - market knowledge
+  - marketing
+  - master’s degree is desirable
+  - maui xamarin
+  - maven
+  - medical terminology
+  - mentorship
+  - mentorship and guidance to junior engineers
+  - merchandise arrangement and store maintenance
+  - merchandise strategies
+  - message bus
+  - messaging
+  - messaging streaming technologies
+  - micro frontends
+  - micro service architecture
+  - microservice architecture
+  - microsoft
+  - microsoft certification preferred
+  - microsoft d365
+  - microsoft dataverse
+  - microsoft dotnet
+  - microsoft dotnet csharp
+  - microsoft dotnet full stack development
   - microsoft dynamics
+  - microsoft dynamics 365
+  - microsoft dynamics 365 crm
+  - microsoft dynamics crm
+  - middleware solutions
+  - middleware tools
+  - minimum high school diploma or ged
+  - mobile development
+  - modelling techniques like uml
+  - modern c++
+  - modern collaborative development tools
+  - modern development practices
   - modern programming languages
+  - module federation
+  - monitoring and logging
+  - monitoring and observability
+  - monitoring and optimizing application performance
+  - mqtt
+  - ms dynamics
+  - ms dynamics 365 ce
+  - ms dynamics 365 crm
+  - ms dynamics development tools
+  - ms office
+  - ms windows
+  - mssql
+  - mulesoft
+  - mulesoft certification
+  - multi platform development
+  - multi threaded and concurrent applications
   - multi threaded programming
+  - multi threading
+  - multithread programming
+  - multithreaded asynchronous programming
+  - multithreaded asynchronous programming experience
+  - multithreading
+  - must have a satisfactory performance record
+  - mvvm architecture
+  - n tier systems
+  - needle safety
+  - nestjs
+  - network security products
+  - nginx
+  - nhibernate
+  - node
+  - non traditional high performance databases
+  - nosql
+  - nosql databases
+  - not data
+  - not provided
   - oauth2 openid connect
+  - object oriented analysis and design
+  - object oriented design
+  - object oriented development
+  - object oriented principles
   - object oriented programming
-  - object relational mapping
+  - object oriented programming languages
+  - object oriented software development experience
+  - objective c
+  - observability
+  - one or more modern programming languages
+  - one or more programming languages
+  - ooa ood
+  - oop
+  - oop ood
+  - oop principles
+  - oops, solid design principles
+  - open mindedness and low ego
+  - openshift
+  - opentext teamsite livesite
+  - operating system administration and troubleshooting
+  - operating systems proficiency
+  - optimistic outlook
+  - optimization engines
+  - oracle
+  - oracle certification
+  - oracle database exposure
+  - oracle tuxedo
+  - organization and time management skills
+  - other microsoft products
+  - partnering with product management and design
+  - passion for building engaging user experiences
+  - passion for technology
+  - passionate about building great software
+  - passionate about technology and continuous learning
+  - patient care and handling
+  - performance and security focus
+  - performance engineering
   - performance measurement and observability tools
-  - refactoring complex systems into scalable components
+  - performance tuning, code and data layer
+  - pharmaceutical regulated processes
+  - pharmacy software
+  - pli, cobol, jcl, markiv, telon, ca7
+  - positive attitude and willingness to learn
+  - post secondary education in technology
+  - power fx
+  - powerapps
+  - powerapps development
+  - powerbi
+  - previous experience in financial services
+  - previous game design development experience
+  - previous specialty apparel retail management experience
+  - prisma
+  - pro*c
+  - proactive approach to meeting targets
+  - proactive self starter attitude
+  - proactive, self driven mindset
+  - process flow mapping and data readiness
+  - production support
+  - professional certifications in related technologies
+  - professional experience in backend software development
+  - professional written and spoken english
+  - proficiency with code management tools
+  - proficient in dotnet
+  - proficient in front end technologies
+  - proficient in industry standard best practices
+  - proficient with containerization technologies
+  - programming
+  - programming languages
+  - programming special effects software
+  - project delivery experience on grc projects
+  - project management
+  - project management technology, work collaboratively
+  - promoting positive culture and diversity
+  - proven effective leadership skills
+  - proven experience leveraging genai code assistants
+  - provide technical leadership and mentorship
+  - public cloud
+  - public cloud certifications
+  - pursuing designation with the cmrito preferred
+  - radiation safety
+  - rag vector stores
+  - rdbms
+  - re engineer and optimize existing code
+  - reactjs
+  - reactjs angularjs
+  - real estate
+  - real estate license
+  - real time rendering
+  - redux
+  - regulatory compliance
+  - relational and nosql databases
+  - relational database
+  - relational database systems
+  - reliability and scaling
+  - requirements definition
+  - resilient, adaptable, flexible
+  - responsive ui development supporting multiple platforms
+  - responsive web front end
+  - rest
+  - rest apis json
+  - rest services
+  - rest soap
+  - rest soap services
+  - restapi
+  - restful apis json
+  - restful architecture
+  - restful services
+  - retail management
+  - risk assessment
+  - risk assessment in business decisions
+  - risk management
+  - rxjs ngrx
+  - sap crystal reports
+  - sap erp implementation cycles
+  - sap s 4hana
+  - scalable architecture design
+  - scalable software
+  - sdk library middleware development experience
+  - sdlc process
+  - sdlc, cloud security, and compliance
+  - secret clearance
+  - secure coding, design and related practices
   - secure software development
+  - security
+  - security and compliance tools
+  - security compliance
+  - security development
+  - self directed
+  - self directed and adaptable
+  - self learner and highly self motivated
+  - self motivated and ambitious
   - self motivated and independent
+  - self motivated and proactive
+  - self motivated and results driven
+  - self motivated and self organizing
+  - self starter who requires minimal supervision
+  - server side technologies
   - serverless technologies
+  - servicenow, office 365, ibm data studio
+  - significant professional software development experience
+  - single page application
+  - sitefinity
+  - sitefinity portals
+  - snowflake
+  - soap rest services
+  - soap restful services
+  - soap services
+  - socket programming
+  - soft skills
+  - software design and architecture
+  - software design using solid design principles
+  - software development
+  - software development principles
+  - software lifecycle management
+  - software programming language
+  - solid principles
+  - solid sense of personal responsibility
+  - solution definition
+  - some experience in cloud
+  - sound time management
+  - sourcetree
+  - sql and nosql
+  - sql and nosql databases
   - sql nosql
-  - strong sql and nosql database skills
-  - technically progressive and innovative
+  - sql nosql databases
+  - sql server nosql database
+  - sqlite
+  - ssas
+  - ssis
+  - ssis package management
+  - stakeholder management, system analysis
+  - standard library
+  - sterile technique
+  - stored procedures
+  - strategic organizational skills
+  - strategic thinker
+  - strong background in c++ development
+  - strong csharp expertise
+  - strong database experience
+  - strong grasp of software development principles
+  - strong in csharp development
+  - strong interpersonal, leadership, and business competencies
+  - strong math and logical thinking
+  - strong opinions that are loosely held
+  - strong proficiency in c++
+  - strong proficiency in csharp
+  - strong programming skills in modern c++
+  - strong project management and organizational skills
+  - strong project management skills
+  - strong relationship building skills
+  - strong sense of autonomy
+  - strong software engineering skills in csharp
+  - strong team oriented mindset
+  - strong technical and client facing skills
+  - strong technical expertise in middleware tools
+  - strong verbal, written, and organizational skills
+  - supervisory experience
+  - support construction and deployment
+  - support dev ops tooling
+  - swift
+  - system architecture
+  - system level programming
+  - system software development
+  - systems administration
+  - systems analysis
+  - systems troubleshooting
+  - tailwind
+  - tcp ip
+  - tdd and automated tooling
+  - team and or delivery leadership
+  - team foundation server
+  - team leadership
+  - team management
+  - technical design
+  - technical strategy
+  - templating in c++
+  - tenacity and long term value thinking
+  - test case execution
+  - the dotnet framework and related technologies
+  - thinks clearly and calmly under pressure
+  - threading async programming
+  - thrives in dynamic product environments
+  - toolchain familiarity
+  - troubleshooting crm plugins and workflows
+  - trustworthiness and reliability
+  - ts sci with fsp
+  - ui design
+  - ui development
+  - ui web technology stacks
+  - uml
+  - unit tests ui automation tests
+  - unity
+  - unix
+  - unix experience
+  - unix o s
+  - user interfaces
+  - uwp
+  - ux best practices
+  - values matter to you
+  - vb
+  - vbnet
+  - vbnet 10.0
+  - vercel neon
+  - version control
+  - version control systems
+  - wcag owasp standards
+  - wcf
+  - web and intranet architecture
+  - web and server based platforms
+  - web service frameworks
+  - web sockets
+  - webapi
+  - webpack
+  - websockets
+  - willingness to travel
+  - willingness to work a flexible schedule
+  - windbg
+  - windows
+  - windows app sdk
+  - windows applications
+  - windows core functionality
+  - windows development
+  - windows forms
+  - windows kernel programming
+  - windows os
+  - windows server
+  - windows system troubleshooting knowledge
+  - word processing software
+  - work collaboratively
+  - working with qa and product teams
+  - workshop facilitation
+  - writing clean, efficient, and maintainable code
+  - writing clean, maintainable, and collaborative code
+  - writing instruction
+  - writing robust and testable code
+  - writing unit and integration tests
+  - x++
+  - z os mainframe environment
 
 [NON_TECHNICAL_ANALYTICS] - 1 skills
-  - power bi based development
+  - power bi
 
-[NON_TECHNICAL_COMMUNICATION] - 7 skills
+[NON_TECHNICAL_BUSINESS] - 13 skills
+  - client relationship management
+  - customer service
+  - dynamics 365 customer engagement
+  - expertise in dynamics 365 customer engagement
+  - microsoft dynamics 365 customer engagement
+  - register functions and sales techniques
+  - sales
+  - sales and negotiation skills
+  - sales performance
+  - sales pipeline management
+  - sales targets
+  - strong customer service orientation
+  - wireless sales
+
+[NON_TECHNICAL_COMMUNICATION] - 81 skills
+  - business requirement documentation
+  - business requirement documentation, design documentation
+  - clear, professional communication—both verbal and written
   - collaborative communication
+  - communication
+  - communication skills
+  - communication skills in english
+  - communication, teamwork and collaboration
+  - communication, teamwork, and collaboration
+  - cross team collaboration, communication skills
+  - demonstrated verbal and written communication skills
+  - effective communication
+  - effective communication and collaboration skills
+  - effective communication and organizational skills
+  - effective communication skills
+  - effective verbal and written communication skills
   - excellent collaboration and communication skills
+  - excellent communication and collaboration abilities
   - excellent communication and collaboration skills
+  - excellent communication and consulting skills
+  - excellent communication and documentation skills
+  - excellent communication and interpersonal skills
+  - excellent communication and problem solving skills
+  - excellent communication and relationship building
+  - excellent communication and team collaboration abilities
+  - excellent communication and team collaboration skills
+  - excellent communication and teamwork abilities
+  - excellent communication skill
+  - excellent communication skills
+  - excellent communication skills, oral and written
+  - excellent communication, documentation, and interpersonal skills
+  - excellent communication, negotiation, and interpersonal skills
+  - excellent interpersonal and communication skills
+  - excellent problem solving and communication skills
+  - excellent teamwork and communication skills
+  - excellent technical writing skills
+  - excellent verbal and written communication skills
+  - excellent verbal communication and interpersonal skills
+  - excellent written and communication skills
   - excellent written and oral communication skills
+  - excellent written and verbal communication
+  - excellent written and verbal communication skills
+  - exceptional communication and collaboration abilities
+  - exceptional communication skills
+  - experience in windows communication foundation
+  - fluent communication skills in english
+  - good communication and client facing skills
+  - good communication and customer facing skills
+  - good communication and interpersonal skills
+  - good communication skills
   - good communication skills and teamwork spirit
+  - good communication skills; concise answers
+  - good verbal and written communication skills
+  - interpersonal skills, communication, teamwork and collaboration
+  - oral and written communication skills
+  - outstanding written and verbal communication skills
+  - solid communication skills
+  - strong collaboration and communication skills
+  - strong communication and collaboration skills
+  - strong communication and coordination skills
+  - strong communication and interpersonal skills
+  - strong communication and leadership skills
+  - strong communication and presentation skills
+  - strong communication and project management skills
   - strong communication and teamwork abilities
+  - strong communication and teamwork skills
+  - strong communication and technical writing skills
   - strong communication skills
+  - strong interpersonal and communication skills
+  - strong organizational effectiveness and communication skills
+  - strong problem solving and communication skills
+  - strong verbal and written communication skills
+  - strong verbal communication skills
+  - strong written and verbal communication skills
+  - technical communication and problem solving skills
+  - transparent communication
+  - verbal and written communication skills
+  - windows communication foundation
+  - windows interprocess communication
+  - write unit tests and documentation
+  - writing clear and concise documentation
 
-[NON_TECHNICAL_EDUCATION_CERTIFICATION] - 3 skills
+[NON_TECHNICAL_EDUCATION_CERTIFICATION] - 11 skills
+  - bachelor's degree
+  - bachelor’s degree
   - bachelor's degree in computer science
-  - bachelor’s degree or equivalent experience
+  - bachelor’s degree in computer science
+  - bachelor’s degree or diploma
+  - bachelor's degree or equivalent experience
+  - bachelor's degree or equivalent work experience
+  - bachelor’s degree or foreign equivalent required
+  - bachelor's degree or higher
   - computer science degree or equivalent experience
+  - master’s degree preferred
 
-[NON_TECHNICAL_EDUCATION_TEACHING] - 1 skills
+[NON_TECHNICAL_EDUCATION_TEACHING] - 14 skills
+  - collaborative and mentoring skills
   - commitment to continuous learning and mentoring
+  - experience in teaching or tutoring writing
+  - experience mentoring other developers
+  - leadership and mentoring abilities
+  - mentoring
+  - mentoring and coaching abilities
+  - mentoring junior engineers
+  - mentoring or tech lead
+  - online tutoring
+  - proficiency with online teaching tools
+  - strong mentoring and leadership skills
+  - technical leadership skills, mentoring
+  - training and mentoring existing staff
 
-[NON_TECHNICAL_PROBLEM_SOLVING] - 1 skills
-  - problem solver with an analytical mind
+[NON_TECHNICAL_PROBLEM_SOLVING] - 35 skills
+  - analysis, problem solving
+  - analytical and problem solving skills
+  - collaborative approach to team problem solving
+  - creative problem solver
+  - creative problem solving skills
+  - critical thinking skills
+  - critical thinking skills, analysis, problem solving
+  - curiosity and problem solving mindset
+  - excellent analytic and problem solving skills
+  - excellent problem solving abilities
+  - excellent problem solving and analytical skills
+  - excellent problem solving and troubleshooting skills
+  - excellent problem solving skills
+  - exceptional analytical and problem solving skills
+  - good problem solving and analytical skills
+  - good problem solving skills
+  - good troubleshooting and problem solving
+  - outstanding development and problem solving abilities
+  - proactive problem solver
+  - problem solver
+  - problem solving
+  - problem solving and troubleshooting
+  - problem solving and troubleshooting skills
+  - problem solving orientation
+  - problem solving skills
+  - problem solving, technical mentoring
+  - proven analytical and problem solving abilities
+  - strong analytical and problem solving abilities
+  - strong analytical and problem solving skills
+  - strong organizational, analytical, and facilitation skills
+  - strong problem solving abilities
+  - strong problem solving and analytical skills
+  - strong problem solving and interpersonal skills
+  - strong problem solving and troubleshooting skills
+  - strong problem solving skills
 
-[NON_TECHNICAL_PROJECT_MGMT] - 6 skills
+[NON_TECHNICAL_PROJECT_MGMT] - 50 skills
   - agile
+  - agile and lean methodologies
+  - agile certification
+  - agile delivery
+  - agile delivery team experience
+  - agile development
+  - agile development and cross functional collaboration
+  - agile development experience
+  - agile development methodologies
+  - agile development processes
+  - agile environment experience
+  - agile experience
+  - agile management
   - agile methodologies
+  - agile methodologies experience
+  - agile methodology
+  - agile methodology experience
+  - agile process
   - agile scrum
+  - agile scrum experience
+  - agile scrum methodologies
+  - agile scrum methodology
+  - agile, growth oriented mindsets
+  - agile, tdd, and continuous integration
+  - devops and agile experience
+  - devops and agile methodologies
+  - experience in agile methodologies
   - experience in agile scrum methodology
+  - experience in an agile environment
+  - experience using kanban or scrum methodologies
+  - experience working with agile development technologies
   - experience working with agile scrum methodologies
+  - exposure to agile methodologies
+  - familiar with agile development methodology
+  - familiarity with agile development methodologies
+  - familiarity with agile methodologies
+  - familiarity with agile methodologies and practices
+  - familiarity with agile scrum methodologies
+  - leadership, agile project delivery
+  - practice in agile development methodologies
+  - project management experience
+  - safe, agile, or scrum certifications
+  - scrum
   - scrum agile experience
+  - sprint kanban experience using agile methodology
+  - strong competency in agile methodology
+  - understand agile development processes
+  - waterfall and agile scrum methodologies
+  - work in an agile scrum environment
+  - working experience in agile development model
 
-[TECHNICAL_BACKEND_APIS] - 3 skills
+[TECHNICAL_BACKEND_APIS] - 15 skills
+  - experience developing and using rest apis
+  - familiarity with restful apis and graphql
+  - graphql
+  - openapi spec
   - rest api
+  - rest api design
+  - rest api experience
+  - rest api micro services
+  - rest api services
   - rest apis
+  - rest soap apis
+  - restful apis graphql
   - soap apis
+  - soap rest api
+  - web and rest api
 
-[TECHNICAL_CLOUD_AZURE] - 10 skills
+[TECHNICAL_BACKEND_MESSAGING] - 3 skills
+  - apache kafka
+  - kafka
+  - rabbitmq kafka ibm mq
+
+[TECHNICAL_BACKEND_SERVER] - 2 skills
+  - node.js
+  - node.js express
+
+[TECHNICAL_CLOUD_AWS] - 17 skills
+  - aws
+  - aws cdk
+  - aws certification
+  - aws dynamodb
+  - aws lambda
+  - aws opensearch
+  - aws s3
+  - aws serverless offerings
+  - aws services
+  - aws stack
+  - experience using aws
+  - exposure to aws services
+  - familiarity with aws services and infrastructure
+  - iac, ci cd, aws
+  - kafka aws sns sqs rabbitmq azurebus
+  - microsoft google aws certificates
+  - windows server, linux, expedient, aws
+
+[TECHNICAL_CLOUD_AZURE] - 67 skills
+  - agile team using azure devops sdlc
+  - aws azure
+  - aws azure gcp
+  - aws azure google cloud
+  - aws or azure
   - aws or azure devops
   - azure
-  - azure certifications a plus
+  - azure active directory
+  - azure ad entra id
+  - azure ado
+  - azure app services
+  - azure aws
+  - azure certification is an asset
+  - azure cli or powershell
   - azure cloud
+  - azure cloud development
+  - azure cloud experience
+  - azure cloud exposure
+  - azure cloud hosting
+  - azure cloud knowledge
+  - azure cloud services
+  - azure cloud technologies
+  - azure csharp
+  - azure data factory
+  - azure databricks
   - azure devops
-  - experience in azure
-  - experience of building on microsoft azure
+  - azure devops pipeline
+  - azure entra id for identity management
+  - azure function app
+  - azure function apps and adf jobs
+  - azure functions
+  - azure functions logic apps
+  - azure functions, service bus
+  - azure kubernetes service
+  - azure logic apps
+  - azure or aws
+  - azure pipelines
+  - azure platform
+  - azure platform services
+  - azure resources with terraform or pulumi
+  - azure service bus
+  - azure services
+  - azure sql
+  - azure sql server
+  - azure web apps
+  - cloud native applications using azure paas
+  - cloud platforms: microsoft azure
+  - cloud services experience aws and azure
+  - cloud: azure aws
+  - experience in azure cloud
+  - experience in azure cloud services
   - experience working on azure devops
+  - exposure to azure cloud services
+  - familiarity with microsoft azure services
+  - git, azure devops
+  - github azure devops ci cd
   - microsoft azure
+  - microsoft azure apis
+  - microsoft azure certifications
+  - microsoft azure cloud environment
+  - microsoft azure services
+  - microsoft certifications in d365 or azure
+  - ms azure devops
+  - ms azure devops git yaml pipelines
+  - powershell azure cli
   - proficient in azure services
+  - sql server, azure sql, or elasticsearch
 
-[TECHNICAL_CLOUD_CLOUD_GENERAL] - 3 skills
+[TECHNICAL_CLOUD_CLOUD_GENERAL] - 15 skills
+  - aws kubernetes
+  - building scalable, containerized services using docker
+  - containerization: docker  kubernetes
+  - deployed services using kubernetes and containerization
   - docker
+  - docker  kubernetes
+  - docker and kubernetes
   - docker kubernetes
+  - docker kubernetes aks
+  - experience in docker, kubernetes
+  - html5 css3 saas less
   - kubernetes
+  - kubernetes openshift
+  - saas enterprise software experience
+  - saas products
 
-[TECHNICAL_DATA_DATABASE_SQL] - 9 skills
-  - microsoft sql
+[TECHNICAL_CLOUD_GCP] - 3 skills
+  - aws gcp openstack
+  - deploying services using gcp
+  - gcp
+
+[TECHNICAL_DATA_BIG_DATA] - 1 skills
+  - spark
+
+[TECHNICAL_DATA_DATA_ENGINEERING] - 2 skills
+  - data governance
+  - data modeling
+
+[TECHNICAL_DATA_DATABASE_NOSQL] - 2 skills
+  - cassandra
+  - mongodb
+
+[TECHNICAL_DATA_DATABASE_SQL] - 64 skills
+  - databases: postgresql  sql
+  - databases: sql server
+  - familiarity with microsoft sql based technologies
+  - fluent in t sql
+  - linux, web servers, mysql
+  - microsoft sql database
+  - microsoft sql postgresql mysql
+  - microsoft sql server
+  - mongodb mysql ms sql
+  - mongodb sql
+  - ms sql
+  - ms sql postgres
   - ms sql server
+  - mysql
+  - oracle 19c and pl sql
+  - oracle 19c pl sql
+  - oracle sql
+  - oracle, sql proficiency
+  - pl sql
+  - postgres
+  - postgres mysql
+  - postgres sql knowledge
+  - postgresql
+  - postgresql  sql
+  - postgresql microsoft sql server mongodb
+  - postgresql mysql
+  - postgresql t sql
+  - proficient in csharpdotnet and sql
+  - proficient in data modeling and sql
+  - programming high performance processes in sql
+  - rdbms sql plsql
   - sql
+  - sql  sql server
   - sql and database tuning
+  - sql and relational database management systems
+  - sql cosmos db
+  - sql database design
+  - sql database schema design experience
   - sql databases
-  - sql programming and profiling optimization
+  - sql databases and transact sql
+  - sql development and optimization
+  - sql postgresql
+  - sql proficiency
+  - sql scripting
   - sql server
+  - sql server 2012 integration services
+  - sql server and database design
+  - sql server and good db design
+  - sql server experience
+  - sql server fundamentals
+  - sql server integration services
+  - sql server mongodb
   - sql server mongodb proficiency
+  - sql server mysql
+  - sql server oracle
+  - sql server postgresql
+  - sql server postgresql mongodb
   - sql server t sql
+  - sql, etls, pipelines, messaging, data
+  - strong sql and database technology experience
+  - t sql
+  - transact sql
+  - tsql sql
+  - write and optimize complex sql queries
 
-[TECHNICAL_DEVOPS_INFRA_AS_CODE] - 1 skills
-  - terraform development
+[TECHNICAL_DEVOPS_CI_CD] - 9 skills
+  - ci cd: jenkins, git, gitlab, ansible
+  - continuous integration
+  - continuous integration continuous delivery
+  - familiarity with continuous integration
+  - familiarity with continuous integration and deployment
+  - jenkins
+  - jenkins and artifactory
+  - proficiency with continuous integration tools
+  - teamcity jenkins
 
-[TECHNICAL_DEVOPS_VERSION_CONTROL] - 1 skills
+[TECHNICAL_DEVOPS_DEVOPS_GENERAL] - 14 skills
+  - build pipelines
+  - devops
+  - devops  ci cd concepts
+  - devops and ci cd pipelines
+  - devops ci cd
+  - devops ci cd pipeline integration
+  - devops devsecops
+  - devops practices
+  - devops principles and best practices
+  - devops tools
+  - devops, cd ci tools
+  - experience in devops and ci cd
+  - familiarity with devops culture and tooling
+  - infrastructure as code
+
+[TECHNICAL_DEVOPS_INFRA_AS_CODE] - 4 skills
+  - developing in terraform
+  - experience in terraform
+  - familiarity with terraform
+  - terraform
+
+[TECHNICAL_DEVOPS_MONITORING] - 1 skills
+  - git, jira, confluence, slack, grafana, teamcity
+
+[TECHNICAL_DEVOPS_VERSION_CONTROL] - 12 skills
+  - familiarity with git version control
   - git
+  - git and platforms like bitbucket github
+  - git github
+  - git workflows
+  - git, source code revision control
+  - github git
+  - proficiency with jira and git
+  - proficient in git, msbuild, and nuget
+  - proficient with git and github
+  - solid git github expertise
+  - using git
 
-[TECHNICAL_FRONTEND_FRAMEWORKS] - 8 skills
+[TECHNICAL_EMBEDDED_DRIVERS] - 1 skills
+  - professional experience working on device drivers
+
+[TECHNICAL_FRONTEND_FRAMEWORKS] - 40 skills
   - angular
+  - angular 12+
+  - angular 14.0+
+  - angular 14+
+  - angular 8.0+
+  - angular and or react
+  - angular certification before client onboarding
+  - angular certification before onboarding
+  - angular js
+  - angular material
   - angular or react
   - angular react
+  - angular react jquery
+  - angular react node.js
+  - angular react vue.js
+  - bootstrap angular jquery
+  - experience using angular grid libraries
+  - expertise in angular 15 or later
+  - familiarity with react best practices
+  - frameworks: angular
+  - frontend development with angularjs react
+  - google angular framework
+  - knowledge on angular hooks
+  - php, mysql, vue.js are considered assets
+  - proficient in angular
   - react
   - react angular
   - react angular blazor
+  - react angular vue.js
+  - react angular vue.js unity
   - react js
+  - react next.js
+  - react react native
+  - react redux
+  - react vue
+  - react.js
+  - react.js vue.js angular.js
   - vue
+  - vue.js
+  - vue.js react
 
-[TECHNICAL_GENERAL_TECH_API_DEVELOPMENT] - 5 skills
+[TECHNICAL_FRONTEND_STYLING] - 10 skills
+  - bootstrap
+  - css
+  - css html
+  - css scss html
+  - excellent html css skills
+  - front end technologies: js, angularjs, css
+  - html css
+  - html css js
+  - html5 css
+  - sass less bootstrap tailwind
+
+[TECHNICAL_FRONTEND_WEB_COMPONENTS] - 8 skills
+  - html
+  - html 5
+  - html 5+
+  - html5
+  - html5 css3
+  - html5 css3 sass
+  - html5 css3 scss sass
+  - html5+
+
+[TECHNICAL_GAME_DEV_ENGINES] - 2 skills
+  - familiarity with unreal engine
+  - unreal engine
+
+[TECHNICAL_GAME_DEV_GAMEPLAY] - 1 skills
+  - gameplay ability system
+
+[TECHNICAL_GENERAL_TECH_API_DEVELOPMENT] - 27 skills
+  - api design
+  - api design and integration
+  - api development
+  - api development and integration
+  - api development and management
+  - api development environment
+  - apis
+  - building secure and performant web apis
+  - cad apis
+  - database modeling, api development
+  - experience building restful apis
+  - experience building webservices apis
   - experience developing restful api's
+  - experience integrating with 3rd party apis
+  - experience integrating with restful apis
+  - expertise in developing apis
+  - extensive experience leveraging third party apis
+  - familiarity with microsoft’s apis
+  - http based web apis
+  - low level graphics apis
+  - proven experience in api development
+  - rest grpc apis
   - restful api
   - restful api design
   - restful apis
+  - web apis
   - web development
 
-[TECHNICAL_GENERAL_TECH_CLOUD_DEVOPS] - 2 skills
+[TECHNICAL_GENERAL_TECH_CLOUD_DEVOPS] - 18 skills
   - build systems
+  - containers
+  - continuous integration and continuous deployment
+  - ensuring application performance and scalability
+  - experience using source control software
+  - experience working with containers
+  - familiarity with containerization and orchestration
+  - familiarity with monitoring tools
+  - high availability systems
+  - linux and containers
+  - linux containers
   - logging and telemetry
+  - performance  reliability monitoring tools
+  - scalability and modularity
+  - source control
+  - source control management
+  - stl containers
+  - systems design
 
-[TECHNICAL_GENERAL_TECH_INDUSTRY_SPECIFIC] - 9 skills
-  - experience in web services
+[TECHNICAL_GENERAL_TECH_DATABASES] - 12 skills
+  - advanced experience in relational databases
+  - data storage
+  - database management
+  - database software
+  - experience developing applications using relational databases
+  - experience working with databases
+  - experience working with relational databases
+  - non relational databases
+  - relational and non relational databases
+  - relational databases
+  - relational databases development experience
+  - work with relational databases
+
+[TECHNICAL_GENERAL_TECH_DOCUMENTATION_PORTFOLIO] - 2 skills
+  - a portfolio of successful projects
+  - balance perfect vs getting it done
+
+[TECHNICAL_GENERAL_TECH_INDUSTRY_SPECIFIC] - 83 skills
+  - 3d metrology computer vision
+  - amazon web services
+  - aspdotnet core web api
+  - aspdotnet web api
+  - business central web services
+  - care for people and user experience
+  - com
+  - demonstrated success in leading development teams
+  - ebpf
+  - erp integration experience
+  - experience developing and consuming web services
+  - experience in unix shell scripting
+  - expertise in windows development
+  - familiarity with asmx web services
+  - familiarity with nginx
+  - familiarity with restful api design principles
+  - firewalls
+  - food preparation
   - foxpro
+  - game development
+  - gdscript
   - identity and access management
+  - identity and access management protocols
+  - java web services
+  - kvm hypervisor
+  - lead generation and administrative support
+  - leadership in technical solution design
+  - legally able to work in canada
+  - market updates and product knowledge
+  - mentor and coach junior team members
+  - minimum of five years industry experience
+  - ms dynamics ax certifications
+  - network programming
+  - network programming experience
+  - network programming, http, and file systems
+  - network protocols
+  - network protocols and analysis
+  - networked game principles
   - one or more scripting languages
+  - open source development norms
+  - open source experience and involvement
+  - operating systems concepts
+  - operational excellence
+  - operations experience
+  - payments or risk experience
+  - posix apis
+  - private connectivity
+  - python or shell scripting
+  - recruiting
+  - recruiting and hiring top talent
+  - redis
+  - redis memcached
+  - redis mongodb elasticsearch
+  - restful web services
+  - scala
   - secure coding practices
   - service oriented architecture
+  - soap and restful web services
+  - soap web services
+  - software architecture
+  - solution design
+  - sql server, redis, kafka
+  - stored procedures and triggers
+  - strong experience in xml
+  - strong grasp of sockets
+  - strong web api experience
   - threat modelling
+  - vpc endpoints
+  - wcf web api
+  - web api
   - web api 2
+  - web api restful api
   - web services
+  - web services and web api
+  - web services web apis
+  - websocket communication
+  - windows api win32 com
+  - windows internals
+  - windows os kernel and driver development
+  - xml
+  - xml schema
+  - xml soap rest
+  - xslt
 
-[TECHNICAL_GENERAL_TECH_SOFT_SKILLS] - 4 skills
-  - collaboration through pair and mob programming
-  - continuous improvement mindset
+[TECHNICAL_GENERAL_TECH_LANGUAGE_LOCALIZATION] - 6 skills
+  - bilingual
+  - bilingual english french
+  - bilingual in english and french
+  - bilingual is an asset
+  - bilingual: french and english
+  - bilingualism in french and english
+
+[TECHNICAL_GENERAL_TECH_NETWORKING] - 6 skills
+  - apache http server
+  - dns
+  - http protocol
+  - hypervisor technologies
+  - ip and network connectivity
+  - tcp ip and non http clients
+
+[TECHNICAL_GENERAL_TECH_SOFT_SKILLS] - 37 skills
+  - ability to conduct remote sessions
+  - ability to mentor and collaborate effectively
+  - attention to detail
+  - bias toward collaboration
+  - collaboration and team skills
+  - collaboration with cross functional teams
+  - collaboration with multifunctional teams
+  - collaborative and teamwork oriented
+  - collaborative team environment
+  - continuous improvement
+  - creativity
+  - cross functional collaboration
+  - cross functional team collaboration
+  - curious, always learning
   - energy and passion
+  - entrepreneurial mindset
+  - entrepreneurial spirit and creativity
+  - excellent organizational skills
+  - growth mindset
   - growth mindset and self learning
+  - mentorship and collaboration
+  - organized
+  - passion for learning and sharing knowledge
+  - passion for technology and code
+  - problem solving and collaboration skills
+  - strong attention to detail
+  - strong collaboration skills
+  - strong problem solving and collaboration skills
+  - strong sense of responsibility
+  - team collaboration
+  - team player
+  - team player and problem solver
+  - team player who enjoys sharing knowledge
+  - team player with a positive attitude
+  - team player, collaborative
+  - teamwork
+  - teamwork and collaboration
 
-[TECHNICAL_GENERAL_TECH_SOFTWARE_DEVELOPMENT] - 2 skills
+[TECHNICAL_GENERAL_TECH_SOFTWARE_DEVELOPMENT] - 18 skills
+  - coding standards and code reviews
+  - collaborative design and code reviews
+  - debugging
   - debugging across the entire technology stack
+  - debugging and disassembling
+  - debugging and problem solving skills
+  - debugging tools
+  - experience in client side performance optimization
+  - graphics debugging tools
+  - high performance, memory efficient, multithreaded code
+  - oo design
+  - performance optimization
+  - performance optimization techniques
+  - problem solving and debugging
+  - proficient with graphics debugging tools
   - strong debugging and problem solving skills
+  - strong development background
+  - strong problem solving and debugging skills
 
-[TECHNICAL_GENERAL_TECH_TESTING_QA] - 5 skills
+[TECHNICAL_GENERAL_TECH_TESTING_QA] - 32 skills
+  - application testing
+  - automated testing
   - automated testing frameworks
+  - automated tests
+  - automation testing
+  - build processes and testing
+  - build processes, testing, and operations
   - csharp, unit testing, and build systems
+  - experience in software testing
+  - experience in writing automated tests
+  - hands on experience using testing frameworks
   - integration testing
+  - perform unit testing on software deliverables
+  - performing unit testing
+  - regression testing
+  - software testing
+  - software testing and test driven development
+  - strong unit testing and debugging skills
   - test driven development
+  - test driven development approach
+  - test driven development techniques
+  - test frameworks
+  - testing frameworks
+  - testing tools
+  - testing: test case preparation and execution
+  - unit integration testing experience
   - unit testing
+  - unit testing and automation testing
+  - unit testing and test automation
+  - unit testing frameworks
+  - unit testing integration testing
+  - unit testing, dependency injection, ci cd
 
-[TECHNICAL_GENERAL_TECH_TOOLS_PLATFORMS] - 2 skills
-  - salesforce – both classic and lightning
-  - ssrs, ssas, ssis
+[TECHNICAL_GENERAL_TECH_TOOLS_PLATFORMS] - 27 skills
+  - adobe experience manager
+  - adobe photoshop
+  - angularjs nodejs
+  - copilot studio
+  - dynamics 365 finance and operations
+  - experience in adobe experience manager
+  - experience in shopify
+  - microsoft dynamics 365 ce
+  - microsoft power platform
+  - next.js
+  - next.js remix
+  - nodejs
+  - power apps
+  - power automate
+  - power pages
+  - power platform
+  - power platform tools
+  - salesforce
+  - sharepoint
+  - sharepoint online
+  - shopify
+  - sketchup
+  - springboot
+  - ssrs
+  - ssrs custom reports
+  - used next.js 13+ in production
+  - wordpress
 
-[TECHNICAL_PROGRAMMING_.NET] - 5 skills
+[TECHNICAL_GENERAL_TECH_WEB_DEVELOPMENT] - 22 skills
+  - aspdotnet core mvc
+  - aspdotnet mvc
+  - aspdotnet mvc programming
+  - background in full stack development
+  - experience building web applications
+  - experience building web applications with aspdotnet
+  - experience in databases and web technologies
+  - experience working with modern web technologies
+  - expertise in mvc framework, angular
+  - extensive experience in developing web applications
+  - familiarity with web development
+  - frontend technologies
+  - modern web technologies
+  - mvc
+  - mvc wcf
+  - ui frameworks
+  - ui ux design
+  - web application development
+  - web application development experience
+  - web applications
+  - web technologies
+  - website development experience using aspdotnet mvc
+
+[TECHNICAL_ML_AI_AI_GENERAL] - 2 skills
+  - acumen with artificial intelligence tools
+  - ai optimization
+
+[TECHNICAL_ML_AI_COMPUTER_VISION] - 1 skills
+  - opencv
+
+[TECHNICAL_ML_AI_MACHINE_LEARNING] - 1 skills
+  - machine learning
+
+[TECHNICAL_PROGRAMMING_.NET] - 46 skills
+  - csharp dotnet wpf
   - entity framework
+  - entity framework core
+  - entity framework, linq
   - net
+  - net  dotnet framework
+  - net , python, and ai frameworks
+  - net 4.5+
+  - net 4.x
+  - net 6
+  - net 6 8
+  - net 6 and 8
+  - net 6+
+  - net 8 or newer
+  - net application development
   - net core
+  - net core  dotnet 6+
+  - net core 8
+  - net core 8+
+  - net core and azure
+  - net core and csharp
   - net core dotnet6+
+  - net csharp
+  - net development
+  - net dotnet core
+  - net dotnet core aspdotnet mvc
   - net framework
+  - net framework  all supported versions
+  - net framework 4.8 or later
+  - net framework 4.8, dotnet core
+  - net framework 4.8.1
+  - net framework 4+ and dotnet core
+  - net framework and core
+  - net framework and csharp
+  - net framework and csharp programming
+  - net framework dotnet core
+  - net framework using csharp
+  - net framework, csharp
+  - net languages
+  - net maui
+  - net platform
+  - net programming
+  - net wpf
+  - web frameworks
+  - winforms
+  - wpf
 
-[TECHNICAL_PROGRAMMING_JAVA_ECOSYSTEM] - 1 skills
+[TECHNICAL_PROGRAMMING_C_CPP] - 2 skills
+  - c programming
+  - expertise in modern c++ development
+
+[TECHNICAL_PROGRAMMING_CONCEPTS] - 9 skills
+  - algorithms
+  - computer science algorithms
+  - data structures
+  - data structures and algorithms
+  - design patterns
+  - extensive expertise in oop concepts
+  - knowledgeable of architecture and design patterns
+  - multithreading, data structures, algorithms
+  - proficiency with modern design patterns
+
+[TECHNICAL_PROGRAMMING_GO] - 3 skills
+  - go
+  - golang
+  - golang go
+
+[TECHNICAL_PROGRAMMING_JAVA_ECOSYSTEM] - 17 skills
+  - experience developing in java
+  - express.js django spring boot
   - java
+  - java and csharp
+  - java dotnet
+  - java exposure
+  - java j2ee
+  - java knowledge
+  - java spring
+  - java, android
+  - kotlin java
+  - languages: java and csharp
+  - spring
+  - spring and spring boot, hibernate
+  - spring boot
+  - spring framework
+  - strong java, j2ee, spring
 
-[TECHNICAL_PROGRAMMING_JAVASCRIPT_TYPESCRIPT] - 4 skills
+[TECHNICAL_PROGRAMMING_JAVASCRIPT_TYPESCRIPT] - 35 skills
+  - angular react with typescript
   - angular typescript
+  - angular typescript rxjs ngrx
+  - bootstrap javascript
+  - csharp, aspdotnet, dotnet core, javascript, sql
+  - csharp, typescript, javascript, sql development components
+  - experience developing with java and javascript
+  - experience working with react and javascript
+  - frontend development with vue.js and typescript
+  - html css javascript
+  - html css javascript jquery
+  - html css javascript typescript
   - html5 css3 javascript
+  - html5 css3 javascript typescript
+  - html5 javascript
+  - html5 javascript css
+  - html5, css, javascript
+  - html5, javascript, typescript, css, jquery
+  - java, typescript, golang, c++, python
   - javascript
+  - javascript  typescript
+  - javascript ajax jquery
+  - javascript frameworks
+  - javascript frameworks libraries
+  - javascript html5 css3
+  - javascript jquery
+  - javascript spa framework
+  - javascript typescript
+  - javascript typescript, html, and css
+  - modern c++, golang, javascript, and python
+  - python typescript golang
+  - python, go, java, or javascript
+  - react, redux, hooks, typescript, and sass
   - typescript
+  - typescript javascript
 
-[TECHNICAL_PROGRAMMING_PYTHON_ECOSYSTEM] - 2 skills
+[TECHNICAL_PROGRAMMING_MOBILE] - 1 skills
+  - kotlin
+
+[TECHNICAL_PROGRAMMING_PHP] - 2 skills
+  - php
+  - strong proficiency in php
+
+[TECHNICAL_PROGRAMMING_PYTHON_ECOSYSTEM] - 12 skills
+  - c++ or python development skills
+  - command line language and python programming
+  - csharp java python
+  - experience developing with python
+  - familiarity with c++ and python
+  - go ruby python java
+  - go, java, or python
+  - java , python, or similar
+  - oracle and python
   - python
+  - python familiarity
   - python or c++ knowledge
 
-[TECHNICAL_SECURITY_APP_SECURITY] - 1 skills
+[TECHNICAL_PROGRAMMING_RUBY] - 1 skills
+  - ruby on rails
+
+[TECHNICAL_PROGRAMMING_RUST] - 2 skills
+  - c c++ or rust development background
+  - rust
+
+[TECHNICAL_SECURITY_APP_SECURITY] - 5 skills
+  - experience in developing network security products
+  - knowledge in security
+  - security implementation
+  - security tools development
   - web application security
 
-[TECHNICAL_SYSTEM_DESIGN] - 3 skills
-  - experience designing and building microservices
-  - highly proficient in distributed systems architecture
-  - microservices
+[TECHNICAL_SECURITY_CRYPTO] - 1 skills
+  - tls certificates
 
-[TECHNICAL_SYSTEM_TOOLS] - 3 skills
-  - microsoft visual studio data tools
+[TECHNICAL_SYSTEM_CONCEPTS] - 4 skills
+  - basic networking knowledge and troubleshooting
+  - computer networking
+  - networking
+  - networking concepts
+
+[TECHNICAL_SYSTEM_DESIGN] - 24 skills
+  - api microservices
+  - build scalable distributed systems and microservices
+  - building secure, scalable apis and microservices
+  - distributed systems
+  - distributed systems design
+  - event driven microservices
+  - experience designing and building microservices
+  - experience in building scalable distributed systems
+  - experience in java for microservices development
+  - expertise in distributed systems architecture
+  - exposure to microservices
+  - familiarity with distributed systems programming
+  - microservices
+  - microservices and container based platform development
+  - microservices and containerization
+  - microservices and event driven architecture
+  - microservices and rest api
+  - microservices architecture
+  - microservices architecture and event driven systems
+  - microservices kafka
+  - performance optimization and scalable distributed systems
+  - system design
+  - system design architecture
+  - system design experience
+
+[TECHNICAL_SYSTEM_TOOLS] - 37 skills
+  - bash powershell
+  - batch script powershell
+  - cmake
+  - comfortable working in unix linux environments
+  - embedded linux
+  - experience working in a linux environment
+  - experimented and talented visual studio user
+  - hands on linux scripting experience
+  - linux
+  - linux based systems
+  - linux hp ux unix ms windows
+  - linux internals
+  - linux kernel
+  - linux kernel development
+  - linux kernel network protocol stack
+  - linux os
+  - linux system calls
+  - linux unix
+  - linux, web servers, and database servers
+  - microsoft visual studio
   - powershell
+  - powershell scripting
+  - proficiency with linux and container environments
+  - proficiency with visual studio, ssms
+  - proficient in powershell
+  - proficient with linux
+  - scripting, powershell and automation
+  - strong linux development experience
+  - unix linux
+  - unix linux environments
+  - visual studio
+  - visual studio 2017 2022
+  - visual studio 2017 and 2022
+  - visual studio code
+  - visual studio code npm node.js
   - visual studio ide
+  - windows and or linux hosts
+
+[TECHNICAL_TESTING_TEST_AUTOMATION] - 3 skills
+  - ci cd and test automation
+  - quality assurance and test automation
+  - test automation
 

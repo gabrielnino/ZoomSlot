@@ -3,6 +3,6 @@
     public class SkillCategory
     {
         public string Category { get; set; }
-        public int Relevance { get; set; }
+        public Skill KeySkill { get; set; }
     }
 }
