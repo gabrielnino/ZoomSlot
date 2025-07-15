@@ -11,5 +11,7 @@ namespace Services.Interfaces
         string ResolveCategory(string skill);
         Task InitializeAsync(string categoryFilePath);
         Task WriteAsync(string categoryFilePath, List<string> uncategorized);
+
+        KeyValuePair<string, List<string>> FindBestCategory(string inputSkill, int similarityThreshold = 85);
     }
 }

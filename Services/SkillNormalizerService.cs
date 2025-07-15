@@ -139,6 +139,7 @@ namespace Services
                     if (skill != null && !string.IsNullOrWhiteSpace(skill.Name))
                     {
                         var normalized = SkillHelpers.CleanSkill(skill.Name);
+                        skill.NormailizeName = normalized;
                         skillRelevanceLookup[normalized] = skill;
                     }
                 }
@@ -146,16 +147,17 @@ namespace Services
 
             foreach (var skill in skillRelevanceLookup)
             {
-               
-                var category = finalGroups.FirstOrDefault(g => g.Value.Contains(skill.Key));
-                if (category.Key == null)
-                {
-                    _logger.LogWarning("⚠️ No category found for skill: {Skill}", skill.Key);
-                    Uncategorized.Add(skill.Key);
-                    continue;
-                }
+                var category = _resolver.FindBestCategory(skill.Value.NormailizeName);
 
-                if(skillCategories.ContainsKey(category.Key))
+                //var category = finalGroups.FirstOrDefault(g => g.Value.Contains(skill.Value.NormailizeName));
+                //if (category == null)
+                //{
+                //    _logger.LogWarning("⚠️ No category found for skill: {Skill}", skill.Key);
+                //    Uncategorized.Add(skill.Key);
+                //    continue;
+                //}
+
+                if (skillCategories.ContainsKey(category.Key))
                 {
                     skillCategories[category.Key].Add(skill.Value);
                     continue;

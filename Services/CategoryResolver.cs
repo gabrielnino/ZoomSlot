@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FuzzySharp;
 
 namespace Services
 {
     using System.Text.Json;
-    using System.Text.RegularExpressions;
     using Microsoft.Extensions.Logging;
-    using Models;
     using Services.Interfaces;
 
     public class CategoryResolver : ICategoryResolver
@@ -134,6 +128,30 @@ namespace Services
             }
 
             return foundCategory;
+        }
+
+        public KeyValuePair<string, List<string>> FindBestCategory(string inputSkill, int similarityThreshold = 85)
+        {
+            KeyValuePair<string, List<string>>? bestCategory = null;
+            int highestScore = 0;
+
+            foreach (var category in _flatCategories)
+            {
+                foreach (var skill in category.Value)
+                {
+                    int score = Fuzz.Ratio(inputSkill, skill);
+                    if (score > highestScore)
+                    {
+                        highestScore = score;
+                        bestCategory = category;
+                    }
+                }
+            }
+
+            var uncategorized = new KeyValuePair<string, List<string>>("UNCATEGORIZED", []);
+            return highestScore >= similarityThreshold
+                ? bestCategory ?? uncategorized
+                : uncategorized;
         }
 
 
