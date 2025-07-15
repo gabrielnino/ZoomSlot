@@ -67,8 +67,6 @@ namespace ValkyrieHire.Bootstrapper
                     services.AddSingleton<IPageTrackingService, PageTrackingService>();
                     services.AddSingleton<IJobDocumentCoordinator, JobDocumentCoordinator>();
                     services.AddSingleton<IFileService, FileService>();
-                    services.AddSingleton<ISkillExtractor, SkillExtractor>();
-                    services.AddSingleton<ISkillGrouper, SkillGrouper>();
                     services.AddSingleton<ICategoryResolver, CategoryResolver>();
                     services.AddSingleton<IResultWriter, ResultWriter>();
                     services.AddSingleton<ISkillNormalizerService, SkillNormalizerService>();

@@ -4,22 +4,19 @@ using System.Linq;
 using System.Text.Json;
 using Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Models;
 using Services.Interfaces;
 
 namespace Services
 {
     public class SkillNormalizerService(
-        ISkillExtractor extractor,
-        ISkillGrouper grouper,
         ICategoryResolver resolver,
         IResultWriter writer,
         AppConfig appConfig,
         ILogger<SkillNormalizerService> logger,
         ExecutionOptions executionOptions) : ISkillNormalizerService
     {
-        private readonly ISkillExtractor _extractor = extractor;
-        private readonly ISkillGrouper _grouper = grouper;
         private readonly ICategoryResolver _resolver = resolver;
         private readonly IResultWriter _writer = writer;
         private readonly AppConfig _appConfig = appConfig;
@@ -40,33 +37,10 @@ namespace Services
 
             _logger.LogInformation("📁 Preparing resume file...");
             File.Copy(resumeFileName, resumePath, overwrite: true);
-            _logger.LogInformation("📁 Resume file copied and overwritten if existed.");
-
             _logger.LogInformation("📖 Initializing category resolver...");
             await _resolver.InitializeAsync(categoryPath);
-
             _logger.LogInformation("🔍 Extracting skills from input file...");
-
             var filePath = Path.Combine(_executionOptions.ExecutionFolder, _appConfig.Paths.InputFile);
-
-            var skills = await _extractor.ExtractSkillsAsync(filePath);
-
-            _logger.LogInformation("🧽 Normalizing skills...");
-            var skillsNormalize = skills.Select(SkillHelpers.CleanSkill).Distinct().Order();
-  
-
-            _logger.LogInformation("🧠 Grouping skills...");
-            var grouped = _grouper.GroupSkills(skillsNormalize);
-
-            _logger.LogInformation("🔗 Consolidating groups...");
-            var consolidated = SkillHelpers.ConsolidateGroups(grouped, _resolver.ResolveCategory);
-
-            _logger.LogInformation("🧮 Reclassifying groups...");
-            var finalGroups = SkillHelpers.ReclassifyGroups(consolidated, _resolver.ResolveCategory);
-
-            _logger.LogInformation("💾 Writing results to output and summary files...");
-            await _writer.WriteResultsAsync(finalGroups, outputPath, summaryPath);
-
             _logger.LogInformation("📦 Processing job offers...");
             var jsonText = await File.ReadAllTextAsync(filePath);
             var jobOffers = JsonSerializer.Deserialize<List<JobOffer>>(jsonText) ?? [];
@@ -74,7 +48,7 @@ namespace Services
 
             foreach (var jobOffer in jobOffers)
             {
-                var categories = ExtractCategories(jobOffer, finalGroups);
+                var categories = ExtractCategories(jobOffer);
                 if (categories.Count > 0)
                 {
                     jobOffer.Skills = categories;
@@ -85,6 +59,17 @@ namespace Services
             if (result.Count > 0)
             {
                 _logger.LogInformation("📤 Writing categorized job offers...");
+                var skillsData = GetSkillsKeysWithCount(result);
+                var skillsDictionary = skillsData.ToDictionary( x => x.Key, x => x.Count);
+                var options = new JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                };
+                var json = JsonSerializer.Serialize(skillsDictionary, options);
+                File.WriteAllText(resumePath, json);
+
                 var outputJson = JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
                 await File.WriteAllTextAsync(outputPath, outputJson);
             }
@@ -97,6 +82,30 @@ namespace Services
             _logger.LogInformation("📁 Copying reports with Robocopy...");
             RoboCopyFiles(_appConfig.Paths.ReportFolder, _appConfig.Paths.OutPath);
             _logger.LogInformation("✅ Skill Normalization Completed Successfully");
+        }
+
+        public static List<(string Key, int Count)> GetSkillsKeysWithCount(List<JobOffer> jobOffers)
+        {
+            var keyCounter = new Dictionary<string, int>();
+
+            foreach (var offer in jobOffers)
+            {
+                var keys = offer?.Skills?.Keys.Where(k => !string.IsNullOrWhiteSpace(k)).ToList();
+                if (keys == null || keys.Count == 0)
+                {
+                    continue;
+                }
+
+                foreach (var key in keys)
+                {
+                    keyCounter[key] = keyCounter.GetValueOrDefault(key) + 1;
+                }
+            }
+
+            return [.. keyCounter
+                .OrderByDescending(kv => kv.Value)
+                .Select(kv => (kv.Key, kv.Value))
+                .Take(40)];
         }
 
         public void RoboCopyFiles(string sourceDir, string destDir)
@@ -122,12 +131,8 @@ namespace Services
             }
         }
 
-        private Dictionary<string, List<Skill>> ExtractCategories(JobOffer offer, Dictionary<string, List<string>> finalGroups)
+        private Dictionary<string, List<Skill>> ExtractCategories(JobOffer offer)
         {
-            if (offer == null || finalGroups == null)
-            {
-                return [];
-            }
 
             var skillCategories = new Dictionary<string, List<Skill>>();
             var skillRelevanceLookup = new Dictionary<string, Skill>();
@@ -148,15 +153,6 @@ namespace Services
             foreach (var skill in skillRelevanceLookup)
             {
                 var category = _resolver.FindBestCategory(skill.Value.NormailizeName);
-
-                //var category = finalGroups.FirstOrDefault(g => g.Value.Contains(skill.Value.NormailizeName));
-                //if (category == null)
-                //{
-                //    _logger.LogWarning("⚠️ No category found for skill: {Skill}", skill.Key);
-                //    Uncategorized.Add(skill.Key);
-                //    continue;
-                //}
-
                 if (skillCategories.ContainsKey(category.Key))
                 {
                     skillCategories[category.Key].Add(skill.Value);
