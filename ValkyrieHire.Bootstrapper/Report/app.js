@@ -260,7 +260,6 @@ class JobViewerApp {
             console.log('ResumePercentage: ', resumePercentage);
             const categoryWeight = (relevance * resumePercentage) / 100;
             console.log('CategoryWeight: ', categoryWeight);
-
             weightedMatch += categoryWeight;
         }
 
