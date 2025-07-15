@@ -177,11 +177,10 @@ class JobViewerApp {
     }
 
     updateDisplay() {
-        console.log('Write updateDisplay');
+        console.log('Updating display');
         if (!this.currentJobId || this.allJobs.length === 0) {
             this.elements.progressText.textContent = `0 / 0`;
             this.elements.progressBar.value = 0;
-            console.log('Job is found');
             this.toggleNavigation(false, -1);
             return;
         }
@@ -195,27 +194,56 @@ class JobViewerApp {
         }
         const job = this.allJobs[currentIndex];
 
+        // Update basic job info
         this.elements.titleText.textContent = job.JobOfferTitle || 'No title';
         this.elements.lblCompany.textContent = job.CompanyName || 'Not specified';
         this.elements.lblSalary.textContent = job.SalaryOrBudgetOffered || 'Not specified';
         this.elements.txtSummary.textContent = job.JobOfferSummarize || 'No summary available.';
 
+        // Update raw description
         if (Array.isArray(job.RawJobDescription)) {
             this.elements.rawDescriptionContent.innerHTML = job.RawJobDescription
                 .map(line => `<p>${line}</p>`)
                 .join('');
-            console.log('rawDescriptionContent successfully');
         } else {
             this.elements.rawDescriptionContent.innerHTML = '<p>No additional description available.</p>';
-            console.log('rawDescriptionContent faiuled');
         }
 
-        this.populateList(this.elements.keySkillsList, job.KeySkillsRequired, 'skill-tag');
+        // Update skills display - now grouped by category
+        this.elements.keySkillsList.innerHTML = ''; // Clear existing skills
+
+        if (job.Skills && typeof job.Skills === 'object') {
+            Object.entries(job.Skills).forEach(([category, skills]) => {
+                if (Array.isArray(skills) && skills.length > 0) {
+                    // Create category header
+                    const categoryHeader = document.createElement('h4');
+                    categoryHeader.className = 'skill-category-header';
+                    categoryHeader.textContent = category;
+                    this.elements.keySkillsList.appendChild(categoryHeader);
+
+                    // Create container for skills in this category
+                    const skillsContainer = document.createElement('div');
+                    skillsContainer.className = 'skill-category-container';
+
+                    // Add each skill
+                    skills.forEach(skill => {
+                        const skillTag = document.createElement('span');
+                        skillTag.className = 'skill-tag';
+                        skillTag.textContent = `${skill.Name}${skill.RelevancePercentage ? ` (${skill.RelevancePercentage}%)` : ''}`;
+                        skillsContainer.appendChild(skillTag);
+                    });
+
+                    this.elements.keySkillsList.appendChild(skillsContainer);
+                }
+            });
+        }
+
+        // Update other lists
         this.populateList(this.elements.essentialQualificationsList, job.EssentialQualifications);
         this.populateList(this.elements.essentialTechSkillsList, job.EssentialTechnicalSkillQualifications);
         this.populateList(this.elements.otherTechSkillsList, job.OtherTechnicalSkillQualifications);
 
-
+        // Update job actions and navigation
         const isAdded = this.addedJobs.some(j => j.Id === this.currentJobId);
         const hasLink = job.Url && job.Url.trim() !== '';
         this.elements.btnApply.classList.toggle('hidden', !hasLink);
@@ -230,9 +258,7 @@ class JobViewerApp {
         this.showButtons(isAdded);
 
         // Update match percentage if resume is loaded
-
         if (this.resumeData) {
-            console.log('Resume ready, calculating match percentage...');
             const percentage = this.calculateMatchPercentage(job);
             this.updateGauge(percentage, '.gauge-arc', '.gauge-text');
         }
