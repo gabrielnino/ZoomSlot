@@ -212,28 +212,49 @@ class JobViewerApp {
         // Update skills display - now grouped by category
         this.elements.keySkillsList.innerHTML = ''; // Clear existing skills
 
+        // Clear the list
+        this.elements.keySkillsList.innerHTML = '';
+
+        // Rebuild with bubbles
         if (job.Skills && typeof job.Skills === 'object') {
             Object.entries(job.Skills).forEach(([category, skills]) => {
                 if (Array.isArray(skills) && skills.length > 0) {
-                    // Create category header
-                    const categoryHeader = document.createElement('h4');
-                    categoryHeader.className = 'skill-category-header';
-                    categoryHeader.textContent = category;
-                    this.elements.keySkillsList.appendChild(categoryHeader);
+                    const bubble = document.createElement('div');
+                    bubble.className = 'skill-bubble';
+                    bubble.classList.add('low-match');
+                    if (this.resumeData && typeof this.resumeData[category] === 'number') {
+                        console.log('UpdateDisplay Category: ', category);
+                        let percentage = this.resumeData?.[category];
+                        if (typeof percentage !== 'number') {
+                            percentage = 0;
+                        }
+                        console.log('UpdateDisplay Percentage: ', percentage);
+                        if (percentage < 30) {
+                            bubble.classList.add('low-match');
+                        } else if (percentage < 70) {
+                            bubble.classList.add('medium-match');
+                        } else {
+                            bubble.classList.add('high-match');
+                        }
+                    }
 
-                    // Create container for skills in this category
-                    const skillsContainer = document.createElement('div');
-                    skillsContainer.className = 'skill-category-container';
+                    const header = document.createElement('div');
+                    header.className = 'skill-bubble-header';
+                    header.textContent = category;
 
-                    // Add each skill
+                    const tagsContainer = document.createElement('div');
+                    tagsContainer.className = 'skill-bubble-tags';
+
                     skills.forEach(skill => {
-                        const skillTag = document.createElement('span');
-                        skillTag.className = 'skill-tag';
-                        skillTag.textContent = `${skill.Name}${skill.RelevancePercentage ? ` (${skill.RelevancePercentage}%)` : ''}`;
-                        skillsContainer.appendChild(skillTag);
+                        const tag = document.createElement('span');
+                        tag.className = 'skill-tag';
+                        tag.textContent = `${skill.Name}${skill.RelevancePercentage ? ` (${skill.RelevancePercentage}%)` : ''}`;
+                        tagsContainer.appendChild(tag);
                     });
 
-                    this.elements.keySkillsList.appendChild(skillsContainer);
+                    bubble.appendChild(header);
+                    bubble.appendChild(tagsContainer);
+                    this.elements.keySkillsList.appendChild(bubble);
                 }
             });
         }

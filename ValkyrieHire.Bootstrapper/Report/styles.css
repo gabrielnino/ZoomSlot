@@ -382,3 +382,50 @@ border-color: #fdd34d;
     font-size: 0.85rem;
     font-weight: 500;
 }
+
+.skill-bubble {
+    background-color: var(--tertiary-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 1.25rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--box-shadow);
+    width: fit-content;
+    max-width: 100%;
+    transition: transform 0.2s ease;
+}
+
+    .skill-bubble:hover {
+        transform: scale(1.02);
+        border-color: var(--primary-color);
+    }
+
+.skill-bubble-header {
+    font-size: 0.85rem;
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    text-transform: capitalize;
+}
+
+.skill-bubble-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+
+.skill-bubble.low-match {
+    border: 2px solid var(--danger-color) !important;
+    box-shadow: 0 0 0 2px var(--danger-color) !important;
+}
+
+.skill-bubble.medium-match {
+    border: 2px solid var(--warning-color) !important;
+    box-shadow: 0 0 0 2px var(--warning-color) !important;
+}
+
+.skill-bubble.high-match {
+    border: 2px solid var(--success-color) !important;
+    box-shadow: 0 0 0 2px var(--success-color) !important;
+}
