@@ -8,7 +8,7 @@ using Serilog;
 using Services;
 using Services.Interfaces;
 
-namespace ValkyrieHire.Bootstrapper
+namespace Console.Bootstrapper
 {
     public static class AppHostBuilder
     {
@@ -47,6 +47,7 @@ namespace ValkyrieHire.Bootstrapper
                     services.AddTransient<JobsCommand>();
                     services.AddTransient<PromtCommand>();
                     services.AddTransient<SkillCommand>();
+                    services.AddTransient<BookCommand>();
                     services.AddTransient<IJobSearchCoordinator, JobSearchCoordinator>();
                     services.AddTransient<IPromptGenerator, PromptGenerator>();
                     services.AddTransient<IDetailProcessing, DetailProcessing>();
@@ -70,6 +71,8 @@ namespace ValkyrieHire.Bootstrapper
                     services.AddSingleton<ICategoryResolver, CategoryResolver>();
                     services.AddSingleton<IResultWriter, ResultWriter>();
                     services.AddSingleton<ISkillNormalizerService, SkillNormalizerService>();
+                    services.AddSingleton<ILoginBook, LoginBook>();
+                    services.AddSingleton<IBookCoordinator, BookCoordinator>();
                 })
                 .UseSerilog((context, services, config) =>
                 {

@@ -10,8 +10,8 @@
         public const string prompt = "--prompt";
         public const string skills = "--skills";
         public const string resume = "--resume";
+        public const string book = "--book";
 
-        
         private static readonly HashSet<string> ValidCommands = new(StringComparer.OrdinalIgnoreCase)
         {
             search,
@@ -21,7 +21,8 @@
             apply,
             prompt,
             skills,
-            resume
+            resume,
+            book
         };
 
         public string MainCommand { get; }

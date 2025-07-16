@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Models;
 using Serilog;
 using Services;
-using ValkyrieHire.Bootstrapper;
+using Console.Bootstrapper;
 
 
 public class Program

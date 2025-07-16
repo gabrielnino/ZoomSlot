@@ -41,6 +41,9 @@ namespace Commands
                 case JobCommandArgs.skills:
                     commands.Add(_serviceProvider.GetRequiredService<SkillCommand>());
                     break;
+                case JobCommandArgs.book:
+                    commands.Add(_serviceProvider.GetRequiredService<BookCommand>());
+                    break;
                 default:
                     commands.Add(_serviceProvider.GetRequiredService<HelpCommand>());
                     break;
