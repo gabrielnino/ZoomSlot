@@ -27,7 +27,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "06_Testing", "06_Testing", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Services", "Tests.Services\Tests.Services.csproj", "{D6AC81B3-E802-4408-A873-9912A6A340DA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ValkyrieHire.Bootstrapper", "ValkyrieHire.Bootstrapper\ValkyrieHire.Bootstrapper.csproj", "{AAC1226E-FE8A-4AC5-B8AC-0753BF54C014}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Console.Bootstrapper", "ValkyrieHire.Bootstrapper\Console.Bootstrapper.csproj", "{AAC1226E-FE8A-4AC5-B8AC-0753BF54C014}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

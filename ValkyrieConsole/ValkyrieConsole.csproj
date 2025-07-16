@@ -9,7 +9,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\ValkyrieHire.Bootstrapper\ValkyrieHire.Bootstrapper.csproj" />
+		<ProjectReference Include="..\ValkyrieHire.Bootstrapper\Console.Bootstrapper.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
