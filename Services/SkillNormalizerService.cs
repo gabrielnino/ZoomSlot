@@ -36,7 +36,7 @@ namespace Services
             var resumePath = Path.Combine(_appConfig.Paths.OutPath, resumeFileName);
 
             _logger.LogInformation("📁 Preparing resume file...");
-            File.Copy(resumeFileName, resumePath, overwrite: true);
+             File.Copy(resumeFileName, resumePath, overwrite: true);
             _logger.LogInformation("📖 Initializing category resolver...");
             await _resolver.InitializeAsync(categoryPath);
             _logger.LogInformation("🔍 Extracting skills from input file...");

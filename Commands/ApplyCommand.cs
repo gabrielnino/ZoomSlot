@@ -5,19 +5,16 @@ namespace Commands
 {
     public class ApplyCommand : ICommand
     {
-        private readonly IJobSearchCoordinator _linkedInService;
         private readonly ILogger<ApplyCommand> _logger;
         private readonly IJobStorageService _storageService;
         private readonly IDocumentCoordinator _documentCoordinator;
 
         public ApplyCommand(
             ILogger<ApplyCommand> logger,
-            IJobSearchCoordinator linkedInService,
             IJobStorageService storageService,
             IDocumentCoordinator documentCoordinator)
         {
             _logger = logger;
-            _linkedInService = linkedInService;
             _storageService = storageService;
             _documentCoordinator = documentCoordinator;
         }
