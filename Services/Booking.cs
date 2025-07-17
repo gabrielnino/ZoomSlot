@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Runtime;
 using System.Text.RegularExpressions;
 using Configuration;
 using Microsoft.Extensions.Logging;
@@ -15,7 +16,7 @@ namespace Services
         private readonly ExecutionOptions _executionOptions;
         private const string FolderName = "Login";
         private readonly ICaptureSnapshot _capture;
-        private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
+        private string FolderPath => Path.Combine(_executionOptions.CompletedFolder, FolderName);
         private readonly IDirectoryCheck _directoryCheck;
         private readonly IGmailCodeReader _gmailCodeReader;
         private DateTime _lastSelectedAppointmentDate = default;
@@ -95,6 +96,7 @@ namespace Services
             if (!reschedule)
             {
                 _logger.LogInformation("❌ No earlier appointment found. Exiting search.");
+                CopyExecutionFilesToCompletedFolder();
                 return;
             }
 
@@ -151,10 +153,39 @@ namespace Services
                 }
 
                 _logger.LogInformation("✅ All files (excluding logs in use) copied to CompletedFolder.");
+                foreach (var subDir in Directory.GetDirectories(sourceDir))
+                {
+                    try
+                    {
+                        ChangeReadOnly(subDir);
+                        Directory.Delete(subDir, recursive: true);
+                        _logger.LogInformation("🗑️ Deleted subdirectory: {SubDir}", subDir);
+                    }
+                    catch (IOException ioEx)
+                    {
+                        _logger.LogWarning(ioEx, "⚠️ Could not delete subdirectory {SubDir}. It might be in use.", subDir);
+                    }
+                    catch (UnauthorizedAccessException uaEx)
+                    {
+                        _logger.LogWarning(uaEx, "🔒 Access denied when trying to delete subdirectory {SubDir}.", subDir);
+                    }
+                }
+                ChangeReadOnly(sourceDir);
+                Directory.Delete(sourceDir, recursive: true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "❌ Error copying files to CompletedFolder.");
+            }
+        }
+
+        private void ChangeReadOnly(string subDir)
+        {
+            var dirInfo = new DirectoryInfo(subDir);
+            if (dirInfo.Attributes.HasFlag(FileAttributes.ReadOnly))
+            {
+                dirInfo.Attributes &= ~FileAttributes.ReadOnly;
+                _logger.LogInformation("🔧 Removed Read-only attribute from: {SubDir}", subDir);
             }
         }
 

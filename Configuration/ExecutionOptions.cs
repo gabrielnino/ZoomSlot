@@ -10,7 +10,7 @@
         }
 
         public string ExecutionFolder => Path.Combine(_outPath, $"{FolderName}_{TimeStamp}");
-        public string CompletedFolder => Path.Combine(_outPath, $"{CompletedFolderName}_{TimeStamp}");
+        public string CompletedFolder => Path.Combine(_outPath, CompletedActiveTimeStamp);
         public static string FolderName => "Execution";
         public static string CompletedFolderName => "Completed";
         public string TimeStamp { get; }
@@ -18,28 +18,43 @@
         {
             get
             {
-                var current = _outPath;
-                var pattern = $"{FolderName}_*";
-                var directories = Directory.GetDirectories(current, $"{FolderName}_*");
+                return GetCurrentFolder(FolderName);
+            }
+        }
 
-                var lastDirectory = directories
-                    .OrderByDescending(dir => dir)
-                    .FirstOrDefault();
+        private string CompletedActiveTimeStamp
+        {
+            get
+            {
+                string? folder = GetCurrentFolder(CompletedFolderName);
+                var suffix = folder ?? TimeStamp;
+                return $"{CompletedFolderName}_{suffix}";
+            }
+        }
 
-                if (lastDirectory == null)
-                {
-                    return null;
-                }
+        public string? GetCurrentFolder(string folder)
+        {
+            var current = _outPath;
+            var pattern = $"{folder}_*";
+            var directories = Directory.GetDirectories(current, $"{folder}_*");
 
-                var folderName = Path.GetFileName(lastDirectory);
+            var lastDirectory = directories
+                .OrderByDescending(dir => dir)
+                .FirstOrDefault();
 
-                if (folderName != null && folderName.StartsWith($"{FolderName}_"))
-                {
-                    return folderName.Substring(FolderName.Length + 1); // +1 for underscore
-                }
-
+            if (lastDirectory == null)
+            {
                 return null;
             }
+
+            var folderName = Path.GetFileName(lastDirectory);
+
+            if (folderName != null && folderName.StartsWith($"{folder}_"))
+            {
+                return folderName.Substring(folder.Length + 1); // +1 for underscore
+            }
+
+            return null;
         }
     }
 }
