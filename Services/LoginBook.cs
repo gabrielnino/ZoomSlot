@@ -18,7 +18,6 @@ namespace Services
         private readonly ExecutionOptions _executionOptions;
         private const string FolderName = "Login";
         private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
-        private readonly ISecurityCheck _securityCheck;
         private readonly IDirectoryCheck _directoryCheck;
 
         public LoginBook(AppConfig config,
@@ -26,7 +25,6 @@ namespace Services
                          ILogger<LoginService> logger,
                          ICaptureSnapshot capture,
                          ExecutionOptions executionOptions,
-                         ISecurityCheck securityCheck,
                          IDirectoryCheck directoryCheck)
         {
             _config = config;
@@ -34,7 +32,6 @@ namespace Services
             _logger = logger;
             _capture = capture;
             _executionOptions = executionOptions;
-            _securityCheck = securityCheck;
             _directoryCheck = directoryCheck;
             _directoryCheck.EnsureDirectoryExists(FolderPath);
         }

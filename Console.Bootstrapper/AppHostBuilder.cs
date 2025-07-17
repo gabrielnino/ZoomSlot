@@ -73,6 +73,7 @@ namespace Console.Bootstrapper
                     services.AddSingleton<ISkillNormalizerService, SkillNormalizerService>();
                     services.AddSingleton<ILoginBook, LoginBook>();
                     services.AddSingleton<IBookCoordinator, BookCoordinator>();
+                    services.AddSingleton<IBooking, Booking>();
                 })
                 .UseSerilog((context, services, config) =>
                 {
