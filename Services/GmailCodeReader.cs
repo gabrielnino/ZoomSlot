@@ -56,26 +56,40 @@ namespace Services
 
                 var request = service.Users.Messages.List("me");
                 request.Q = "from:roadtests-donotreply@icbc.com";
-                request.MaxResults = 5;
-                request.LabelIds = new[] { "INBOX" }; // Opcional: limitar a bandeja de entrada
+                request.MaxResults = 10;
+                request.LabelIds = new[] { "INBOX" };
                 request.IncludeSpamTrash = false;
 
                 var messages = await request.ExecuteAsync();
 
-                if (messages.Messages is null || messages.Messages.Count == 0)
+                if (messages.Messages == null || messages.Messages.Count == 0)
                 {
                     _logger.LogWarning("📭 No matching Gmail messages found.");
                     return null;
                 }
 
-                // Tomar solo el mensaje más reciente
-                var latestMessage = messages.Messages.First();
-                var email = await service.Users.Messages.Get("me", latestMessage.Id).ExecuteAsync();
-
-                // Primero intentar extraer desde el snippet
-                if (!string.IsNullOrWhiteSpace(email.Snippet))
+                // Ordenar los mensajes por internalDate (más reciente primero)
+                var detailedMessages = new List<Message>();
+                foreach (var messageMeta in messages.Messages)
                 {
-                    var match = Regex.Match(email.Snippet, @"\b\d{6}\b");
+                    var msg = await service.Users.Messages.Get("me", messageMeta.Id).ExecuteAsync();
+                    detailedMessages.Add(msg);
+                }
+
+                var latestMessage = detailedMessages
+                    .OrderByDescending(m => m.InternalDate)
+                    .FirstOrDefault();
+
+                if (latestMessage == null)
+                {
+                    _logger.LogWarning("⚠️ No message could be loaded after metadata fetch.");
+                    return null;
+                }
+
+                // Intentar extraer desde el snippet
+                if (!string.IsNullOrWhiteSpace(latestMessage.Snippet))
+                {
+                    var match = Regex.Match(latestMessage.Snippet, @"\b\d{6}\b");
                     if (match.Success)
                     {
                         _logger.LogInformation("✅ Code found in snippet: {Code}", match.Value);
@@ -83,8 +97,8 @@ namespace Services
                     }
                 }
 
-                // Fallback: intentar decodificar cuerpo (por si snippet falla en el futuro)
-                var body = GetPlainTextFromMessage(email.Payload);
+                // Intentar extraer desde el cuerpo si snippet falla
+                var body = GetPlainTextFromMessage(latestMessage.Payload);
                 if (!string.IsNullOrWhiteSpace(body))
                 {
                     var match = Regex.Match(body, @"\b\d{6}\b");

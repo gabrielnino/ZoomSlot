@@ -193,6 +193,7 @@ namespace Services
 
         public async Task SetVerificationCodeAsync()
         {
+            await Task.Delay(TimeSpan.FromSeconds(30));
             string? code = await _gmailCodeReader.GetVerificationCodeAsync();
             if (!string.IsNullOrEmpty(code))
             {
