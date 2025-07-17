@@ -36,6 +36,7 @@ namespace Services
             await CloseSurvey();
             await FindAppointments();
             await SelectAppointmentTime("Monday, November 24th, 2025", "8:35 AM");
+            await SendVerificationCodeAsync();
         }
         public async Task FindAppointments()
         {
@@ -85,26 +86,107 @@ namespace Services
 
             try
             {
-                // Espera a que aparezca alguna fecha disponible
+                // Paso 1: Buscar la fecha deseada
                 var dateTitleXpath = $"//div[contains(@class, 'date-title') and contains(., '{desiredDate}')]";
                 var dateElement = wait.Until(driver => driver.FindElement(By.XPath(dateTitleXpath)));
-
                 _logger.LogInformation($"📆 Found date: {desiredDate}");
 
-                // Buscar el botón de hora debajo de esa fecha
-                //aqui todavía no funciona, pero se deja como referencia para el futuro
+                // Paso 2: Encontrar el bloque de horas debajo de esa fecha
+                var appointmentBlock = dateElement.FindElement(By.XPath("./parent::*"));
+                var timeButtons = appointmentBlock.FindElements(By.XPath(".//button[contains(@class,'mat-button-toggle-button')]"));
 
-                _logger.LogInformation($"⏰ Selected time slot: {desiredTime}");
+                foreach (var button in timeButtons)
+                {
+                    var timeText = button.Text.Trim();
+                    if (timeText == desiredTime)
+                    {
+                        _logger.LogInformation($"⏰ Found and clicking time slot: {timeText}");
+                        button.Click();
+
+                        // Paso 3: Esperar y hacer clic en "Review Appointment"
+                        var reviewButtonXpath = "//button[.//span[normalize-space(text())='Review Appointment']]";
+                        var reviewButton = wait.Until(driver => driver.FindElement(By.XPath(reviewButtonXpath)));
+                        reviewButton.Click();
+                        _logger.LogInformation("📥 Clicked 'Review Appointment' button successfully.");
+                        await Task.Delay(1000);
+                        // Paso 4: Esperar el diálogo de confirmación
+                        var dialogXpath = "//mat-dialog-container[contains(@class,'mat-dialog-container')]";
+                        wait.Until(driver => driver.FindElement(By.XPath(dialogXpath)));
+                        _logger.LogInformation("💬 Dialog appeared for booking review.");
+
+                        // Paso 5: Hacer clic en "Next"
+                        var nextButtonXpath = "//mat-dialog-container//button[contains(@class, 'primary') and contains(., 'Next')]";
+                        var nextButton = wait.Until(driver => driver.FindElement(By.XPath(nextButtonXpath)));
+                        nextButton.Click();
+                        _logger.LogInformation("✅ Clicked 'Next' button to confirm booking.");
+                        return;
+                    }
+                }
+
+                _logger.LogWarning($"⚠️ Time slot '{desiredTime}' not found under date '{desiredDate}'.");
             }
             catch (WebDriverTimeoutException)
             {
-                _logger.LogError("⏰ Timeout: No appointment times available.");
+                _logger.LogError("❌ 'Next' button did not appear in dialog.");
             }
             catch (NoSuchElementException)
             {
-                _logger.LogError($"❌ Time slot {desiredTime} not found under date {desiredDate}.");
+                _logger.LogError($"❌ Element not found: date '{desiredDate}' or time '{desiredTime}'.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Unexpected error during SelectAppointmentTime.");
             }
         }
+
+        public async Task SendVerificationCodeAsync(string method = "Email")
+        {
+            _logger.LogInformation("🔐 Waiting for verification code dialog...");
+
+            var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(15));
+
+            try
+            {
+                // Esperar a que aparezca el diálogo del OTP
+                var dialogXpath = "//mat-dialog-container[contains(@class,'mat-dialog-container')]//app-onetime-password";
+                wait.Until(driver => driver.FindElement(By.XPath(dialogXpath)));
+                _logger.LogInformation("📬 Verification code dialog appeared.");
+
+                // Seleccionar el método deseado: "Email" o "SMS"
+                string radioLabelXpath = method.ToLower() switch
+                {
+                    "sms" => "//label[@for='mat-radio-9-input']",
+                    _ => "//label[@for='mat-radio-8-input']"
+                };
+
+                var radioLabel = wait.Until(driver => driver.FindElement(By.XPath(radioLabelXpath)));
+                radioLabel.Click();
+                _logger.LogInformation($"📨 Selected {method} as delivery method for verification code.");
+
+                // Hacer clic en el botón "Send"
+                var sendButtonXpath = "//button[contains(@class,'primary') and normalize-space(text())='Send']";
+                var sendButton = wait.Until(driver => driver.FindElement(By.XPath(sendButtonXpath)));
+                sendButton.Click();
+
+                _logger.LogInformation("✅ Verification code sent successfully.");
+            }
+            catch (WebDriverTimeoutException)
+            {
+                _logger.LogError("⏰ Timeout: Verification code dialog or buttons not found.");
+            }
+            catch (NoSuchElementException ex)
+            {
+                _logger.LogError(ex, $"❌ Failed to locate element for method '{method}'.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Unexpected error during verification code step.");
+            }
+
+            // Esperar opcional para cargar el siguiente paso
+            await Task.Delay(2000);
+        }
+
 
         public async Task CloseSurvey()
         {
