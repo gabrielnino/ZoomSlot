@@ -1,4 +1,6 @@
-﻿using Configuration;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
+using Configuration;
 using Microsoft.Extensions.Logging;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
@@ -12,6 +14,7 @@ namespace Services
         private readonly ILogger<LoginService> _logger;
         private readonly ExecutionOptions _executionOptions;
         private const string FolderName = "Login";
+       
 
         private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
         private readonly IDirectoryCheck _directoryCheck;
@@ -37,6 +40,7 @@ namespace Services
             if (IsRescheduleButtonPresent())
             {
                 _logger.LogInformation("🔁 Reschedule button is present. Proceeding with rescheduling...");
+                await CloseSurvey();
                 await Reschedule();
                 await ConfirmReschedule();
             }
@@ -46,11 +50,18 @@ namespace Services
                 await CloseSurvey();
             }
             await FindAppointments();
-            await SelectAppointmentTime("Monday, November 24th, 2025", "8:35 AM");
+            await CloseSurvey();
+            //"Monday, November 24th, 2025", "8:35 AM"
+            var result = new DateTime(2025,11,24,8,35,0);
+            await SelectEarlierClosestAppointmentAsync(result);
+            await CloseSurvey();
             await SendVerificationCodeAsync();
+            await CloseSurvey();
             await SetVerificationCodeAsync();
+            await CloseSurvey();
 
         }
+
         public async Task FindAppointments()
         {
             _logger.LogInformation("🧭 Navigating to location input and selecting from dropdown...");
@@ -91,64 +102,76 @@ namespace Services
         }
 
 
-        public async Task SelectAppointmentTime(string desiredDate, string desiredTime)
+        public async Task SelectEarlierClosestAppointmentAsync(DateTime currentAppointmentDateTime)
         {
-            _logger.LogInformation("⏳ Waiting for appointment time slots to appear...");
+            _logger.LogInformation("⏳ Searching for closest earlier appointment than current one: {Current}", currentAppointmentDateTime);
 
             var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(15));
 
             try
             {
-                // Paso 1: Buscar la fecha deseada
-                var dateTitleXpath = $"//div[contains(@class, 'date-title') and contains(., '{desiredDate}')]";
-                var dateElement = wait.Until(driver => driver.FindElement(By.XPath(dateTitleXpath)));
-                _logger.LogInformation($"📆 Found date: {desiredDate}");
+                var listings = wait.Until(driver => driver.FindElements(By.XPath("//div[contains(@class,'appointment-listings')]")));
 
-                // Paso 2: Encontrar el bloque de horas debajo de esa fecha
-                var appointmentBlock = dateElement.FindElement(By.XPath("./parent::*"));
-                var timeButtons = appointmentBlock.FindElements(By.XPath(".//button[contains(@class,'mat-button-toggle-button')]"));
+                DateTime? bestCandidate = null;
+                IWebElement? bestButton = null;
 
-                foreach (var button in timeButtons)
+                foreach (var listing in listings)
                 {
-                    var timeText = button.Text.Trim();
-                    if (timeText == desiredTime)
+                    var dateElement = listing.FindElement(By.XPath(".//div[contains(@class,'date-title')]"));
+                    if (!DateTime.TryParse(dateElement.Text.Trim(), out var parsedDate))
                     {
-                        _logger.LogInformation($"⏰ Found and clicking time slot: {timeText}");
-                        button.Click();
-                        // Paso 3: Esperar y hacer clic en "Review Appointment"
-                        var reviewButtonXpath = "//button[.//span[normalize-space(text())='Review Appointment']]";
-                        var reviewButton = wait.Until(driver => driver.FindElement(By.XPath(reviewButtonXpath)));
-                        reviewButton.Click();
-                        _logger.LogInformation("📥 Clicked 'Review Appointment' button successfully.");
-                        await Task.Delay(1000);
-                        // Paso 4: Esperar el diálogo de confirmación
-                        var dialogXpath = "//mat-dialog-container[contains(@class,'mat-dialog-container')]";
-                        wait.Until(driver => driver.FindElement(By.XPath(dialogXpath)));
-                        _logger.LogInformation("💬 Dialog appeared for booking review.");
-                        // Paso 5: Hacer clic en "Next"
-                        var nextButtonXpath = "//mat-dialog-container//button[contains(@class, 'primary') and contains(., 'Next')]";
-                        var nextButton = wait.Until(driver => driver.FindElement(By.XPath(nextButtonXpath)));
-                        nextButton.Click();
-                        _logger.LogInformation("✅ Clicked 'Next' button to confirm booking.");
-                        return;
+                        continue;
+                    }
+                    var buttons = listing.FindElements(By.XPath(".//button[contains(@class,'mat-button-toggle-button')]"));
+                    foreach (var button in buttons)
+                    {
+                        var timeText = button.Text.Trim();
+                        if (!DateTime.TryParse(timeText, out var parsedTime))
+                        {
+                            continue;
+                        }
+                        var fullDateTime = new DateTime(parsedDate.Year, parsedDate.Month, parsedDate.Day, parsedTime.Hour, parsedTime.Minute, 0);
+                        if (fullDateTime >= currentAppointmentDateTime)
+                        {
+                            continue; // Only interested in earlier times
+                        }
+                        if (bestCandidate == null || fullDateTime > bestCandidate)
+                        {
+                            bestCandidate = fullDateTime;
+                            bestButton = button;
+                        }
                     }
                 }
 
-                _logger.LogWarning($"⚠️ Time slot '{desiredTime}' not found under date '{desiredDate}'.");
-            }
-            catch (WebDriverTimeoutException)
-            {
-                _logger.LogError("❌ 'Next' button did not appear in dialog.");
-            }
-            catch (NoSuchElementException)
-            {
-                _logger.LogError($"❌ Element not found: date '{desiredDate}' or time '{desiredTime}'.");
+                if (bestButton == null)
+                {
+                    _logger.LogInformation("🛑 No earlier appointment found.");
+                    return;
+                }
+
+                _logger.LogInformation("✅ Found better (earlier) appointment: {NewTime}", bestCandidate.Value);
+
+                bestButton.Click();
+                var reviewButtonXpath = "//button[.//span[normalize-space(text())='Review Appointment']]";
+                var reviewButton = wait.Until(driver =>  driver.FindElement(By.XPath(reviewButtonXpath)));
+                reviewButton.Click();
+                _logger.LogInformation("📥 Clicked 'Review Appointment' button.");
+                await Task.Delay(1000);
+                 var xpathMatDialog = "//mat-dialog-container[contains(@class,'mat-dialog-container')]";
+                wait.Until(driver =>  driver.FindElement(By.XPath(xpathMatDialog)));
+                _logger.LogInformation("💬 Dialog appeared for booking review.");
+                var xpathDialogContainer = "//mat-dialog-container//button[contains(@class, 'primary') and contains(., 'Next')]";
+                var nextButton = wait.Until(driver =>  driver.FindElement(By.XPath(xpathDialogContainer)));
+                nextButton.Click();
+                _logger.LogInformation("✅ Clicked 'Next' to confirm new appointment.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "❌ Unexpected error during SelectAppointmentTime.");
+                _logger.LogError(ex, "❌ Error while selecting earlier appointment.");
             }
         }
+
+
 
         public async Task SendVerificationCodeAsync(string method = "Email")
         {
@@ -224,14 +247,13 @@ namespace Services
         {
             try
             {
-                await Task.Delay(3000);
                 _logger.LogInformation("🔎 Checking for survey popup...");
-                await Task.Delay(TimeSpan.FromSeconds(10));
-                var dialog = _driver.FindElement(By.XPath("//div[@role='dialog' and contains(., 'Help us improve our appointment booking services')]"));
-                if (dialog != null)
+                //await Task.Delay(TimeSpan.FromSeconds(10));
+                var dialogs = _driver.FindElements(By.XPath("//div[@role='dialog' and contains(., 'Help us improve our appointment booking services')]"));
+                if (dialogs != null && dialogs.Any())
                 {
                     _logger.LogInformation("📋 Survey popup found. Attempting to dismiss...");
-                    var noThanksBtn = dialog.FindElement(By.XPath(".//button[normalize-space(text())='No thanks']"));
+                    var noThanksBtn = dialogs[0].FindElement(By.XPath(".//button[normalize-space(text())='No thanks']"));
                     noThanksBtn.Click();
                     _logger.LogInformation("✅ Survey popup dismissed successfully.");
                 }
