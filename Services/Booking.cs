@@ -34,12 +34,22 @@ namespace Services
         public async Task Search()
         {
             _logger.LogInformation($"🔍 ID:{_executionOptions.TimeStamp} Starting search for booking appointments...");
-            await Task.Delay(3000);
-            await CloseSurvey();
+            if (IsRescheduleButtonPresent())
+            {
+                _logger.LogInformation("🔁 Reschedule button is present. Proceeding with rescheduling...");
+                await Reschedule();
+                await ConfirmReschedule();
+            }
+            else
+            {
+                _logger.LogInformation("🔍 Reschedule button is not present. Proceeding with new booking...");
+                await CloseSurvey();
+            }
             await FindAppointments();
             await SelectAppointmentTime("Monday, November 24th, 2025", "8:35 AM");
             await SendVerificationCodeAsync();
             await SetVerificationCodeAsync();
+
         }
         public async Task FindAppointments()
         {
@@ -105,7 +115,6 @@ namespace Services
                     {
                         _logger.LogInformation($"⏰ Found and clicking time slot: {timeText}");
                         button.Click();
-
                         // Paso 3: Esperar y hacer clic en "Review Appointment"
                         var reviewButtonXpath = "//button[.//span[normalize-space(text())='Review Appointment']]";
                         var reviewButton = wait.Until(driver => driver.FindElement(By.XPath(reviewButtonXpath)));
@@ -116,7 +125,6 @@ namespace Services
                         var dialogXpath = "//mat-dialog-container[contains(@class,'mat-dialog-container')]";
                         wait.Until(driver => driver.FindElement(By.XPath(dialogXpath)));
                         _logger.LogInformation("💬 Dialog appeared for booking review.");
-
                         // Paso 5: Hacer clic en "Next"
                         var nextButtonXpath = "//mat-dialog-container//button[contains(@class, 'primary') and contains(., 'Next')]";
                         var nextButton = wait.Until(driver => driver.FindElement(By.XPath(nextButtonXpath)));
@@ -154,18 +162,14 @@ namespace Services
                 var dialogXpath = "//mat-dialog-container[contains(@class,'mat-dialog-container')]//app-onetime-password";
                 wait.Until(driver => driver.FindElement(By.XPath(dialogXpath)));
                 _logger.LogInformation("📬 Verification code dialog appeared.");
-
                 // Seleccionar el método deseado: "Email" o "SMS"
                 string radioLabelXpath = method.ToLower() switch
                 {
-                    "sms" => "//label[@for='mat-radio-9-input']",
-                    _ => "//label[@for='mat-radio-8-input']"
+                    "sms" => "//label[@for='mat-radio-9-input']", _ => "//label[@for='mat-radio-8-input']"
                 };
-
                 var radioLabel = wait.Until(driver => driver.FindElement(By.XPath(radioLabelXpath)));
                 radioLabel.Click();
                 _logger.LogInformation($"📨 Selected {method} as delivery method for verification code.");
-
                 // Hacer clic en el botón "Send"
                 var sendButtonXpath = "//button[contains(@class,'primary') and normalize-space(text())='Send']";
                 var sendButton = wait.Until(driver => driver.FindElement(By.XPath(sendButtonXpath)));
@@ -198,13 +202,11 @@ namespace Services
             if (!string.IsNullOrEmpty(code))
             {
                 var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
-
                 // Step 1: Wait for input and enter code
                 var input = wait.Until(driver => driver.FindElement(By.XPath("//input[@maxlength='6']")));
                 input.Clear();
                 input.SendKeys(code);
                 _logger.LogInformation("✅ Verification code entered.");
-
                 // Step 2: Wait for and click the submit button
                 var submitButton = wait.Until(driver => driver.FindElement(By.XPath("//button[contains(@class, 'submit-code-button')]")));
                 submitButton.Click();
@@ -222,6 +224,7 @@ namespace Services
         {
             try
             {
+                await Task.Delay(3000);
                 _logger.LogInformation("🔎 Checking for survey popup...");
                 await Task.Delay(TimeSpan.FromSeconds(10));
                 var dialog = _driver.FindElement(By.XPath("//div[@role='dialog' and contains(., 'Help us improve our appointment booking services')]"));
@@ -241,6 +244,78 @@ namespace Services
             {
                 _logger.LogError(ex, "⚠️ Unexpected error while checking for survey popup.");
             }
+        }
+
+        public bool IsRescheduleButtonPresent()
+        {
+            try
+            {
+                var buttons = _driver.FindElements(By.XPath("//button[contains(text(),'Reschedule appointment')]"));
+                bool exists = buttons.Count > 0;
+                _logger.LogInformation(exists ? "🔁 Reschedule button is present." : "❌ Reschedule button is not present.");
+                return exists;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "⚠️ Error checking for 'Reschedule appointment' button.");
+                return false;
+            }
+        }
+
+
+        public async Task Reschedule()
+        {
+            try
+            {
+                await Task.Delay(3000);
+                var buttons = _driver.FindElements(By.XPath("//button[contains(text(),'Reschedule appointment')]"));
+                if (buttons.Any())
+                {
+                    _logger.LogInformation("🔁 Reschedule button found. Clicking to proceed...");
+                    buttons[0].Click();
+                    _logger.LogInformation("✅ Reschedule button clicked successfully.");
+                }
+                else
+                {
+                    _logger.LogWarning("❌ Reschedule button not found. Cannot proceed with rescheduling.");
+                    return;
+                }
+            }
+            catch (NoSuchElementException)
+            {
+                _logger.LogInformation("ℹ️ No survey popup displayed. Continuing normally.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "⚠️ Unexpected error while checking for survey popup.");
+            }
+        }
+
+        public async Task ConfirmReschedule()
+        {
+            try
+            {
+                _logger.LogInformation("🔍 Waiting for reschedule confirmation dialog...");
+                var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+                // Wait for the "Yes" button to appear inside the dialog
+                var buttonYesXpath = "//mat-dialog-container//button[normalize-space(text())='Yes']";
+                var yesButton = wait.Until(driver => driver.FindElement(By.XPath(buttonYesXpath)));
+                yesButton.Click();
+                _logger.LogInformation("✅ Clicked 'Yes' to confirm reschedule.");
+            }
+            catch (WebDriverTimeoutException)
+            {
+                _logger.LogWarning("⚠️ Timeout: 'Yes' button in reschedule dialog did not appear.");
+            }
+            catch (NoSuchElementException)
+            {
+                _logger.LogWarning("❌ 'Yes' button in reschedule dialog not found.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Unexpected error while clicking 'Yes' in reschedule dialog.");
+            }
+            await Task.Delay(500); // Optional: slight delay after click
         }
     }
 }
