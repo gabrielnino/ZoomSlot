@@ -111,30 +111,29 @@ namespace Services
         {
             try
             {
-
+                await Task.Delay(1000);
+                _logger.LogInformation("🔍 Starting search for earlier available appointment before {Current}", current);
                 var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
                 var div = "div.appointment-listings";
                 var appointmentContainer = wait.Until(driver => driver.FindElement(By.CssSelector(div)));
                 var dateBlocks = appointmentContainer.FindElements(By.XPath(".//div[contains(@class, 'date-title')]"));
                 var availableSlots = new List<(DateTime DateTime, IWebElement Button)>();
-
+                _logger.LogInformation("📅 Found {Count} date blocks to scan for appointments.", dateBlocks.Count);
                 foreach (var dateBlock in dateBlocks)
                 {
                     string rawDate = dateBlock.Text.Trim(); // Ej: "Monday, November 24th, 2025"
-
-                    // Quitar el sufijo ordinal (st, nd, rd, th)
                     string cleanedDate = Regex.Replace(rawDate, @"(\d{1,2})(st|nd|rd|th)", "$1");
 
                     if (!DateTime.TryParseExact(cleanedDate, "dddd, MMMM d, yyyy",
                         CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate))
                     {
-                        _logger.LogWarning("❌ Fecha inválida: {Date}", rawDate);
+                        _logger.LogWarning("❌ Invalid date format: {RawDate}", rawDate);
                         continue;
                     }
 
-                    // Buscar los botones de horario dentro del bloque actual
                     var timeButtons = dateBlock.FindElements(By.XPath("following-sibling::mat-button-toggle//button"));
-                    
+                    _logger.LogInformation("⏰ Found {Count} time buttons for date {Date}", timeButtons.Count, parsedDate.ToShortDateString());
+
                     foreach (var btn in timeButtons)
                     {
                         string timeText = btn.Text.Trim(); // Ej: "8:35 AM"
@@ -143,28 +142,47 @@ namespace Services
                         {
                             DateTime fullDateTime = parsedDate.Date + parsedTime.TimeOfDay;
                             availableSlots.Add((fullDateTime, btn));
+                            _logger.LogDebug("🕒 Found available slot: {Slot}", fullDateTime);
+                        }
+                        else
+                        {
+                            _logger.LogWarning("⚠️ Invalid time format: {TimeText}", timeText);
                         }
                     }
                 }
 
-                availableSlots = [.. availableSlots.OrderBy(slot => slot.DateTime)];
-                var earliestSlot = availableSlots.FirstOrDefault();
-
-                if (earliestSlot.DateTime >= current)
+                if (!availableSlots.Any())
                 {
+                    _logger.LogWarning("📭 No valid available slots found.");
                     return false;
                 }
 
+                availableSlots = [.. availableSlots.OrderBy(slot => slot.DateTime)];
+                var earliestSlot = availableSlots.FirstOrDefault();
+                _logger.LogInformation("📌 Earliest slot found: {Earliest}", earliestSlot.DateTime);
+
+                if (earliestSlot.DateTime >= current)
+                {
+                    _logger.LogInformation("🚫 No earlier slot found. Current: {Current} | Earliest: {Earliest}",
+                        current, earliestSlot.DateTime);
+                    return false;
+                }
+
+                _logger.LogInformation("✅ Selecting earlier slot: {Slot}", earliestSlot.DateTime);
                 earliestSlot.Button.Click();
+
                 var buttonReview = "//button[.//span[contains(text(),'Review Appointment')]]";
                 var reviewButton = wait.Until(driver => driver.FindElement(By.XPath(buttonReview)));
                 reviewButton.Click();
                 _logger.LogInformation("✅ Clicked on 'Review Appointment' button.");
-                wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+
+                wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(20));
                 var nextButtonXpath = "//button[contains(text(), 'Next')]";
+
                 var nextButton = wait.Until(driver => driver.FindElement(By.XPath(nextButtonXpath)));
                 nextButton.Click();
                 _logger.LogInformation("✅ Clicked on 'Next' button.");
+
                 return true;
             }
             catch (Exception ex)
@@ -175,10 +193,10 @@ namespace Services
         }
 
 
+
         public async Task SendVerificationCodeAsync(string method = "Email")
         {
             _logger.LogInformation("🔐 Waiting for verification code dialog...");
-
             var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(15));
 
             try
@@ -188,10 +206,12 @@ namespace Services
                 wait.Until(driver => driver.FindElement(By.XPath(dialogXpath)));
                 _logger.LogInformation("📬 Verification code dialog appeared.");
                 // Seleccionar el método deseado: "Email" o "SMS"
-                string radioLabelXpath = method.ToLower() switch
-                {
-                    "sms" => "//label[@for='mat-radio-9-input']", _ => "//label[@for='mat-radio-8-input']"
-                };
+                string radioLabelXpath = method.ToLower()
+                    switch               
+                    {
+                        "sms" => "//input[@type='radio' and @value='SMS']/ancestor::label", 
+                        _ => "//input[@type='radio' and @value='Email']/ancestor::label"
+                    };
                 var radioLabel = wait.Until(driver => driver.FindElement(By.XPath(radioLabelXpath)));
                 radioLabel.Click();
                 _logger.LogInformation($"📨 Selected {method} as delivery method for verification code.");
