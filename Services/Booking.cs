@@ -19,6 +19,7 @@ namespace Services
         private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
         private readonly IDirectoryCheck _directoryCheck;
         private readonly IGmailCodeReader _gmailCodeReader;
+        private DateTime _lastSelectedAppointmentDate = default;
         public Booking(AppConfig config,
                        IWebDriverFactory driverFactory,
                        ILogger<LoginService> logger,
@@ -37,6 +38,7 @@ namespace Services
         public async Task Search()
         {
             _logger.LogInformation($"🔍 ID:{_executionOptions.TimeStamp} Starting search for booking appointments...");
+
             if (IsRescheduleButtonPresent())
             {
                 _logger.LogInformation("🔁 Reschedule button is present. Proceeding with rescheduling...");
@@ -49,23 +51,55 @@ namespace Services
                 _logger.LogInformation("🔍 Reschedule button is not present. Proceeding with new booking...");
                 await CloseSurvey();
             }
+
             await FindAppointments();
             await CloseSurvey();
-            //"Monday, November 24th, 2025", "8:35 AM"
-            var result = new DateTime(2025,11,24,8,35,0);
-            var reshedule = await SelectEarlierClosestAppointmentAsync(result);
-            if (!reshedule)
+
+            DateTime result;
+            string dateFilePath = "last_selected_appointment.txt";
+            DateTime defaultDate = new DateTime(2025, 11, 24, 8, 35, 0);
+
+            if (!File.Exists(dateFilePath))
+            {
+                await File.WriteAllTextAsync(dateFilePath, defaultDate.ToString("o")); // ISO 8601
+                _logger.LogInformation("📄 File did not exist. Created with default date: {Date}", defaultDate);
+                result = defaultDate;
+            }
+            else
+            {
+                var dateText = await File.ReadAllTextAsync(dateFilePath);
+                if (!DateTime.TryParse(dateText, out result))
+                {
+                    _logger.LogWarning("⚠️ Failed to parse stored date. Using default date.");
+                    result = defaultDate;
+                }
+                else
+                {
+                    _logger.LogInformation("📅 Loaded stored appointment date: {Date}", result);
+                }
+            }
+
+            var reschedule = await SelectEarlierClosestAppointmentAsync(result);
+
+            if (!reschedule)
             {
                 _logger.LogInformation("❌ No earlier appointment found. Exiting search.");
                 return;
             }
+
+            if (_lastSelectedAppointmentDate != default)
+            {
+                await File.WriteAllTextAsync(dateFilePath, _lastSelectedAppointmentDate.ToString("o"));
+                _logger.LogInformation("📝 Saved new earlier appointment date: {Date}", _lastSelectedAppointmentDate);
+            }
+
             await CloseSurvey();
             await SendVerificationCodeAsync();
             await CloseSurvey();
             await SetVerificationCodeAsync();
             await CloseSurvey();
-
         }
+
 
         public async Task FindAppointments()
         {
@@ -170,6 +204,7 @@ namespace Services
 
                 _logger.LogInformation("✅ Selecting earlier slot: {Slot}", earliestSlot.DateTime);
                 earliestSlot.Button.Click();
+                _lastSelectedAppointmentDate = earliestSlot.DateTime;
 
                 var buttonReview = "//button[.//span[contains(text(),'Review Appointment')]]";
                 var reviewButton = wait.Until(driver => driver.FindElement(By.XPath(buttonReview)));
