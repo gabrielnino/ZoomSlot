@@ -43,16 +43,23 @@ namespace Services
             {
                 _logger.LogInformation("🔁 Reschedule button is present. Proceeding with rescheduling...");
                 await CloseSurvey();
+                _logger.LogInformation("🧭 Calling Reschedule...");
                 await Reschedule();
+                _logger.LogInformation("✅ Reschedule completed. Proceeding to ConfirmReschedule...");
                 await ConfirmReschedule();
+                _logger.LogInformation("✅ ConfirmReschedule completed.");
             }
             else
             {
-                _logger.LogInformation("🔍 Reschedule button is not present. Proceeding with new booking...");
+                _logger.LogInformation("🆕 Reschedule button is not present. Proceeding with new booking flow...");
                 await CloseSurvey();
             }
 
+            _logger.LogInformation("📌 Calling FindAppointments...");
             await FindAppointments();
+            _logger.LogInformation("✅ Finished FindAppointments.");
+
+            _logger.LogInformation("🧹 Calling CloseSurvey again after appointment search...");
             await CloseSurvey();
 
             DateTime result;
@@ -68,6 +75,8 @@ namespace Services
             else
             {
                 var dateText = await File.ReadAllTextAsync(dateFilePath);
+                _logger.LogInformation("📄 Read date from file: {RawDate}", dateText);
+
                 if (!DateTime.TryParse(dateText, out result))
                 {
                     _logger.LogWarning("⚠️ Failed to parse stored date. Using default date.");
@@ -79,6 +88,7 @@ namespace Services
                 }
             }
 
+            _logger.LogInformation("📆 Calling SelectEarlierClosestAppointmentAsync...");
             var reschedule = await SelectEarlierClosestAppointmentAsync(result);
 
             if (!reschedule)
@@ -93,42 +103,72 @@ namespace Services
                 _logger.LogInformation("📝 Saved new earlier appointment date: {Date}", _lastSelectedAppointmentDate);
             }
 
+            _logger.LogInformation("📨 Sending verification code...");
             await CloseSurvey();
             await SendVerificationCodeAsync();
+            _logger.LogInformation("✅ Verification code sent.");
+
             await CloseSurvey();
+
+            _logger.LogInformation("🔐 Setting verification code...");
             await SetVerificationCodeAsync();
+            _logger.LogInformation("✅ Verification code set.");
+
             await CloseSurvey();
+
+            _logger.LogInformation("✅ Booking flow completed successfully.");
         }
+
 
 
         public async Task FindAppointments()
         {
             _logger.LogInformation("🧭 Navigating to location input and selecting from dropdown...");
+
             try
             {
                 var searchBoxXpath = "//input[@placeholder='Start typing...']";
+                _logger.LogInformation("🔍 Locating search input with XPath: {Xpath}", searchBoxXpath);
                 var inputSearch = _driver.FindElement(By.XPath(searchBoxXpath));
+
                 inputSearch.Clear();
+                _logger.LogInformation("🧹 Cleared search input");
+
                 inputSearch.SendKeys("vancou");
+                _logger.LogInformation("⌨️ Typed partial location: 'vancou'");
                 await Task.Delay(1000);
+
                 inputSearch.SendKeys("v");
+                _logger.LogInformation("⌨️ Typed additional letter: 'v'");
                 await Task.Delay(500);
-                var wait = new OpenQA.Selenium.Support.UI.WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+
+                var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
                 var dropdownOptionXpath = "//mat-option//span[contains(text(), 'Vancouver, BC')]";
+                _logger.LogInformation("🕵️ Waiting for dropdown option: {Xpath}", dropdownOptionXpath);
                 var dropdownItem = wait.Until(drv => drv.FindElement(By.XPath(dropdownOptionXpath)));
-                dropdownItem.Click(); // Garantiza que el valor sea realmente seleccionado
+
+                dropdownItem.Click();
                 _logger.LogInformation("✅ Location selected from dropdown: Vancouver, BC");
-                await Task.Delay(500); // Esperar a que se active el botón de búsqueda
+
+                await Task.Delay(500);
+
                 var searchButtonXpath = "//button[.//span[contains(text(),'Search')]]";
+                _logger.LogInformation("🔍 Looking for Search button with XPath: {Xpath}", searchButtonXpath);
                 var searchButton = _driver.FindElement(By.XPath(searchButtonXpath));
+
                 searchButton.Click();
+                _logger.LogInformation("🖱️ Clicked on Search button");
                 await Task.Delay(1000);
+
                 var officeContainerXpath = "//div[contains(@class,'first-office-container') and .//div[contains(@class,'department-title') and contains(., 'Vancouver claim centre')]]";
+                _logger.LogInformation("🕵️ Waiting for office container with XPath: {Xpath}", officeContainerXpath);
                 var officeContainer = wait.Until(driver => driver.FindElement(By.XPath(officeContainerXpath)));
+
                 _logger.LogInformation("🏢 Found office container for Vancouver claim centre (Kingsway)");
                 officeContainer.Click();
+
                 await Task.Delay(1000);
-                _logger.LogInformation("🔍 Search button clicked successfully.");
+                _logger.LogInformation("✅ Successfully navigated to Vancouver claim centre details.");
             }
             catch (NoSuchElementException ex)
             {
@@ -139,6 +179,7 @@ namespace Services
                 _logger.LogError(ex, "❌ Unexpected error during FindAppointments.");
             }
         }
+
 
 
         public async Task<bool> SelectEarlierClosestAppointmentAsync(DateTime current)
@@ -274,20 +315,30 @@ namespace Services
             await Task.Delay(2000);
         }
 
-
         public async Task SetVerificationCodeAsync()
         {
+            _logger.LogInformation("⏳ Waiting 30 seconds before retrieving verification code...");
             await Task.Delay(TimeSpan.FromSeconds(30));
+
+            _logger.LogInformation("📨 Retrieving verification code from Gmail...");
             string? code = await _gmailCodeReader.GetVerificationCodeAsync();
+
             if (!string.IsNullOrEmpty(code))
             {
+                _logger.LogInformation("✅ Verification code retrieved: {Code}", code);
+
                 var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+
                 // Step 1: Wait for input and enter code
+                _logger.LogInformation("🔍 Waiting for code input field...");
                 var input = wait.Until(driver => driver.FindElement(By.XPath("//input[@maxlength='6']")));
+
                 input.Clear();
                 input.SendKeys(code);
-                _logger.LogInformation("✅ Verification code entered.");
+                _logger.LogInformation("✍️ Verification code entered in input field.");
+
                 // Step 2: Wait for and click the submit button
+                _logger.LogInformation("🔍 Waiting for submit button...");
                 var submitButton = wait.Until(driver => driver.FindElement(By.XPath("//button[contains(@class, 'submit-code-button')]")));
                 submitButton.Click();
                 _logger.LogInformation("📤 Submit button clicked to finalize booking.");
@@ -298,6 +349,7 @@ namespace Services
             }
 
             await Task.Delay(1000); // Optional: small delay to allow navigation to next screen
+            _logger.LogInformation("⏭️ Proceeded after code submission.");
         }
 
         public async Task CloseSurvey()
