@@ -118,9 +118,45 @@ namespace Services
             await CloseSurvey();
 
             _logger.LogInformation("✅ Booking flow completed successfully.");
+            CopyExecutionFilesToCompletedFolder();
         }
 
+        private void CopyExecutionFilesToCompletedFolder()
+        {
+            try
+            {
+                var sourceDir = _executionOptions.ExecutionFolder;
+                var destDir = _executionOptions.CompletedFolder;
 
+                if (!Directory.Exists(destDir))
+                {
+                    Directory.CreateDirectory(destDir);
+                    _logger.LogInformation("📁 Created completed folder at {DestDir}", destDir);
+                }
+
+                foreach (var filePath in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
+                {
+
+                    var relativePath = Path.GetRelativePath(sourceDir, filePath);
+                    var destFilePath = Path.Combine(destDir, relativePath);
+                    var destFileDir = Path.GetDirectoryName(destFilePath);
+
+                    if (!Directory.Exists(destFileDir))
+                    {
+                        Directory.CreateDirectory(destFileDir);
+                    }
+
+                    File.Move(filePath, destFilePath, overwrite: true);
+                    _logger.LogInformation("📄 Copied file: {File}", relativePath);
+                }
+
+                _logger.LogInformation("✅ All files (excluding logs in use) copied to CompletedFolder.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Error copying files to CompletedFolder.");
+            }
+        }
 
         public async Task FindAppointments()
         {

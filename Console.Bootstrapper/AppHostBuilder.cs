@@ -79,7 +79,7 @@ namespace Console.Bootstrapper
                 .UseSerilog((context, services, config) =>
                 {
                     // Paso 6: Crear carpeta de logs y configurar Serilog
-                    var logPath = Path.Combine(executionOptions.ExecutionFolder, "Logs");
+                    var logPath = Path.Combine(executionOptions.CompletedFolder, "Logs");
                     Directory.CreateDirectory(logPath);
 
                     config.MinimumLevel.Debug()
@@ -88,8 +88,9 @@ namespace Console.Bootstrapper
                               path: Path.Combine(logPath, "valkyriehire-.log"),
                               rollingInterval: RollingInterval.Day,
                               fileSizeLimitBytes: 5_000_000,
-                              retainedFileCountLimit: 3,
-                              rollOnFileSizeLimit: true
+                              retainedFileCountLimit: 7,
+                              rollOnFileSizeLimit: true,
+                              outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level}] {Message}{NewLine}{Exception}"
                           );
                 });
         }
