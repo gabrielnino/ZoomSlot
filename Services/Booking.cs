@@ -14,8 +14,7 @@ namespace Services
         private readonly ILogger<LoginService> _logger;
         private readonly ExecutionOptions _executionOptions;
         private const string FolderName = "Login";
-       
-
+        private readonly ICaptureSnapshot _capture;
         private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
         private readonly IDirectoryCheck _directoryCheck;
         private readonly IGmailCodeReader _gmailCodeReader;
@@ -25,7 +24,8 @@ namespace Services
                        ILogger<LoginService> logger,
                        ExecutionOptions executionOptions,
                        IDirectoryCheck directoryCheck,
-                       IGmailCodeReader gmailCodeReader)
+                       IGmailCodeReader gmailCodeReader,
+                       ICaptureSnapshot capture)
         {
             _driver = driverFactory.Create();
             _logger = logger;
@@ -33,12 +33,13 @@ namespace Services
             _directoryCheck = directoryCheck;
             _directoryCheck.EnsureDirectoryExists(FolderPath);
             _gmailCodeReader = gmailCodeReader;
+            _capture = capture;
         }
 
         public async Task Search()
         {
             _logger.LogInformation($"🔍 ID:{_executionOptions.TimeStamp} Starting search for booking appointments...");
-
+            await _capture.CaptureArtifactsAsync(FolderPath, "CloseSurvey");
             if (IsRescheduleButtonPresent())
             {
                 _logger.LogInformation("🔁 Reschedule button is present. Proceeding with rescheduling...");
@@ -64,7 +65,7 @@ namespace Services
 
             DateTime result;
             string dateFilePath = "last_selected_appointment.txt";
-            DateTime defaultDate = new DateTime(2025, 11, 24, 8, 35, 0);
+            DateTime defaultDate = new DateTime(2025, 11, 10, 3, 35, 0);
 
             if (!File.Exists(dateFilePath))
             {
@@ -283,11 +284,11 @@ namespace Services
                 _logger.LogInformation("📬 Verification code dialog appeared.");
                 // Seleccionar el método deseado: "Email" o "SMS"
                 string radioLabelXpath = method.ToLower()
-                    switch               
-                    {
-                        "sms" => "//input[@type='radio' and @value='SMS']/ancestor::label", 
-                        _ => "//input[@type='radio' and @value='Email']/ancestor::label"
-                    };
+                    switch
+                {
+                    "sms" => "//input[@type='radio' and @value='SMS']/ancestor::label",
+                    _ => "//input[@type='radio' and @value='Email']/ancestor::label"
+                };
                 var radioLabel = wait.Until(driver => driver.FindElement(By.XPath(radioLabelXpath)));
                 radioLabel.Click();
                 _logger.LogInformation($"📨 Selected {method} as delivery method for verification code.");
@@ -319,7 +320,7 @@ namespace Services
         {
             _logger.LogInformation("⏳ Waiting 30 seconds before retrieving verification code...");
             await Task.Delay(TimeSpan.FromSeconds(30));
-
+            await _capture.CaptureArtifactsAsync(FolderPath, "CloseSurvey");
             _logger.LogInformation("📨 Retrieving verification code from Gmail...");
             string? code = await _gmailCodeReader.GetVerificationCodeAsync();
 
@@ -356,6 +357,8 @@ namespace Services
         {
             try
             {
+                await Task.Delay(2000);
+                await _capture.CaptureArtifactsAsync(FolderPath, "CloseSurvey");
                 _logger.LogInformation("🔎 Checking for survey popup...");
                 await Task.Delay(TimeSpan.FromSeconds(10));
                 var dialogs = _driver.FindElements(By.XPath("//div[@role='dialog' and contains(., 'Help us improve our appointment booking services')]"));
@@ -399,6 +402,7 @@ namespace Services
             try
             {
                 await Task.Delay(3000);
+                await _capture.CaptureArtifactsAsync(FolderPath, "CloseSurvey");
                 var buttons = _driver.FindElements(By.XPath("//button[contains(text(),'Reschedule appointment')]"));
                 if (buttons.Any())
                 {
@@ -426,6 +430,7 @@ namespace Services
         {
             try
             {
+                await _capture.CaptureArtifactsAsync(FolderPath, "CloseSurvey");
                 _logger.LogInformation("🔍 Waiting for reschedule confirmation dialog...");
                 var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
                 // Wait for the "Yes" button to appear inside the dialog
