@@ -27,6 +27,9 @@
 	  <None Update="category_hierarchy.json">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
+	  <None Update="credentials.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	  <None Update="LuisNino.txt">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>

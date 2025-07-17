@@ -74,6 +74,7 @@ namespace Console.Bootstrapper
                     services.AddSingleton<ILoginBook, LoginBook>();
                     services.AddSingleton<IBookCoordinator, BookCoordinator>();
                     services.AddSingleton<IBooking, Booking>();
+                    services.AddSingleton<IGmailCodeReader, GmailCodeReader>();
                 })
                 .UseSerilog((context, services, config) =>
                 {

@@ -15,18 +15,20 @@ namespace Services
 
         private string FolderPath => Path.Combine(_executionOptions.ExecutionFolder, FolderName);
         private readonly IDirectoryCheck _directoryCheck;
-
+        private readonly IGmailCodeReader _gmailCodeReader;
         public Booking(AppConfig config,
                        IWebDriverFactory driverFactory,
                        ILogger<LoginService> logger,
                        ExecutionOptions executionOptions,
-                       IDirectoryCheck directoryCheck)
+                       IDirectoryCheck directoryCheck,
+                       IGmailCodeReader gmailCodeReader)
         {
             _driver = driverFactory.Create();
             _logger = logger;
             _executionOptions = executionOptions;
             _directoryCheck = directoryCheck;
             _directoryCheck.EnsureDirectoryExists(FolderPath);
+            _gmailCodeReader = gmailCodeReader;
         }
 
         public async Task Search()
@@ -37,6 +39,7 @@ namespace Services
             await FindAppointments();
             await SelectAppointmentTime("Monday, November 24th, 2025", "8:35 AM");
             await SendVerificationCodeAsync();
+            await SetVerificationCodeAsync();
         }
         public async Task FindAppointments()
         {
@@ -187,6 +190,32 @@ namespace Services
             await Task.Delay(2000);
         }
 
+
+        public async Task SetVerificationCodeAsync()
+        {
+            string? code = await _gmailCodeReader.GetVerificationCodeAsync();
+            if (!string.IsNullOrEmpty(code))
+            {
+                var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+
+                // Step 1: Wait for input and enter code
+                var input = wait.Until(driver => driver.FindElement(By.XPath("//input[@maxlength='6']")));
+                input.Clear();
+                input.SendKeys(code);
+                _logger.LogInformation("✅ Verification code entered.");
+
+                // Step 2: Wait for and click the submit button
+                var submitButton = wait.Until(driver => driver.FindElement(By.XPath("//button[contains(@class, 'submit-code-button')]")));
+                submitButton.Click();
+                _logger.LogInformation("📤 Submit button clicked to finalize booking.");
+            }
+            else
+            {
+                _logger.LogWarning("❌ No verification code retrieved from Gmail.");
+            }
+
+            await Task.Delay(1000); // Optional: small delay to allow navigation to next screen
+        }
 
         public async Task CloseSurvey()
         {

@@ -16,5 +16,8 @@ namespace Configuration
 
         public FilePathsConfig FilePaths { get; set; }
 
+        public Gmail Gmail { get; set; }
+
+
     }
 }
