@@ -3,6 +3,7 @@ using System.Runtime;
 using System.Text.RegularExpressions;
 using Configuration;
 using Microsoft.Extensions.Logging;
+using Models;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using Services.Interfaces;
@@ -97,6 +98,7 @@ namespace Services
             {
                 _logger.LogInformation("❌ No earlier appointment found. Exiting search.");
                 CopyExecutionFilesToCompletedFolder();
+                _logger.LogInformation("✅ Finished");
                 return;
             }
 
@@ -121,6 +123,7 @@ namespace Services
 
             _logger.LogInformation("✅ Booking flow completed successfully.");
             CopyExecutionFilesToCompletedFolder();
+            _logger.LogInformation("✅ Finished");
         }
 
         private void CopyExecutionFilesToCompletedFolder()
